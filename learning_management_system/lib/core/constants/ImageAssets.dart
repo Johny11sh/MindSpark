@@ -4,6 +4,9 @@ class ImageAssets {
   static const String ImageRoute = "images";
 
   static const String AppIcon = "$ImageRoute/MindSpark.png";
+  static const String AppIconNoBackGround = "$ImageRoute/MindSparkPNG.png";
+  static const String AppLogo = "$ImageRoute/MindSparkLogo.png";
+  static const String SplashScreenLogo = "$ImageRoute/SplashScreenLogo.png";
   static const String OnBoarding1 = "$ImageRoute/onboarding1.png";
   static const String OnBoarding2 = "$ImageRoute/onboarding2.png";
   static const String OnBoarding3 = "$ImageRoute/onboarding3.png";
@@ -16,6 +19,7 @@ class ImageAssets {
   static const String university = '$ImageRoute/university.png';
   static const String lecture = '$ImageRoute/lecture.png';
   static const String subject = '$ImageRoute/subject.png';
+  static const String course = '$ImageRoute/course.png';
   static const String UserLightMode = '$ImageRoute/Default User Profile.png';
   static const String UserDarkMode = '$ImageRoute/Default User Profile Dark Mode.png';
 }

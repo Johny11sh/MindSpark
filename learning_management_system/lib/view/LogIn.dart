@@ -47,11 +47,12 @@ class _LogInState extends State<LogIn> {
 
   Future<Map<String, dynamic>?> sendLogInData() async {
     try {
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl = "$baseUrl/api/login";
+      print(                                         APIurl);
 
       if (userNameController.text.isEmpty || passwordController.text.isEmpty) {
         Get.snackbar("Error".tr, "Username and password are required".tr);

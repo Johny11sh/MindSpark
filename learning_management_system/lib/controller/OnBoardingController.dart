@@ -13,9 +13,17 @@ class OnboardingController extends GetxController {
 
   int currentPage = 0;
   next() {
-    if (currentPage == OnBoardingList.length - 1) {
+    currentPage++;
+    if (currentPage > OnBoardingList.length - 1) {
       // sharedPrefs.prefs.setBool('isFirstEntry', false);
       Get.offAll(() => SignUp());
+    }
+    else{
+      pageController.animateToPage(
+          currentPage,
+          duration: Duration(milliseconds: 900),
+          curve: Curves.easeInOut);
+
     }
     update();
   }

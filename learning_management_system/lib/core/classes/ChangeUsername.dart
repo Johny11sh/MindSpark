@@ -13,6 +13,7 @@ import '../../services/SharedPrefs.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
 import '../../view/LogIn.dart';
+import '../../view/NavBar.dart';
 import '../../view/Profile.dart';
 import '../constants/ImageAssets.dart';
 
@@ -51,9 +52,9 @@ class _ChangeUsernameState extends State<ChangeUsername> {
       final newUsername = userNameController.text.trim();
 
       // 3. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl = '$baseUrl/api/changeusername';
 

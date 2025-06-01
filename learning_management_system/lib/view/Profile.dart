@@ -2,6 +2,8 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:learning_management_system/core/classes/WatchList.dart';
+
 import '../core/classes/AboutUs.dart';
 import '../core/classes/ChangeTheme.dart';
 import '../core/classes/ContactUs.dart';
@@ -21,6 +23,8 @@ import '../services/SharedPrefs.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
 import 'package:flutter/material.dart';
+
+import 'NavBar.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -95,9 +99,9 @@ class _ProfileState extends State<Profile> {
     }
 
     try {
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl = '$baseUrl/api/getuser';
 
@@ -179,9 +183,9 @@ class _ProfileState extends State<Profile> {
       }
 
       // 2. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl = '$baseUrl/api/logout';
 
@@ -341,6 +345,49 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
               SizedBox(height: 30),
+              InkWell(
+                onTap: () {
+                  Get.to(() => WatchList());
+                },
+                child: Card(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Icon(
+                          Icons.format_list_numbered_outlined,
+                          size: 25,
+                          color:
+                              themeController.initialTheme ==
+                                      Themes.customLightTheme
+                                  ? Color.fromARGB(255, 40, 41, 61)
+                                  : Color.fromARGB(255, 210, 209, 224),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Container(
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "WatchList".tr,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.normal,
+                              color:
+                                  themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               InkWell(
                 onTap: () {
                   Get.to(() => ChangeUsername());

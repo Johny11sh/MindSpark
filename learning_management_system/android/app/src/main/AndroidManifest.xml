@@ -1,8 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+        <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <application
         android:label="MindSpark"
         android:name="${applicationName}"
-        android:icon="@mipmap/learning_management_system">
+        android:icon="@mipmap/learning_management_system"
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

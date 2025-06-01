@@ -14,6 +14,7 @@ import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
 import '../services/SharedPrefs.dart';
 import 'package:flutter/material.dart';
+import 'Favorites.dart';
 import 'NavBar.dart';
 import 'TeacherDetails.dart';
 
@@ -120,9 +121,9 @@ class _TeachersState extends State<Teachers> {
 
     try {
       // 2. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl = '$baseUrl/api/getallteachers';
 
@@ -217,9 +218,9 @@ class _TeachersState extends State<Teachers> {
       final token = sharedPrefs.prefs.getString('token') ?? '';
       if (token.isEmpty) return null;
 
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final url = '$baseUrl/api/getteacherimage/$teacherId';
 
@@ -268,6 +269,15 @@ class _TeachersState extends State<Teachers> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Favorites()),
+              );
+            },
+            icon: Icon(Icons.favorite),
+          ),
           title: Text("Teachers".tr),
           centerTitle: true,
           actions: [

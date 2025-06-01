@@ -13,6 +13,7 @@ import '../core/constants/ImageAssets.dart';
 import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
+import 'Favorites.dart';
 import 'NavBar.dart';
 import 'TeachersCourses.dart';
 
@@ -121,12 +122,12 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
 
     try {
       // 2. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl =
-          '$baseUrl/api/getuniversityteachers/${widget.SubjectData['id']}';
+          '$baseUrl/api/subjects/${widget.SubjectData['id']}/teachers';
 
       // 3. API Request with timeout
       final response = await http
@@ -220,9 +221,9 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
       final token = sharedPrefs.prefs.getString('token') ?? '';
       if (token.isEmpty) return null;
 
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final url = '$baseUrl/api/getteacherimage/$teacherId';
 
@@ -271,6 +272,15 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Favorites()),
+              );
+            },
+            icon: Icon(Icons.favorite),
+          ),
           title: Text("Home Page".tr),
           centerTitle: true,
           actions: [

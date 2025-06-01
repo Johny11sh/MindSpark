@@ -13,6 +13,7 @@ import '../core/constants/ImageAssets.dart';
 import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
+import 'Favorites.dart';
 import 'NavBar.dart';
 import 'CoursesLessons.dart';
 import '../services/SharedPrefs.dart';
@@ -122,12 +123,12 @@ class _TeachersCoursesState extends State<TeachersCourses> {
 
     try {
       // 2. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl =
-          '$baseUrl/api/getteachersubjects/${widget.TeacherData['id']}';
+          '$baseUrl/api/getteachercourses/${widget.TeacherData['id']}';
 
       // 3. API Request with timeout
       final response = await http
@@ -151,7 +152,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         final List<dynamic> coursesList =
             responseBody is List
                 ? responseBody
-                : (responseBody['subjects'] ?? [responseBody]);
+                : (responseBody['courses'] ?? [responseBody]);
 
         // 5. State Management and caching
         if (mounted) {
@@ -221,11 +222,11 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       final token = sharedPrefs.prefs.getString('token') ?? '';
       if (token.isEmpty) return null;
 
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
-      final url = '$baseUrl/api/getsubjectimage/$courseId';
+      final url = '$baseUrl/api/getcourseimage/$courseId';
 
       final response = await http
           .get(
@@ -272,6 +273,15 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Favorites()),
+              );
+            },
+            icon: Icon(Icons.favorite),
+          ),
           title: Text("Home Page".tr),
           centerTitle: true,
           actions: [
@@ -368,14 +378,14 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                   stackTrace,
                                                 ) {
                                                   return Image.asset(
-                                                    ImageAssets.subject,
+                                                    ImageAssets.course,
                                                     height: 125,
                                                     fit: BoxFit.cover,
                                                   );
                                                 },
                                               )
                                               : Image.asset(
-                                                ImageAssets.subject,
+                                                ImageAssets.course,
                                               ),
                                     ),
                                     SizedBox(height: 30),
@@ -523,7 +533,7 @@ class SearchCustom extends SearchDelegate {
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Image.asset(
-                              ImageAssets.subject,
+                              ImageAssets.course,
                               height: 50,
                               width: 50,
                               fit: BoxFit.cover,
@@ -531,7 +541,7 @@ class SearchCustom extends SearchDelegate {
                           },
                         )
                         : Image.asset(
-                          ImageAssets.subject,
+                          ImageAssets.course,
                           height: 50,
                           width: 50,
                           fit: BoxFit.cover,
@@ -584,7 +594,7 @@ class SearchCustom extends SearchDelegate {
                         fit: BoxFit.fill,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.asset(
-                            ImageAssets.subject,
+                            ImageAssets.course,
                             height: 50,
                             width: 50,
                             fit: BoxFit.cover,
@@ -592,7 +602,7 @@ class SearchCustom extends SearchDelegate {
                         },
                       )
                       : Image.asset(
-                        ImageAssets.subject,
+                        ImageAssets.course,
                         height: 50,
                         width: 50,
                         fit: BoxFit.cover,

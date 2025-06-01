@@ -21,7 +21,6 @@ import 'view/LogIn.dart';
 import 'view/OnBoarding.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'view/VideoPlayerScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +48,6 @@ class MyApp extends StatelessWidget {
           locale: localeController.initialLang,
           theme: themeController.initialTheme,
           home: 
-          // OnBoarding()
           isLoggedIn ? NavBar() : OnBoarding(),
           // navigatorKey: NavigationService.navigatorKey, // Add this line
           getPages: [

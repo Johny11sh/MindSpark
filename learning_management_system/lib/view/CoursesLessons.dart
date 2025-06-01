@@ -1,12 +1,13 @@
 // ignore_for_file: file_names, non_constant_identifier_names, unnecessary_null_comparison, avoid_print, unused_element
 
 import 'dart:async';
+import 'dart:io';
+import '../core/classes/PDFOpener.dart';
 import '../view/LogIn.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-// import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../controller/NetworkController.dart';
@@ -15,6 +16,10 @@ import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
 import '../services/SharedPrefs.dart';
 import '../themes/Themes.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'Favorites.dart';
+import 'NavBar.dart';
 import 'VideoPlayer.dart';
 // import 'VideoPlayerScreen.dart';
 
@@ -133,9 +138,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
     }
 
     try {
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl = '$baseUrl/api/lectureissubscribed/${id}';
 
@@ -147,7 +152,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
               'Content-Type': 'application/json; charset=UTF-8',
             },
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
@@ -193,12 +198,12 @@ class _CoursesLessonsState extends State<CoursesLessons> {
 
     try {
       // 2. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl =
-          '$baseUrl/api/getsubjectlectures/${widget.CoursesData['id']}';
+          '$baseUrl/api/getcourselectures/${widget.CoursesData['id']}';
 
       // 3. API request with timeout
       final response = await http
@@ -292,9 +297,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
       final token = sharedPrefs.prefs.getString('token') ?? '';
       if (token.isEmpty) return null;
 
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final url = '$baseUrl/api/getlectureimage/$lectureId';
 
@@ -331,8 +336,31 @@ class _CoursesLessonsState extends State<CoursesLessons> {
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
       backgroundColor: Colors.red[800]!,
+      isDismissible: true,
       icon: const Icon(Icons.error_outline, color: Colors.white),
     );
+  }
+
+  static Future<File> loadNetwork(String url) async {
+    final response = await http.get(Uri.parse(url));
+    final bytes = response.bodyBytes;
+
+    return _storeFile(url, bytes);
+  }
+
+  static Future<File> _storeFile(String url, List<int> bytes) async {
+    final filename = basename(url);
+    final dir = await getApplicationDocumentsDirectory();
+
+    final file = File('${dir.path}/$filename');
+    await file.writeAsBytes(bytes, flush: true);
+    return file;
+  }
+
+  void openPDF(BuildContext context, File file) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => PDFOpener(PDFfile: file)));
   }
 
   @override
@@ -342,7 +370,19 @@ class _CoursesLessonsState extends State<CoursesLessons> {
       locale: localeController.initialLang,
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(title: Text("Home Page".tr), centerTitle: true),
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Favorites()),
+              );
+            },
+            icon: Icon(Icons.favorite),
+          ),
+          title: Text("Home Page".tr),
+          centerTitle: true,
+        ),
         body:
             coursesData.isEmpty
                 ? Center(
@@ -396,120 +436,133 @@ class _CoursesLessonsState extends State<CoursesLessons> {
 
                             return InkWell(
                               onTap: () async {
-                                getSubscription(lectureId);
-                                await Future.delayed(
-                                  Duration(milliseconds: 500),
-                                );
-                                Future.microtask(() {
-                                  setState(() {
+                                await getSubscription(lectureId);
 
-
-                                    // return to true .................!!!!!!!!!!!!!!!!!!!!!!
-                                    
-                                    
-                                    if (isLectureSubscribed == false) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                      VideoPlayer(
-                                        videoUrl: coursesData[i]
-                                            ['file_360'],
-                                        url360p: coursesData[i]
-                                            ['file_360'],
-                                        url720p: coursesData[i]
-                                            ['file_720'],
-                                        url1080p: coursesData[i]
-                                            ['file_1080'],
-                                      ),
-                                      fullscreenDialog: true
-                                      ),
-                                      );
-                                    } else {
-                                      Get.rawSnackbar(
-                                        titleText: Text(
-                                          "Not subscribed!".tr,
-                                          style: TextStyle(
-                                            color:
-                                                themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    ),
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                        messageText: Text(
-                                          'Contact the support team for instructions on how to subscribe to the course/subject first.'
-                                              .tr,
-                                          style: TextStyle(
-                                            color:
-                                                themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    ),
-                                          ),
-                                        ),
-                                        isDismissible: true,
-                                        snackPosition: SnackPosition.BOTTOM,
-                                        duration: const Duration(seconds: 3),
-                                        backgroundColor: Color.fromARGB(
-                                          255,
-                                          210,
-                                          209,
-                                          224,
-                                        ),
-                                        icon: FaIcon(
-                                          FontAwesomeIcons.ban,
-                                          size: 30,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                        margin: const EdgeInsets.all(5),
-                                        borderRadius: 5,
-                                        borderColor: Color.fromARGB(
-                                          255,
-                                          40,
-                                          41,
-                                          61,
-                                        ),
-                                      );
+                                if (isLectureSubscribed == true) {
+                                  if (coursesData[i]['type'] == 'pdf') {
+                                    try {
+                                      final PDFurl = coursesData[i]['urlpdf'];
+                                      // "http://www.pdf995.com/samples/pdf.pdf";
+                                      final file = await loadNetwork(PDFurl);
+                                      if (mounted) {
+                                        openPDF(context, file);
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        showErrorSnackbar(
+                                          "Failed to load PDF: ${e.toString()}",
+                                        );
+                                      }
                                     }
-                                  });
-                                });
+                                  } else if (coursesData[i]['type'] ==
+                                      'video') {
+                                    try {
+                                      if (mounted) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => VideoPlayer(
+                                                  videoUrl:
+                                                      coursesData[i]['url360'],
+                                                  // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+                                                  url360p:
+                                                      coursesData[i]['url360'],
+                                                  url720p:
+                                                      coursesData[i]['url720'],
+                                                  url1080p:
+                                                      coursesData[i]['url1080'],
+                                                ),
+                                            fullscreenDialog: true,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        showErrorSnackbar(
+                                          "Failed to load Video: ${e.toString()}",
+                                        );
+                                      }
+                                    }
+                                  }
+                                } else {
+                                  Get.rawSnackbar(
+                                    titleText: Text(
+                                      "Not subscribed!".tr,
+                                      style: TextStyle(
+                                        color:
+                                            themeController.initialTheme ==
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    messageText: Text(
+                                      'Contact the support team for instructions on how to subscribe to the course/subject first.'
+                                          .tr,
+                                      style: TextStyle(
+                                        color:
+                                            themeController.initialTheme ==
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
+                                      ),
+                                    ),
+                                    isDismissible: true,
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    duration: const Duration(seconds: 3),
+                                    backgroundColor: Color.fromARGB(
+                                      255,
+                                      210,
+                                      209,
+                                      224,
+                                    ),
+                                    icon: FaIcon(
+                                      FontAwesomeIcons.ban,
+                                      size: 30,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    margin: const EdgeInsets.all(5),
+                                    borderRadius: 5,
+                                    borderColor: Color.fromARGB(
+                                      255,
+                                      40,
+                                      41,
+                                      61,
+                                    ),
+                                  );
+                                }
                               },
                               child: Card(
                                 child: ListTile(
@@ -551,45 +604,54 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                   ),
                                   subtitle: Row(
                                     children: [
-
-                                     Text(
-                                    "1- ".tr,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      fontStyle: FontStyle.normal,
-                                      color:
-                                          themeController.initialTheme ==
-                                                  Themes.customLightTheme
-                                              ? Color.fromARGB(255, 40, 41, 61)
-                                              : Color.fromARGB(
-                                                255,
-                                                210,
-                                                209,
-                                                224,
-                                              ),
-                                    ),
-                                  ),
-                                      
                                       Text(
-                                    "${coursesData[i]["name"]}".tr,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w300,
-                                      fontStyle: FontStyle.normal,
-                                      color:
-                                          themeController.initialTheme ==
-                                                  Themes.customLightTheme
-                                              ? Color.fromARGB(255, 40, 41, 61)
-                                              : Color.fromARGB(
-                                                255,
-                                                210,
-                                                209,
-                                                224,
-                                              ),
-                                    ),
-                                  ),
-                                  ],
+                                        "1- ".tr,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                          fontStyle: FontStyle.normal,
+                                          color:
+                                              themeController.initialTheme ==
+                                                      Themes.customLightTheme
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  ),
+                                        ),
+                                      ),
+
+                                      Text(
+                                        "${coursesData[i]["name"]}".tr,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w300,
+                                          fontStyle: FontStyle.normal,
+                                          color:
+                                              themeController.initialTheme ==
+                                                      Themes.customLightTheme
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   trailing: Icon(
                                     Icons.arrow_forward_rounded,

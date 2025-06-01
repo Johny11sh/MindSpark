@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import '../../view/NavBar.dart';
 import '../../view/SignUp.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -66,9 +67,9 @@ class _ChangePasswordState extends State<ChangePassword> {
       }
 
       // 3. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl = '$baseUrl/api/changepassword';
 
@@ -158,9 +159,9 @@ class _ChangePasswordState extends State<ChangePassword> {
       }
 
       // 2. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
       final APIurl = '$baseUrl/api/logout';
 

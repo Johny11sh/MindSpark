@@ -42,9 +42,9 @@ class _SignUpState extends State<SignUp> {
 
   Future<Map<String, dynamic>?> sendSignUpData() async {
     // Use configurable base URL (should be in a config file)
-    final baseUrl = const String.fromEnvironment(
+    var baseUrl = String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'http://192.168.1.7:8000',
+      defaultValue: mainIP,
     );
     final APIurl = '$baseUrl/api/register';
 

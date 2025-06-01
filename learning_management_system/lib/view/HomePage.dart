@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:learning_management_system/view/Favorites.dart';
 import 'package:learning_management_system/view/SubjectTeachers.dart';
 import '../controller/NetworkController.dart';
 import '../locale/LocaleController.dart';
@@ -31,11 +32,17 @@ class _HomePageState extends State<HomePage> {
   final NetworkController networkController = Get.find<NetworkController>();
   final LocaleController localeController = Get.find<LocaleController>();
 
-  List<Map<String, dynamic>> universities = [];
-  final Map<int, Uint8List> universitiesImages = {};
+  List<Map<String, dynamic>> subjects = [];
+  final Map<int, Uint8List> subjectsImages = {};
   bool isFavorite = false;
+  bool isLiterary = false;
+  String subjectType = 'scientific';
 
   List<bool> isSelected = [true, false];
+
+  // Add new variables for caching
+  List<Map<String, dynamic>> scientificSubjects = [];
+  List<Map<String, dynamic>> literarySubjects = [];
 
   @override
   void initState() {
@@ -58,61 +65,83 @@ class _HomePageState extends State<HomePage> {
 
     // Then try to fetch fresh data if online
     if (sharedPrefs.prefs.getBool('isConnected') == true) {
-      await getUniversitiesData();
+      await getSubjectsData(subjectType);
     }
   }
 
   Future<void> _loadCachedData() async {
     try {
-      // Load universities data
-      final cachedUniversities = sharedPrefs.prefs.getString(
-        'cached_universities',
-      );
-      if (cachedUniversities != null) {
-        final List<dynamic> parsedList = jsonDecode(cachedUniversities);
-        setState(() {
-          universities = List<Map<String, dynamic>>.from(parsedList);
-        });
+      // Load scientific subjects data
+      final cachedScientificSubjects = sharedPrefs.prefs.getString('cached_scientific_subjects');
+      if (cachedScientificSubjects != null) {
+        final List<dynamic> parsedScientificList = jsonDecode(cachedScientificSubjects);
+        scientificSubjects = List<Map<String, dynamic>>.from(parsedScientificList);
       }
 
-      // Load universities images
-      universities.forEach((uni) async {
-        final imageKey = 'university_image_${uni['id']}';
-        final cachedImage = sharedPrefs.prefs.getString(imageKey);
-        if (cachedImage != null && mounted) {
-          setState(() {
-            universitiesImages[uni['id']] = base64Decode(cachedImage);
-          });
-        }
+      // Load literary subjects data
+      final cachedLiterarySubjects = sharedPrefs.prefs.getString('cached_literary_subjects');
+      if (cachedLiterarySubjects != null) {
+        final List<dynamic> parsedLiteraryList = jsonDecode(cachedLiterarySubjects);
+        literarySubjects = List<Map<String, dynamic>>.from(parsedLiteraryList);
+      }
+
+      // Set initial subjects based on current subjectType
+      setState(() {
+        subjects = subjectType == 'scientific' ? scientificSubjects : literarySubjects;
       });
+
+      // Load subjects images for both lists
+      await _loadImagesForSubjects(scientificSubjects);
+      await _loadImagesForSubjects(literarySubjects);
     } catch (e) {
       debugPrint("Error loading cached data: $e");
     }
   }
 
-  Future<void> _cacheUniversitiesData() async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'cached_universities',
-        jsonEncode(universities),
-      );
-    } catch (e) {
-      debugPrint("Error caching universities data: $e");
+  Future<void> _loadImagesForSubjects(List<Map<String, dynamic>> subjectList) async {
+    for (var subject in subjectList) {
+      final imageKey = 'subject_image_${subject['id']}';
+      final cachedImage = sharedPrefs.prefs.getString(imageKey);
+      if (cachedImage != null && mounted) {
+        setState(() {
+          subjectsImages[subject['id']] = base64Decode(cachedImage);
+        });
+      }
     }
   }
 
-  Future<void> _cacheUniversityImage(int uniId, Uint8List imageBytes) async {
+  Future<void> _cacheSubjectsData() async {
+    try {
+      if (subjectType == 'scientific') {
+        await sharedPrefs.prefs.setString(
+          'cached_scientific_subjects',
+          jsonEncode(subjects),
+        );
+        scientificSubjects = List.from(subjects);
+      } else {
+        await sharedPrefs.prefs.setString(
+          'cached_literary_subjects',
+          jsonEncode(subjects),
+        );
+        literarySubjects = List.from(subjects);
+      }
+    } catch (e) {
+      debugPrint("Error caching subjects data: $e");
+    }
+  }
+
+  Future<void> _cacheSubjectImage(int uniId, Uint8List imageBytes) async {
     try {
       await sharedPrefs.prefs.setString(
-        'university_image_$uniId',
+        'subject_image_$uniId',
         base64Encode(imageBytes),
       );
     } catch (e) {
-      debugPrint("Error caching university image: $e");
+      debugPrint("Error caching subject image: $e");
     }
   }
 
-  Future<void> getUniversitiesData() async {
+  Future<void> getSubjectsData(String subjectType) async {
     // 1. Token Handling
     final token = sharedPrefs.prefs.getString('token') ?? '';
     if (token.isEmpty) {
@@ -126,11 +155,11 @@ class _HomePageState extends State<HomePage> {
 
     try {
       // 2. Configurable API URL
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
-      final APIurl = '$baseUrl/api/getalluniversities';
+      final APIurl = '$baseUrl/api/subjects/$subjectType';
 
       // 3. API Request
       final response = await http
@@ -144,36 +173,36 @@ class _HomePageState extends State<HomePage> {
           )
           .timeout(const Duration(seconds: 15));
 
-      debugPrint("Universities API response: ${response.statusCode}");
+      debugPrint("Subjects API response: ${response.statusCode}");
 
       // 4. Response Handling
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
 
         // Handle both array and object responses
-        final List<dynamic> universitiesList =
+        final List<dynamic> subjectsList =
             responseBody is List
                 ? responseBody
-                : (responseBody['universities'] ?? [responseBody]);
+                : (responseBody['subjects'] ?? [responseBody]);
 
         // 5. Update state and cache
         if (mounted) {
           setState(() {
-            universities = List<Map<String, dynamic>>.from(universitiesList);
+            subjects = List<Map<String, dynamic>>.from(subjectsList);
           });
-          await _cacheUniversitiesData();
+          await _cacheSubjectsData();
         }
 
         // 6. Parallel Image Loading and caching
         await Future.wait(
-          universitiesList.map((uni) async {
+          subjectsList.map((uni) async {
             final uniId = uni["id"] as int;
-            final imageBytes = await getUniversityImage(uni);
+            final imageBytes = await getSubjectImage(uni);
             if (imageBytes != null && mounted) {
               setState(() {
-                universitiesImages[uniId] = imageBytes;
+                subjectsImages[uniId] = imageBytes;
               });
-              await _cacheUniversityImage(uniId, imageBytes);
+              await _cacheSubjectImage(uniId, imageBytes);
             }
           }),
         );
@@ -183,36 +212,51 @@ class _HomePageState extends State<HomePage> {
           showErrorSnackbar("Session expired. Please log in again.");
         });
       } else {
-        // If API fails but we have cached data, don't throw error
-        if (universities.isEmpty) {
-          throw Exception(
-            "Failed to load universities: ${response.statusCode}",
-          );
+        // If API fails, use cached data for the current subject type
+        if (subjects.isEmpty) {
+          setState(() {
+            subjects = subjectType == 'scientific' ? scientificSubjects : literarySubjects;
+          });
+          if (subjects.isEmpty) {
+            throw Exception(
+              "Failed to load subjects: ${response.statusCode}",
+            );
+          }
         }
       }
     } on TimeoutException {
-      // If we have cached data, just show a warning
-      if (universities.isEmpty) {
-        showErrorSnackbar("Request timeout. Please try again.");
-      } else {
-        showErrorSnackbar("Using cached data - connection is slow");
+      // If we have cached data, use it
+      if (subjects.isEmpty) {
+        setState(() {
+          subjects = subjectType == 'scientific' ? scientificSubjects : literarySubjects;
+        });
+        if (subjects.isEmpty) {
+          showErrorSnackbar("Request timeout. Please try again.");
+        } else {
+          showErrorSnackbar("Using cached data - connection is slow");
+        }
       }
     } catch (e) {
-      // If we have cached data, just show a warning
-      if (universities.isEmpty) {
-        showErrorSnackbar("Failed to load universities");
-      } else {
-        showErrorSnackbar("Using cached data - ${e.toString()}");
+      // If we have cached data, use it
+      if (subjects.isEmpty) {
+        setState(() {
+          subjects = subjectType == 'scientific' ? scientificSubjects : literarySubjects;
+        });
+        if (subjects.isEmpty) {
+          showErrorSnackbar("Failed to load subjects");
+        } else {
+          showErrorSnackbar("Using cached data - ${e.toString()}");
+        }
       }
-      debugPrint("Error fetching universities: $e");
+      debugPrint("Error fetching subjects: $e");
     }
   }
 
-  Future<Uint8List?> getUniversityImage(dynamic university) async {
+  Future<Uint8List?> getSubjectImage(dynamic subject) async {
     // First try to get from cache
     final uniId =
-        university is Map ? university['id'] as int : university as int;
-    final cachedImage = sharedPrefs.prefs.getString('university_image_$uniId');
+        subject is Map ? subject['id'] as int : subject as int;
+    final cachedImage = sharedPrefs.prefs.getString('subject_image_$uniId');
     if (cachedImage != null) {
       return base64Decode(cachedImage);
     }
@@ -227,11 +271,11 @@ class _HomePageState extends State<HomePage> {
       final token = sharedPrefs.prefs.getString('token') ?? '';
       if (token.isEmpty) return null;
 
-      const baseUrl = String.fromEnvironment(
+      var baseUrl = String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.7:8000',
+        defaultValue: mainIP,
       );
-      final url = '$baseUrl/api/getuniversityimage/$uniId';
+      final url = '$baseUrl/api/getsubjectimage/$uniId';
 
       final response = await http
           .get(
@@ -246,16 +290,16 @@ class _HomePageState extends State<HomePage> {
       if (response.statusCode == 200) {
         return response.bodyBytes;
       } else if (response.statusCode == 404) {
-        debugPrint("University image not found for ID: $uniId");
+        debugPrint("Subject image not found for ID: $uniId");
         return null;
       } else {
         throw Exception("Image fetch failed: ${response.statusCode}");
       }
     } on TimeoutException {
-      debugPrint("Timeout loading image for university $uniId");
+      debugPrint("Timeout loading image for subject $uniId");
       return null;
     } catch (e) {
-      debugPrint("Error fetching university image: $e");
+      debugPrint("Error fetching subject image: $e");
       return null;
     }
   }
@@ -278,6 +322,15 @@ class _HomePageState extends State<HomePage> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Favorites()),
+              );
+            },
+            icon: Icon(Icons.favorite),
+          ),
           title: Text("Home Page".tr),
           centerTitle: true,
           actions: [
@@ -285,243 +338,232 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 showSearch(
                   context: context,
-                  delegate: SearchCustom(universities, universitiesImages),
+                  delegate: SearchCustom(subjects, subjectsImages),
                 );
               },
               icon: Icon(Icons.search_outlined),
             ),
           ],
         ),
-        body:
-            universities.isEmpty
-                ? Center(
-                  child: CircularProgressIndicator(
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                )
-                : RefreshIndicator(
-                  color:
-                      themeController.initialTheme == Themes.customLightTheme
+        body: subjects.isEmpty
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
+                ),
+              )
+            : RefreshIndicator(
+                color: themeController.initialTheme == Themes.customLightTheme
+                    ? Color.fromARGB(255, 40, 41, 61)
+                    : Color.fromARGB(255, 210, 209, 224),
+                backgroundColor: themeController.initialTheme == Themes.customLightTheme
+                    ? Color.fromARGB(255, 210, 209, 224)
+                    : Color.fromARGB(255, 46, 48, 97),
+                onRefresh: () async {
+                  await networkController.checkConnectivityManually();
+                  await getSubjectsData(subjectType);
+                },
+                child: Column(
+                  children: [
+                    SizedBox(height: 30),
+                    ToggleButtons(
+                      isSelected: isSelected,
+                      direction: Axis.horizontal,
+                      constraints: BoxConstraints(
+                        minWidth: Get.width / 3,
+                        maxWidth: Get.width / 3,
+                      ),
+                      borderWidth: 3,
+                      borderRadius: BorderRadius.circular(25),
+                      borderColor: themeController.initialTheme == Themes.customLightTheme
                           ? Color.fromARGB(255, 40, 41, 61)
                           : Color.fromARGB(255, 210, 209, 224),
-                  backgroundColor:
-                      themeController.initialTheme == Themes.customLightTheme
+                      selectedBorderColor: themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                      fillColor: themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                      selectedColor: themeController.initialTheme == Themes.customLightTheme
                           ? Color.fromARGB(255, 210, 209, 224)
-                          : Color.fromARGB(255, 46, 48, 97),
-                  onRefresh: () async {
-                    await networkController.checkConnectivityManually();
-                    await getUniversitiesData();
-                  },
-                  child: Column(
-                    children: [
-                      SizedBox(height: 30),
-
-                      ToggleButtons(
-                        isSelected: isSelected,
-
-                        direction: Axis.horizontal,
-                        constraints: BoxConstraints(
-                          minWidth: Get.width / 3,
-                          maxWidth: Get.width / 3,
-                        ),
-                        borderWidth: 3,
-                        borderRadius: BorderRadius.circular(25),
-                        borderColor:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 40, 41, 61)
-                                : Color.fromARGB(255, 210, 209, 224),
-                        selectedBorderColor:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 40, 41, 61)
-                                : Color.fromARGB(255, 210, 209, 224),
-                        fillColor:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 40, 41, 61)
-                                : Color.fromARGB(255, 210, 209, 224),
-                        selectedColor:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 210, 209, 224)
-                                : Color.fromARGB(255, 40, 41, 61),
-                        // highlightColor:Color.fromARGB(255, 254, 233, 204),
-                        onPressed: (int newIndex) {
-                          setState(() {
-                            // for ( int index = 0; index <isSelected.length; index++){
-                            //   if(index == newIndex){
-                            //     isSelected[index] = true;
-                            //   }else{
-                            //     isSelected[index]= false;
-                            //   }
-                            // }
-                          });
-                        },
-
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                isSelected[0] = true;
-                                isSelected[1] = false;
-                              });
-                            },
-                            child: Text(
-                              "Scientific".tr,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 18,
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? isSelected[0]
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61)
-                                        : isSelected[0]
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),
-                              ),
+                          : Color.fromARGB(255, 40, 41, 61),
+                      onPressed: (int newIndex) {
+                        setState(() {
+                          for (int index = 0; index < isSelected.length; index++) {
+                            isSelected[index] = index == newIndex;
+                          }
+                          isLiterary = newIndex == 1;
+                          subjectType = isLiterary ? 'literary' : 'scientific';
+                          subjects = subjectType == 'scientific' ? scientificSubjects : literarySubjects;
+                        });
+                        if (sharedPrefs.prefs.getBool('isConnected') == true) {
+                          getSubjectsData(subjectType);
+                        }
+                      },
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              isSelected[0] = true;
+                              isSelected[1] = false;
+                              isLiterary = false;
+                              subjectType = "scientific";
+                              subjects = scientificSubjects;
+                            });
+                            if (sharedPrefs.prefs.getBool('isConnected') == true) {
+                              getSubjectsData(subjectType);
+                            }
+                          },
+                          child: Text(
+                            "Scientific".tr,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 18,
+                              color: themeController.initialTheme == Themes.customLightTheme
+                                  ? isSelected[0]
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61)
+                                  : isSelected[0]
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224),
                             ),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                isSelected[1] = true;
-                                isSelected[0] = false;
-                              });
-                            },
-                            child: Text(
-                              "Literary".tr,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 18,
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? isSelected[1]
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61)
-                                        : isSelected[1]
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),
-                              ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              isSelected[1] = true;
+                              isSelected[0] = false;
+                              isLiterary = true;
+                              subjectType = "literary";
+                              subjects = literarySubjects;
+                            });
+                            if (sharedPrefs.prefs.getBool('isConnected') == true) {
+                              getSubjectsData(subjectType);
+                            }
+                          },
+                          child: Text(
+                            "Literary".tr,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 18,
+                              color: themeController.initialTheme == Themes.customLightTheme
+                                  ? isSelected[1]
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61)
+                                  : isSelected[1]
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224),
                             ),
                           ),
-                        ],
-                      ),
-
-                      SizedBox(height: 30),
-                      Text(
-                        "Choose a subject".tr,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.normal,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
                         ),
+                      ],
+                    ),
+                    SizedBox(height: 30),
+                    Text(
+                      "Choose a subject".tr,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        fontStyle: FontStyle.normal,
+                        color:
+                            themeController.initialTheme ==
+                                    Themes.customLightTheme
+                                ? Color.fromARGB(255, 40, 41, 61)
+                                : Color.fromARGB(255, 210, 209, 224),
                       ),
-                      SizedBox(height: 50),
-                      Expanded(
-                        child: GridView.builder(
-                          scrollDirection: Axis.vertical,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                              ),
-                          controller: scrollController,
-                          itemCount: universities.length,
-                          itemBuilder: (context, i) {
-                            int uniId = universities[i]["id"];
-                            Uint8List? imageBytes = universitiesImages[uniId];
+                    ),
+                    SizedBox(height: 30),
+                    Expanded(
+                      child: GridView.builder(
+                        scrollDirection: Axis.vertical,
+                        physics: AlwaysScrollableScrollPhysics(),
+                        gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                            ),
+                        controller: scrollController,
+                        itemCount: subjects.length,
+                        itemBuilder: (context, i) {
+                          int uniId = subjects[i]["id"];
+                          Uint8List? imageBytes = subjectsImages[uniId];
 
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => SubjectTeachers(
-                                          SubjectData: universities[i],
-                                        ),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                child: Column(
-                                  children: [
-                                    Expanded(
-                                      flex: 5,
-                                      child:
-                                          imageBytes != null
-                                              ? Image.memory(
-                                                imageBytes,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  return Image.asset(
-                                                    ImageAssets.university,
-                                                    height: 125,
-                                                    fit: BoxFit.cover,
-                                                  );
-                                                },
-                                              )
-                                              : Image.asset(
-                                                ImageAssets.university,
-                                              ),
-                                    ),
-                                    SizedBox(height: 30),
-                                    Expanded(
-                                      flex: 2,
-                                      child: 
-                                          Text(
-                                            "${universities[i]["name"]}".tr,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w400,
-                                              fontStyle: FontStyle.normal,
-                                              color:
-                                                  themeController
-                                                              .initialTheme ==
-                                                          Themes
-                                                              .customLightTheme
-                                                      ? Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
-                                                        210,
-                                                        209,
-                                                        224,
-                                                      ),
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => SubjectTeachers(
+                                        SubjectData: subjects[i],
+                                      ),
+                                ),
+                              );
+                            },
+                            child: Card(
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child:
+                                        imageBytes != null
+                                            ? Image.memory(
+                                              imageBytes,
+                                              fit: BoxFit.fill,
+                                              errorBuilder: (
+                                                context,
+                                                error,
+                                                stackTrace,
+                                              ) {
+                                                return Image.asset(
+                                                  ImageAssets.subject,
+                                                  height: 125,
+                                                  fit: BoxFit.cover,
+                                                );
+                                              },
+                                            )
+                                            : Image.asset(
+                                              ImageAssets.subject,
                                             ),
-                                          
+                                  ),
+                                  SizedBox(height: 30),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Text(
+                                      "${subjects[i]["name"]}".tr,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
+                                        fontStyle: FontStyle.normal,
+                                        color:
+                                            themeController.initialTheme ==
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
       ),
     );
   }
@@ -597,7 +639,7 @@ class SearchCustom extends SearchDelegate {
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Image.asset(
-                              ImageAssets.university,
+                              ImageAssets.subject,
                               height: 50,
                               width: 50,
                               fit: BoxFit.cover,
@@ -605,7 +647,7 @@ class SearchCustom extends SearchDelegate {
                           },
                         )
                         : Image.asset(
-                          ImageAssets.university,
+                          ImageAssets.subject,
                           height: 50,
                           width: 50,
                           fit: BoxFit.cover,
@@ -655,7 +697,7 @@ class SearchCustom extends SearchDelegate {
                         fit: BoxFit.fill,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.asset(
-                            ImageAssets.university,
+                            ImageAssets.subject,
                             height: 50,
                             width: 50,
                             fit: BoxFit.cover,
@@ -663,7 +705,7 @@ class SearchCustom extends SearchDelegate {
                         },
                       )
                       : Image.asset(
-                        ImageAssets.university,
+                        ImageAssets.subject,
                         height: 50,
                         width: 50,
                         fit: BoxFit.cover,
