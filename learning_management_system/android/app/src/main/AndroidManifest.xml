@@ -3,7 +3,7 @@
     <application
         android:label="MindSpark"
         android:name="${applicationName}"
-        android:icon="@mipmap/learning_management_system"
+        android:icon="@mipmap/launcher_icon"
         android:hardwareAccelerated="true"
         android:usesCleartextTraffic="true">
         <activity

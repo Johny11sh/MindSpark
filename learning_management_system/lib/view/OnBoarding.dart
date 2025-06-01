@@ -67,98 +67,107 @@ class OnBoarding extends StatelessWidget {
                   onBoardingController.onPageChanged(val);
                 },
                 itemCount: OnBoardingList.length,
-                itemBuilder: (context, i) => Column(
-                  children: [
-                    SizedBox(height: 70),
-                    Container(
-                      width: Get.width,
-                      alignment: Alignment.center,
-                      child: Image.asset(
-                        OnBoardingList[i].image!,
-                        height: 300,
-                        width: 300,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Container(
-                      width: Get.width,
-                      alignment: Alignment.center,
-                      child: Card(
-                        shadowColor: const Color.fromARGB(255, 46, 48, 97),
-                        elevation: 8,
-                        color: const Color.fromARGB(255, 210, 209, 224),
-                        margin: EdgeInsets.only(left: 20, right: 20),
-                        child: Container(
-                          padding: EdgeInsets.all(20),
-                          child: Text(
-                            OnBoardingList[i].title!.tr,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: const Color.fromARGB(255, 46, 48, 97),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18,
-                            ),
+                itemBuilder:
+                    (context, i) => Column(
+                      children: [
+                        SizedBox(height: 70),
+                        Container(
+                          width: Get.width,
+                          alignment: Alignment.center,
+                          child: Image.asset(
+                            OnBoardingList[i].image!,
+                            height: 300,
+                            width: 300,
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: GetBuilder<OnboardingController>(
-                builder: (controller) => Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ...List.generate(
-                          OnBoardingList.length,
-                          (index) => AnimatedContainer(
-                            duration: Duration(milliseconds: 400),
-                            margin: EdgeInsets.all(3),
-                            width: controller.currentPage == index ? 30 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 210, 209, 224),
-                              borderRadius: BorderRadius.circular(20),
+                        SizedBox(height: 20),
+                        Container(
+                          width: Get.width,
+                          alignment: Alignment.center,
+                          child: Card(
+                            shadowColor: const Color.fromARGB(255, 46, 48, 97),
+                            elevation: 8,
+                            color: const Color.fromARGB(255, 210, 209, 224),
+                            margin: EdgeInsets.only(left: 20, right: 20),
+                            child: Container(
+                              padding: EdgeInsets.all(20),
+                              child: Text(
+                                OnBoardingList[i].title!.tr,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color.fromARGB(255, 46, 48, 97),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18,
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 30),
-                    MaterialButton(
-                      onPressed:
-                          controller.currentPage == OnBoardingList.length - 1
-                              ? () {
-                                  onBoardingController.next();
-                                }
-                              : null,
-                      minWidth: Get.width / 3,
-                      height: 40,
-                      disabledColor: const Color.fromARGB(255, 153, 151, 188),
-                      color: const Color.fromARGB(255, 40, 41, 61),
-                      elevation: 6,
-                      focusElevation: 8,
-                      disabledElevation: 4,
-                      clipBehavior: Clip.hardEdge,
-                      child: Text(
-                        controller.currentPage == OnBoardingList.length - 1
-                            ? "Get Started".tr
-                            : "Continue".tr,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 210, 209, 224),
-                          fontWeight: FontWeight.w400,
-                          fontSize: 16,
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: GetBuilder<OnboardingController>(
+                builder:
+                    (controller) => Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ...List.generate(
+                              OnBoardingList.length,
+                              (index) => AnimatedContainer(
+                                duration: Duration(milliseconds: 400),
+                                margin: EdgeInsets.all(3),
+                                width: controller.currentPage == index ? 30 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    210,
+                                    209,
+                                    224,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                        SizedBox(height: 30),
+                        MaterialButton(
+                          onPressed: () {
+                            onBoardingController.next();
+                          },
+                          minWidth: Get.width / 3,
+                          height: 40,
+                          disabledColor: const Color.fromARGB(
+                            255,
+                            153,
+                            151,
+                            188,
+                          ),
+                          color: const Color.fromARGB(255, 40, 41, 61),
+                          elevation: 6,
+                          focusElevation: 8,
+                          disabledElevation: 4,
+                          clipBehavior: Clip.hardEdge,
+                          child: Text(
+                            controller.currentPage == OnBoardingList.length - 1
+                                ? "Get Started".tr
+                                : "Continue".tr,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 210, 209, 224),
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               ),
             ),
           ],

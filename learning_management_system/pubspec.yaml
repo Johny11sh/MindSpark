@@ -53,11 +53,7 @@ dependencies:
   wakelock_plus: ^1.3.2
   audioplayers: ^6.4.0
 
-flutter_native_splash:
-  color: "#2E3061"
-  image: "images/MindSpark.png"
-  android: true
-  ios: true 
+
 
 dev_dependencies:
   flutter_test:
@@ -70,14 +66,6 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.3
-
-flutter_launcher_icons:
-  android: "learning_management_system"
-  ios: true
-  remove_alpha_ios: true
-  image_path: "images/MindSparkLogo.png"
-  min_sdk_android: 21 # android min sdk min:16, default 21
-
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -122,3 +110,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_native_splash:
+  color: "#2D3043"
+  image: images/SplashScreenLogo.png
+  ios: true
+  web: false
+  android_12:
+    image: images/SplashScreenLogo.png
+    color: "#2D3043"
+    icon_background_color: "#2D3043"
