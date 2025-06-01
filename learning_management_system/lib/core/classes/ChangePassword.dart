@@ -281,7 +281,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   Padding(padding: EdgeInsets.all(20)),
                   Center(
                     child: Image.asset(
-                      ImageAssets.AppIcon,
+                      ImageAssets.AppLogo,
                       width: 220,
                       height: 220,
                     ),

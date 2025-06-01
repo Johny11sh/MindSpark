@@ -24,7 +24,7 @@ class AboutUs extends StatelessWidget {
           children: [
             Padding(padding: EdgeInsets.all(30)),
             Center(
-              child: Image.asset(ImageAssets.AppIcon, width: 180, height: 180),
+              child: Image.asset(ImageAssets.AppLogo, width: 180, height: 180),
             ),
             Padding(padding: EdgeInsets.all(20)),
             Container(

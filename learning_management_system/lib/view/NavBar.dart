@@ -16,7 +16,7 @@ import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
 final ThemeController themeController = Get.find<ThemeController>();
 final LocaleController localeController = Get.find<LocaleController>();
-String mainIP = "http://192.168.12.213:8000";
+String mainIP = "http://192.168.1.8:8000";
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});

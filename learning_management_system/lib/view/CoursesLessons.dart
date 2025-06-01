@@ -439,7 +439,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                 await getSubscription(lectureId);
 
                                 if (isLectureSubscribed == true) {
-                                  if (coursesData[i]['type'] == 'pdf') {
+                                  if (coursesData[i]['type'] == 0) {
                                     try {
                                       final PDFurl = coursesData[i]['urlpdf'];
                                       // "http://www.pdf995.com/samples/pdf.pdf";
@@ -455,7 +455,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                       }
                                     }
                                   } else if (coursesData[i]['type'] ==
-                                      'video') {
+                                      1) {
                                     try {
                                       if (mounted) {
                                         Navigator.push(

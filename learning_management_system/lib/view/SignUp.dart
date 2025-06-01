@@ -209,7 +209,7 @@ class _SignUpState extends State<SignUp> {
                     child: CircleAvatar(
                       radius: 80,
                       child: Image.asset(
-                        ImageAssets.AppIcon,
+                        ImageAssets.AppLogo,
                         width: 220,
                         height: 220,
                       ),
