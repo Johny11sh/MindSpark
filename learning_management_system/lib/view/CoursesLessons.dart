@@ -55,6 +55,344 @@ class _CoursesLessonsState extends State<CoursesLessons> {
   final Map<int, Uint8List> lecturesImages = {};
   bool? isLectureSubscribed = false;
 
+  // --- Most Recent Lessons ---
+  List<Map<String, dynamic>> recentLessonsData = [];
+  final Map<int, Uint8List> recentLessonsImages = {};
+
+  Future<void> _loadCachedRecentLessons() async {
+    try {
+      final cacheKey = 'cached_recent_lessons_${widget.CoursesData['id']}';
+      final cachedData = sharedPrefs.prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final List<dynamic> parsedList = jsonDecode(cachedData);
+        setState(() {
+          recentLessonsData = List<Map<String, dynamic>>.from(parsedList);
+        });
+        // Load cached images
+        for (final lesson in recentLessonsData) {
+          final imageKey = 'recent_lesson_image_${lesson['id']}';
+          final imageString = sharedPrefs.prefs.getString(imageKey);
+          if (imageString != null && mounted) {
+            setState(() {
+              recentLessonsImages[lesson['id']] = base64Decode(imageString);
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading cached recent lessons: $e");
+    }
+  }
+
+  Future<void> _cacheRecentLessons() async {
+    try {
+      final cacheKey = 'cached_recent_lessons_${widget.CoursesData['id']}';
+      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(recentLessonsData));
+    } catch (e) {
+      debugPrint("Error caching recent lessons: $e");
+    }
+  }
+
+  Future<void> _cacheRecentLessonImage(int lessonId, Uint8List imageBytes) async {
+    try {
+      await sharedPrefs.prefs.setString(
+        'recent_lesson_image_$lessonId',
+        base64Encode(imageBytes),
+      );
+    } catch (e) {
+      debugPrint("Error caching recent lesson image: $e");
+    }
+  }
+
+  Future<void> getRecentLessonsData() async {
+    final token = sharedPrefs.prefs.getString('token') ?? '';
+    if (token.isEmpty) {
+      debugPrint("Token empty, redirecting to login");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAll(() => LogIn());
+        showErrorSnackbar("Session expired. Please log in again.");
+      });
+      return;
+    }
+    try {
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final APIurl = '$baseUrl/api/getcourselectures/${widget.CoursesData['id']}/recent';
+      final response = await http
+          .get(
+            Uri.parse(APIurl),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+      debugPrint("Recent Lessons API response: "+response.statusCode.toString());
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final List<dynamic> lessonsList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['lessons'] ?? [responseBody]);
+        if (mounted) {
+          setState(() {
+            recentLessonsData = List<Map<String, dynamic>>.from(lessonsList);
+          });
+          await _cacheRecentLessons();
+        }
+        await Future.wait(
+          lessonsList.map((lesson) async {
+            final lessonId = lesson['id'] as int;
+            final imageBytes = await getRecentLessonImage(lesson);
+            if (imageBytes != null && mounted) {
+              setState(() {
+                recentLessonsImages[lessonId] = imageBytes;
+              });
+              await _cacheRecentLessonImage(lessonId, imageBytes);
+            }
+          }),
+        );
+      } else if (response.statusCode == 401) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offAll(() => LogIn());
+          showErrorSnackbar("Session expired. Please log in again.");
+        });
+      } else {
+        if (recentLessonsData.isEmpty) {
+          throw Exception("Failed to load recent lessons: "+response.statusCode.toString());
+        }
+      }
+    } on TimeoutException {
+      if (recentLessonsData.isEmpty) {
+        showErrorSnackbar("Request timeout. Please try again.");
+      } else {
+        showErrorSnackbar("Using cached data - connection is slow");
+      }
+    } catch (e) {
+      if (recentLessonsData.isEmpty) {
+        showErrorSnackbar("Failed to load recent lessons");
+      } else {
+        showErrorSnackbar("Using cached data - "+e.toString());
+      }
+      debugPrint("Error fetching recent lessons: $e");
+    }
+  }
+
+  Future<Uint8List?> getRecentLessonImage(dynamic lesson) async {
+    final lessonId = lesson is Map ? lesson['id'] as int : lesson as int;
+    final cachedImage = sharedPrefs.prefs.getString('recent_lesson_image_$lessonId');
+    if (cachedImage != null) {
+      return base64Decode(cachedImage);
+    }
+    if (sharedPrefs.prefs.getBool('isConnected') == false) {
+      return null;
+    }
+    try {
+      final token = sharedPrefs.prefs.getString('token') ?? '';
+      if (token.isEmpty) return null;
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final url = '$baseUrl/api/getlectureimage/$lessonId';
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Accept': 'application/octet-stream',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else if (response.statusCode == 404) {
+        debugPrint("Recent lesson image not found for ID: $lessonId");
+        return null;
+      } else {
+        throw Exception("Image fetch failed: "+response.statusCode.toString());
+      }
+    } on TimeoutException {
+      debugPrint("Timeout loading image for recent lesson $lessonId");
+      return null;
+    } catch (e) {
+      debugPrint("Error fetching recent lesson image: $e");
+      return null;
+    }
+  }
+
+  // --- Top Rated Lessons ---
+  List<Map<String, dynamic>> topRatedLessonsData = [];
+  final Map<int, Uint8List> topRatedLessonsImages = {};
+
+  Future<void> _loadCachedTopRatedLessons() async {
+    try {
+      final cacheKey = 'cached_top_rated_lessons_${widget.CoursesData['id']}';
+      final cachedData = sharedPrefs.prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final List<dynamic> parsedList = jsonDecode(cachedData);
+        setState(() {
+          topRatedLessonsData = List<Map<String, dynamic>>.from(parsedList);
+        });
+        // Load cached images
+        for (final lesson in topRatedLessonsData) {
+          final imageKey = 'top_rated_lesson_image_${lesson['id']}';
+          final imageString = sharedPrefs.prefs.getString(imageKey);
+          if (imageString != null && mounted) {
+            setState(() {
+              topRatedLessonsImages[lesson['id']] = base64Decode(imageString);
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading cached top rated lessons: $e");
+    }
+  }
+
+  Future<void> _cacheTopRatedLessons() async {
+    try {
+      final cacheKey = 'cached_top_rated_lessons_${widget.CoursesData['id']}';
+      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(topRatedLessonsData));
+    } catch (e) {
+      debugPrint("Error caching top rated lessons: $e");
+    }
+  }
+
+  Future<void> _cacheTopRatedLessonImage(int lessonId, Uint8List imageBytes) async {
+    try {
+      await sharedPrefs.prefs.setString(
+        'top_rated_lesson_image_$lessonId',
+        base64Encode(imageBytes),
+      );
+    } catch (e) {
+      debugPrint("Error caching top rated lesson image: $e");
+    }
+  }
+
+  Future<void> getTopRatedLessonsData() async {
+    final token = sharedPrefs.prefs.getString('token') ?? '';
+    if (token.isEmpty) {
+      debugPrint("Token empty, redirecting to login");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAll(() => LogIn());
+        showErrorSnackbar("Session expired. Please log in again.");
+      });
+      return;
+    }
+    try {
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final APIurl = '$baseUrl/api/getcourselectures/${widget.CoursesData['id']}/rated';
+      final response = await http
+          .get(
+            Uri.parse(APIurl),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+      debugPrint("Top Rated Lessons API response: "+response.statusCode.toString());
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final List<dynamic> lessonsList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['lessons'] ?? [responseBody]);
+        if (mounted) {
+          setState(() {
+            topRatedLessonsData = List<Map<String, dynamic>>.from(lessonsList);
+          });
+          await _cacheTopRatedLessons();
+        }
+        await Future.wait(
+          lessonsList.map((lesson) async {
+            final lessonId = lesson['id'] as int;
+            final imageBytes = await getTopRatedLessonImage(lesson);
+            if (imageBytes != null && mounted) {
+              setState(() {
+                topRatedLessonsImages[lessonId] = imageBytes;
+              });
+              await _cacheTopRatedLessonImage(lessonId, imageBytes);
+            }
+          }),
+        );
+      } else if (response.statusCode == 401) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offAll(() => LogIn());
+          showErrorSnackbar("Session expired. Please log in again.");
+        });
+      } else {
+        if (topRatedLessonsData.isEmpty) {
+          throw Exception("Failed to load top rated lessons: "+response.statusCode.toString());
+        }
+      }
+    } on TimeoutException {
+      if (topRatedLessonsData.isEmpty) {
+        showErrorSnackbar("Request timeout. Please try again.");
+      } else {
+        showErrorSnackbar("Using cached data - connection is slow");
+      }
+    } catch (e) {
+      if (topRatedLessonsData.isEmpty) {
+        showErrorSnackbar("Failed to load top rated lessons");
+      } else {
+        showErrorSnackbar("Using cached data - "+e.toString());
+      }
+      debugPrint("Error fetching top rated lessons: $e");
+    }
+  }
+
+  Future<Uint8List?> getTopRatedLessonImage(dynamic lesson) async {
+    final lessonId = lesson is Map ? lesson['id'] as int : lesson as int;
+    final cachedImage = sharedPrefs.prefs.getString('top_rated_lesson_image_$lessonId');
+    if (cachedImage != null) {
+      return base64Decode(cachedImage);
+    }
+    if (sharedPrefs.prefs.getBool('isConnected') == false) {
+      return null;
+    }
+    try {
+      final token = sharedPrefs.prefs.getString('token') ?? '';
+      if (token.isEmpty) return null;
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final url = '$baseUrl/api/getlectureimage/$lessonId';
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Accept': 'application/octet-stream',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else if (response.statusCode == 404) {
+        debugPrint("Top rated lesson image not found for ID: $lessonId");
+        return null;
+      } else {
+        throw Exception("Image fetch failed: "+response.statusCode.toString());
+      }
+    } on TimeoutException {
+      debugPrint("Timeout loading image for top rated lesson $lessonId");
+      return null;
+    } catch (e) {
+      debugPrint("Error fetching top rated lesson image: $e");
+      return null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +415,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
     // Then try to fetch fresh data if online
     if (sharedPrefs.prefs.getBool('isConnected') == true) {
       await getLecturesData();
+      // await getTopRatedLessonsData();
+      // await getRecentLessonsData();
+
     }
   }
 

@@ -263,82 +263,82 @@ class _ProfileState extends State<Profile> {
             children: [
               SizedBox(height: 30),
               Card(
-                elevation: 0,
-                child: ListTile(
-                  isThreeLine: true,
-                  leading: Image.asset( 
-                    themeController.initialTheme == Themes.customLightTheme
-                    ? ImageAssets.UserLightMode 
-                    : ImageAssets.UserDarkMode ,
-                    width: 60,
-                    height: 60,
-                  ),
-                  title: Text(
-                    profileData.isEmpty
-                        ? "Username".tr
-                        : "${profileData["userName"]}".tr,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.normal,
-                      color:
-                          themeController.initialTheme ==
-                                  Themes.customLightTheme
-                              ? Color.fromARGB(255, 40, 41, 61)
-                              : Color.fromARGB(255, 210, 209, 224),
+                  elevation: 0,
+                  child: ListTile(
+                    isThreeLine: true,
+                    leading: Image.asset( 
+                      themeController.initialTheme == Themes.customLightTheme
+                      ? ImageAssets.UserLightMode 
+                      : ImageAssets.UserDarkMode ,
+                      width: 60,
+                      height: 60,
                     ),
-                  ),
-                  trailing: Text(
-                    profileData.isEmpty
-                        ? "09XXXXXXXX"
-                        : "0${profileData["number"]}".tr,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.normal,
-                      color:
-                          themeController.initialTheme ==
-                                  Themes.customLightTheme
-                              ? Color.fromARGB(255, 40, 41, 61)
-                              : Color.fromARGB(255, 210, 209, 224),
+                    title: Text(
+                      profileData.isEmpty
+                          ? "Username".tr
+                          : "${profileData["userName"]}".tr,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        fontStyle: FontStyle.normal,
+                        color:
+                            themeController.initialTheme ==
+                                    Themes.customLightTheme
+                                ? Color.fromARGB(255, 40, 41, 61)
+                                : Color.fromARGB(255, 210, 209, 224),
+                      ),
                     ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        profileData.isEmpty
-                            ? "● Subscriptions:\n".tr
-                            : "● Subscriptions:\n[ ${profileData["subs"]} ]"
-                                .tr,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.normal,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
+                    trailing: Text(
+                      profileData.isEmpty
+                          ? "09XXXXXXXX"
+                          : "0${profileData["number"]}".tr,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontStyle: FontStyle.normal,
+                        color:
+                            themeController.initialTheme ==
+                                    Themes.customLightTheme
+                                ? Color.fromARGB(255, 40, 41, 61)
+                                : Color.fromARGB(255, 210, 209, 224),
                       ),
-                      Text(
-                        profileData.isEmpty
-                            ? "\n● Lectures number: X".tr
-                            : "\n● Lectures number: ${profileData["lecturesNum"]}"
-                                .tr,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.normal,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          profileData.isEmpty
+                              ? "● Subscriptions:\n".tr
+                              : "● Subscriptions:\n[ ${profileData["subs"]} ]"
+                                  .tr,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.normal,
+                            color:
+                                themeController.initialTheme ==
+                                        Themes.customLightTheme
+                                    ? Color.fromARGB(255, 40, 41, 61)
+                                    : Color.fromARGB(255, 210, 209, 224),
+                          ),
                         ),
-                      ),
-                    ],
+                        Text(
+                          profileData.isEmpty
+                              ? "\n● Lectures number: X".tr
+                              : "\n● Lectures number: ${profileData["lecturesNum"]}"
+                                  .tr,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.normal,
+                            color:
+                                themeController.initialTheme ==
+                                        Themes.customLightTheme
+                                    ? Color.fromARGB(255, 40, 41, 61)
+                                    : Color.fromARGB(255, 210, 209, 224),
+                          ),
+                        ),
+                      ],
                   ),
                 ),
               ),
@@ -541,6 +541,49 @@ class _ProfileState extends State<Profile> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             "Theme".tr,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.normal,
+                              color:
+                                  themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  // Get.to(() => ContactUs());
+                },
+                child: Card(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Icon(
+                          Icons.font_download_outlined,
+                          size: 25,
+                          color:
+                              themeController.initialTheme ==
+                                      Themes.customLightTheme
+                                  ? Color.fromARGB(255, 40, 41, 61)
+                                  : Color.fromARGB(255, 210, 209, 224),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Container(
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Fonts".tr,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,

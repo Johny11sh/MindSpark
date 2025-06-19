@@ -17,6 +17,7 @@ import 'Favorites.dart';
 import 'NavBar.dart';
 import 'CoursesLessons.dart';
 import '../services/SharedPrefs.dart';
+import 'OnBoarding.dart';
 
 class TeachersCourses extends StatefulWidget {
   final Map<String, dynamic> TeacherData;
@@ -36,6 +37,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   List<Map<String, dynamic>> teacherData = [];
   final Map<int, Uint8List> coursesImages = {};
   bool isFavorite = false;
+
+  // --- Most Recent Courses ---
+  List<Map<String, dynamic>> recentCoursesData = [];
+  final Map<int, Uint8List> recentCoursesImages = {};
 
   @override
   void initState() {
@@ -59,6 +64,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     // Then try to fetch fresh data if online
     if (sharedPrefs.prefs.getBool('isConnected') == true) {
       await getCoursesData();
+      // await getTopRatedCoursesData();
+      // await getRecentCoursesData();
+
     }
   }
 
@@ -265,6 +273,341 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     );
   }
 
+
+  Future<void> _loadCachedRecentCourses() async {
+    try {
+      final cacheKey = 'cached_recent_courses_${widget.TeacherData['id']}';
+      final cachedData = sharedPrefs.prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final List<dynamic> parsedList = jsonDecode(cachedData);
+        setState(() {
+          recentCoursesData = List<Map<String, dynamic>>.from(parsedList);
+        });
+        // Load cached images
+        for (final course in recentCoursesData) {
+          final imageKey = 'recent_course_image_${course['id']}';
+          final imageString = sharedPrefs.prefs.getString(imageKey);
+          if (imageString != null && mounted) {
+            setState(() {
+              recentCoursesImages[course['id']] = base64Decode(imageString);
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading cached recent courses: $e");
+    }
+  }
+
+  Future<void> _cacheRecentCourses() async {
+    try {
+      final cacheKey = 'cached_recent_courses_${widget.TeacherData['id']}';
+      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(recentCoursesData));
+    } catch (e) {
+      debugPrint("Error caching recent courses: $e");
+    }
+  }
+
+  Future<void> _cacheRecentCourseImage(int courseId, Uint8List imageBytes) async {
+    try {
+      await sharedPrefs.prefs.setString(
+        'recent_course_image_$courseId',
+        base64Encode(imageBytes),
+      );
+    } catch (e) {
+      debugPrint("Error caching recent course image: $e");
+    }
+  }
+
+  Future<void> getRecentCoursesData() async {
+    final token = sharedPrefs.prefs.getString('token') ?? '';
+    if (token.isEmpty) {
+      debugPrint("Token empty, redirecting to login");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAll(() => LogIn());
+        showErrorSnackbar("Session expired. Please log in again.");
+      });
+      return;
+    }
+    try {
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final APIurl = '$baseUrl/api/getteachercoursesrecent/${widget.TeacherData['id']}';
+      final response = await http
+          .get(
+            Uri.parse(APIurl),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+      debugPrint("Recent Courses API response: "+response.statusCode.toString());
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final List<dynamic> coursesList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['courses'] ?? [responseBody]);
+        if (mounted) {
+          setState(() {
+            recentCoursesData = List<Map<String, dynamic>>.from(coursesList);
+          });
+          await _cacheRecentCourses();
+        }
+        await Future.wait(
+          coursesList.map((course) async {
+            final courseId = course["id"] as int;
+            final imageBytes = await getRecentCourseImage(course);
+            if (imageBytes != null && mounted) {
+              setState(() {
+                recentCoursesImages[courseId] = imageBytes;
+              });
+              await _cacheRecentCourseImage(courseId, imageBytes);
+            }
+          }),
+        );
+      } else if (response.statusCode == 401) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offAll(() => LogIn());
+          showErrorSnackbar("Session expired. Please log in again.");
+        });
+      } else {
+        if (recentCoursesData.isEmpty) {
+          throw Exception("Failed to load recent courses: "+response.statusCode.toString());
+        }
+      }
+    } on TimeoutException {
+      if (recentCoursesData.isEmpty) {
+        showErrorSnackbar("Request timeout. Please try again.");
+      } else {
+        showErrorSnackbar("Using cached data - connection is slow");
+      }
+    } catch (e) {
+      if (recentCoursesData.isEmpty) {
+        showErrorSnackbar("Failed to load recent courses");
+      } else {
+        showErrorSnackbar("Using cached data - "+e.toString());
+      }
+      debugPrint("Error fetching recent courses: $e");
+    }
+  }
+
+  Future<Uint8List?> getRecentCourseImage(dynamic course) async {
+    final courseId = course is Map ? course['id'] as int : course as int;
+    final cachedImage = sharedPrefs.prefs.getString('recent_course_image_$courseId');
+    if (cachedImage != null) {
+      return base64Decode(cachedImage);
+    }
+    if (sharedPrefs.prefs.getBool('isConnected') == false) {
+      return null;
+    }
+    try {
+      final token = sharedPrefs.prefs.getString('token') ?? '';
+      if (token.isEmpty) return null;
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final url = '$baseUrl/api/getcourseimage/$courseId';
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Accept': 'application/octet-stream',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else if (response.statusCode == 404) {
+        debugPrint("Recent course image not found for ID: $courseId");
+        return null;
+      } else {
+        throw Exception("Image fetch failed: "+response.statusCode.toString());
+      }
+    } on TimeoutException {
+      debugPrint("Timeout loading image for recent course $courseId");
+      return null;
+    } catch (e) {
+      debugPrint("Error fetching recent course image: $e");
+      return null;
+    }
+  }
+
+  // --- Top Rated Courses ---
+  List<Map<String, dynamic>> topRatedCoursesData = [];
+  final Map<int, Uint8List> topRatedCoursesImages = {};
+
+  Future<void> _loadCachedTopRatedCourses() async {
+    try {
+      final cacheKey = 'cached_top_rated_courses_${widget.TeacherData['id']}';
+      final cachedData = sharedPrefs.prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final List<dynamic> parsedList = jsonDecode(cachedData);
+        setState(() {
+          topRatedCoursesData = List<Map<String, dynamic>>.from(parsedList);
+        });
+        // Load cached images
+        for (final course in topRatedCoursesData) {
+          final imageKey = 'top_rated_course_image_${course['id']}';
+          final imageString = sharedPrefs.prefs.getString(imageKey);
+          if (imageString != null && mounted) {
+            setState(() {
+              topRatedCoursesImages[course['id']] = base64Decode(imageString);
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading cached top rated courses: $e");
+    }
+  }
+
+  Future<void> _cacheTopRatedCourses() async {
+    try {
+      final cacheKey = 'cached_top_rated_courses_${widget.TeacherData['id']}';
+      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(topRatedCoursesData));
+    } catch (e) {
+      debugPrint("Error caching top rated courses: $e");
+    }
+  }
+
+  Future<void> _cacheTopRatedCourseImage(int courseId, Uint8List imageBytes) async {
+    try {
+      await sharedPrefs.prefs.setString(
+        'top_rated_course_image_$courseId',
+        base64Encode(imageBytes),
+      );
+    } catch (e) {
+      debugPrint("Error caching top rated course image: $e");
+    }
+  }
+
+  Future<void> getTopRatedCoursesData() async {
+    final token = sharedPrefs.prefs.getString('token') ?? '';
+    if (token.isEmpty) {
+      debugPrint("Token empty, redirecting to login");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAll(() => LogIn());
+        showErrorSnackbar("Session expired. Please log in again.");
+      });
+      return;
+    }
+    try {
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final APIurl = '$baseUrl/api/getteachercoursesrated/${widget.TeacherData['id']}';
+      final response = await http
+          .get(
+            Uri.parse(APIurl),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+      debugPrint("Top Rated Courses API response: "+response.statusCode.toString());
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final List<dynamic> coursesList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['courses'] ?? [responseBody]);
+        if (mounted) {
+          setState(() {
+            topRatedCoursesData = List<Map<String, dynamic>>.from(coursesList);
+          });
+          await _cacheTopRatedCourses();
+        }
+        await Future.wait(
+          coursesList.map((course) async {
+            final courseId = course["id"] as int;
+            final imageBytes = await getTopRatedCourseImage(course);
+            if (imageBytes != null && mounted) {
+              setState(() {
+                topRatedCoursesImages[courseId] = imageBytes;
+              });
+              await _cacheTopRatedCourseImage(courseId, imageBytes);
+            }
+          }),
+        );
+      } else if (response.statusCode == 401) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offAll(() => LogIn());
+          showErrorSnackbar("Session expired. Please log in again.");
+        });
+      } else {
+        if (topRatedCoursesData.isEmpty) {
+          throw Exception("Failed to load top rated courses: "+response.statusCode.toString());
+        }
+      }
+    } on TimeoutException {
+      if (topRatedCoursesData.isEmpty) {
+        showErrorSnackbar("Request timeout. Please try again.");
+      } else {
+        showErrorSnackbar("Using cached data - connection is slow");
+      }
+    } catch (e) {
+      if (topRatedCoursesData.isEmpty) {
+        showErrorSnackbar("Failed to load top rated courses");
+      } else {
+        showErrorSnackbar("Using cached data - "+e.toString());
+      }
+      debugPrint("Error fetching top rated courses: $e");
+    }
+  }
+
+  Future<Uint8List?> getTopRatedCourseImage(dynamic course) async {
+    final courseId = course is Map ? course['id'] as int : course as int;
+    final cachedImage = sharedPrefs.prefs.getString('top_rated_course_image_$courseId');
+    if (cachedImage != null) {
+      return base64Decode(cachedImage);
+    }
+    if (sharedPrefs.prefs.getBool('isConnected') == false) {
+      return null;
+    }
+    try {
+      final token = sharedPrefs.prefs.getString('token') ?? '';
+      if (token.isEmpty) return null;
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final url = '$baseUrl/api/getcourseimage/$courseId';
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Accept': 'application/octet-stream',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else if (response.statusCode == 404) {
+        debugPrint("Top rated course image not found for ID: $courseId");
+        return null;
+      } else {
+        throw Exception("Image fetch failed: "+response.statusCode.toString());
+      }
+    } on TimeoutException {
+      debugPrint("Timeout loading image for top rated course $courseId");
+      return null;
+    } catch (e) {
+      debugPrint("Error fetching top rated course image: $e");
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -458,6 +801,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       ),
     );
   }
+
 }
 
 class SearchCustom extends SearchDelegate {

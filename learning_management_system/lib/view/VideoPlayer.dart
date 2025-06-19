@@ -37,13 +37,17 @@ class _VideoPlayerState extends State<VideoPlayer> {
   final ThemeController themeController = Get.find<ThemeController>();
   bool _isDisposed = false;
   String _currentQuality = 'Auto';
+  bool isLiked = false;
+  bool isDisLiked = false;
   AudioPlayer audio = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
     // Pause audio and hide navbar when entering video player
-    audio.pause();
+    if (NavBarState.audioPlayer != null) {
+      NavBarState.audioPlayer!.pause();
+    }
     NavBarState.isNavBarVisible = false;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _initializePlayer();
@@ -277,9 +281,11 @@ class _VideoPlayerState extends State<VideoPlayer> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _videoPlayerController.dispose();
     _chewieController?.dispose();
-    // Resume audio and show navbar when leaving video player
-    audio.resume();
+    // Show navbar and reinitialize audio when leaving video player
     NavBarState.isNavBarVisible = true;
+    if (NavBarState.audioPlayer != null) {
+      NavBarState.audioPlayer!.resume();
+    }
     super.dispose();
   }
 
@@ -292,8 +298,10 @@ class _VideoPlayerState extends State<VideoPlayer> {
             ? const Color.fromARGB(255, 210, 209, 224)
             : const Color.fromARGB(255, 40, 41, 61),
         body: SafeArea(
-          child: Center(
-            child: _isError
+          child: Column(
+            children: [
+              Center(
+                 child: _isError
                 ? _buildErrorWidget(_errorMessage ?? 'Failed to load video'.tr)
                 : _isInitialized && _chewieController != null
                     ? AspectRatio(
@@ -303,6 +311,53 @@ class _VideoPlayerState extends State<VideoPlayer> {
                     : const Center(
                         child: CircularProgressIndicator(),
                       ),
+
+              ),
+              SizedBox(height: 20),
+              _isInitialized && _chewieController != null ? Row(
+          children: [
+                  IconButton(onPressed: (){
+                    isLiked = !isLiked;
+                    if(isLiked == true){
+                      isDisLiked == false;
+                      setState(() {
+                        
+                      });
+                    }
+                    setState(() {
+                      
+                    });
+
+                  }, icon: isLiked == false ? Icon(Icons.thumb_up_alt_outlined,size: 30,color: themeController.initialTheme == Themes.customLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224),)
+             : Icon(Icons.thumb_up_alt_rounded , size: 30,color: themeController.initialTheme == Themes.customLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224),)),
+                  IconButton(onPressed: (){
+                    isDisLiked = !isDisLiked;
+                    if(isDisLiked == true){
+                      isLiked == false;
+                      setState(() {
+                        
+                      });
+                    }
+                    setState(() {
+                      
+                    });
+
+                  }, icon: isDisLiked == false ? Icon(Icons.thumb_down_alt_outlined,size: 30,color: themeController.initialTheme == Themes.customLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224),) 
+            : Icon(Icons.thumb_down_alt_rounded, size: 30,color: themeController.initialTheme == Themes.customLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224),)),
+                  
+                ],
+              )
+              : SizedBox()
+            ],
+           
           ),
         ),
       ),

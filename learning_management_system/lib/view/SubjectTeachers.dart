@@ -57,7 +57,7 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
 
     // Then try to fetch fresh data if online
     if (sharedPrefs.prefs.getBool('isConnected') == true) {
-      await getUniTeachersData();
+      await getSubTeachersData();
     }
   }
 
@@ -108,7 +108,7 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
     }
   }
 
-  Future<void> getUniTeachersData() async {
+  Future<void> getSubTeachersData() async {
     // 1. Token Handling
     final token = sharedPrefs.prefs.getString('token') ?? '';
     if (token.isEmpty) {
@@ -316,7 +316,7 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
                           : Color.fromARGB(255, 46, 48, 97),
                   onRefresh: () async {
                     await networkController.checkConnectivityManually();
-                    await getUniTeachersData();
+                    await getSubTeachersData();
                   },
                   child: Column(
                     children: [

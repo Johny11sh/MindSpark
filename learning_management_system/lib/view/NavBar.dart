@@ -16,7 +16,7 @@ import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
 final ThemeController themeController = Get.find<ThemeController>();
 final LocaleController localeController = Get.find<LocaleController>();
-String mainIP = "http://192.168.1.8:8000";
+String mainIP = "http://192.168.1.9:8000";
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -27,8 +27,8 @@ class NavBar extends StatefulWidget {
 
 class NavBarState extends State<NavBar> {
   static bool isNavBarVisible = true;
+  static AudioPlayer? audioPlayer;
 
-  final audioPlayer = AudioPlayer();
   final audioCache = AudioCache(prefix: 'assets/music/');
   bool isPlaying = false;
   bool isExpanded = false;
@@ -52,11 +52,13 @@ class NavBarState extends State<NavBar> {
   @override
   void initState() {
     super.initState();
+    audioPlayer = AudioPlayer();
   }
 
   @override
   void dispose() {
-    audioPlayer.dispose();
+    audioPlayer?.dispose();
+    audioPlayer = null;
     previousSongs.clear();
     super.dispose();
   }
@@ -75,8 +77,8 @@ class NavBarState extends State<NavBar> {
       previousSongs.add(currentSong!);
     }
     currentSong = songName;
-    await audioPlayer.setSource(AssetSource('music/$songName'));
-    await audioPlayer.resume();
+    await audioPlayer?.setSource(AssetSource('music/$songName'));
+    await audioPlayer?.resume();
     setState(() {
       isPlaying = true;
     });
@@ -112,13 +114,13 @@ class NavBarState extends State<NavBar> {
         await playNextSong();
       } else {
         // Resume current song
-        await audioPlayer.resume();
+        await audioPlayer?.resume();
         setState(() {
           isPlaying = true;
         });
       }
     } else {
-      await audioPlayer.pause();
+      await audioPlayer?.pause();
       setState(() {
         isPlaying = false;
       });
@@ -126,7 +128,11 @@ class NavBarState extends State<NavBar> {
   }
 
   Widget _buildMusicControls() {
-    if (!isNavBarVisible) return const SizedBox.shrink(); // Hide controls when navbar is hidden
+    if (!isNavBarVisible) {
+      // Ensure audio is paused when navbar is hidden
+      audioPlayer?.pause();
+      return const SizedBox.shrink();
+    }
 
     return Stack(
       alignment: Alignment.center,
@@ -140,75 +146,75 @@ class NavBarState extends State<NavBar> {
               elevation: 0,
               mini: true,
               backgroundColor: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 40, 41, 61)
-                  : Color.fromARGB(255, 210, 209, 224),
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
               foregroundColor: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 210, 209, 224)
-                  : Color.fromARGB(255, 46, 48, 97),
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
               child: Icon(Icons.skip_previous_rounded, size: 22),
             ),
-          ),
+            ),
           // Play/Pause Button
           Positioned(
             child: FloatingActionButton(
               onPressed: () async {
                 if (isPlaying) {
-                  await audioPlayer.pause();
+                  await audioPlayer?.pause();
                 } else {
-                  await audioPlayer.resume();
+                  await audioPlayer?.resume();
                 }
                 setState(() {
                   isPlaying = !isPlaying;
                 });
               },
-              elevation: 0,
+                elevation: 0,
               mini: true,
               backgroundColor: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 40, 41, 61)
-                  : Color.fromARGB(255, 210, 209, 224),
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
               foregroundColor: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 210, 209, 224)
-                  : Color.fromARGB(255, 46, 48, 97),
+                        ? Color.fromARGB(255, 210, 209, 224)
+                        : Color.fromARGB(255, 46, 48, 97),
               child: Icon(
                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                 size: 22,
               ),
             ),
-          ),
+              ),
           // Next Button
           Positioned(
             right: 0,
             child: FloatingActionButton(
               onPressed: playNextSong,
-              elevation: 0,
+                elevation: 0,
               mini: true,
               backgroundColor: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 40, 41, 61)
-                  : Color.fromARGB(255, 210, 209, 224),
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
               foregroundColor: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 210, 209, 224)
-                  : Color.fromARGB(255, 46, 48, 97),
+                        ? Color.fromARGB(255, 210, 209, 224)
+                        : Color.fromARGB(255, 46, 48, 97),
               child: Icon(Icons.skip_next_rounded, size: 22),
-            ),
-          ),
+                ),
+              ),
         ],
         // Main Button
-        FloatingActionButton(
+              FloatingActionButton(
           onPressed: _handleMainButtonPress,
           elevation: 2,
           mini: true,
           backgroundColor: themeController.initialTheme == Themes.customLightTheme
-              ? Color.fromARGB(255, 40, 41, 61)
-              : Color.fromARGB(255, 210, 209, 224),
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
           foregroundColor: themeController.initialTheme == Themes.customLightTheme
-              ? Color.fromARGB(255, 210, 209, 224)
-              : Color.fromARGB(255, 46, 48, 97),
+                        ? Color.fromARGB(255, 210, 209, 224)
+                        : Color.fromARGB(255, 46, 48, 97),
           child: Icon(
             isExpanded ? Icons.music_off_rounded : Icons.music_note_rounded,
             size: 22,
           ),
-        ),
-      ],
+              ),
+            ],
     );
   }
 
@@ -220,68 +226,68 @@ class NavBarState extends State<NavBar> {
       locale: localeController.initialLang,
       home: Scaffold(
         body: PersistentTabView(
-          tabs: [
-            PersistentTabConfig(
-              screen: HomePage(),
-              item: ItemConfig(
-                activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
-                inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
-                inactiveBackgroundColor:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 46, 48, 97),
-                icon: Icon(Icons.home),
-                title: "Home".tr,
-              ),
+        tabs: [
+          PersistentTabConfig(
+            screen: HomePage(),
+            item: ItemConfig(
+              activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
+              inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
+              inactiveBackgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
+              icon: Icon(Icons.home),
+              title: "Home".tr,
             ),
-            PersistentTabConfig(
-              screen: Teachers(),
-              item: ItemConfig(
-                activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
-                inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
-                inactiveBackgroundColor:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 46, 48, 97),
-                icon: Icon(Icons.person),
-                title: "Teachers".tr,
-              ),
+          ),
+          PersistentTabConfig(
+            screen: Teachers(),
+            item: ItemConfig(
+              activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
+              inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
+              inactiveBackgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
+              icon: Icon(Icons.person),
+              title: "Teachers".tr,
             ),
-            PersistentTabConfig(
-              screen: Library(),
-              item: ItemConfig(
-                activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
-                inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
-                inactiveBackgroundColor:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 46, 48, 97),
-                icon: Icon(Icons.local_library_rounded),
-                title: "Library".tr,
-              ),
+          ),
+          PersistentTabConfig(
+            screen: Library(),
+            item: ItemConfig(
+              activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
+              inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
+              inactiveBackgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
+              icon: Icon(Icons.local_library_rounded),
+              title: "Library".tr,
             ),
-            PersistentTabConfig(
-              screen: Profile(),
-              item: ItemConfig(
-                activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
-                inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
-                inactiveBackgroundColor:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 46, 48, 97),
-                icon: Icon(Icons.person),
-                title: "Profile".tr,
-              ),
+          ),
+          PersistentTabConfig(
+            screen: Profile(),
+            item: ItemConfig(
+              activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
+              inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
+              inactiveBackgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
+              icon: Icon(Icons.person),
+              title: "Profile".tr,
             ),
-          ],
+          ),
+        ],
           navBarBuilder: (navBarConfig) => CustomNavBar(navBarConfig: navBarConfig),
         ),
-        floatingActionButton: Container(
+        floatingActionButton: isNavBarVisible ? Container(
           width: 150,
           height: 40,
           margin: EdgeInsets.only(bottom: 58),
           child: _buildMusicControls(),
-        ),
+        ) : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
     );
