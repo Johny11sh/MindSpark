@@ -1422,33 +1422,29 @@ class _HomePageState extends State<HomePage> {
                                     Expanded(
                                       flex: 3,
                                       child:
-                                          // imageBytes != null
-                                          //     ? Image.memory(
-                                          //       imageBytes,
-                                          //       fit: BoxFit.fill,
-                                          //       errorBuilder: (
-                                          //         context,
-                                          //         error,
-                                          //         stackTrace,
-                                          //       ) {
-                                          //         return Image.asset(
-                                          //           ImageAssets.subject,
-                                          //           height: 125,
-                                          //           fit: BoxFit.cover,
-                                          //         );
-                                          //       },
-                                          //     )
-                                          //     : Image.asset(
-                                          //       ImageAssets.subject,
-                                          //     ),
-                                          subjects[i]["image"]
-                                              ? CachedNetworkImage(
-                                                imageUrl:
-                                                    "$mainIP/${subjects[i]["image"]}",
-                                              )
-                                              : Image.asset(
-                                                ImageAssets.subject,
-                                              ),
+                                      // imageBytes != null
+                                      //     ? Image.memory(
+                                      //       imageBytes,
+                                      //       fit: BoxFit.fill,
+                                      //       errorBuilder: (
+                                      //         context,
+                                      //         error,
+                                      //         stackTrace,
+                                      //       ) {
+                                      //         return Image.asset(
+                                      //           ImageAssets.subject,
+                                      //           height: 125,
+                                      //           fit: BoxFit.cover,
+                                      //         );
+                                      //       },
+                                      //     )
+                                      //     : Image.asset(
+                                      //       ImageAssets.subject,
+                                      //     ),
+                                      CachedNetworkImage(
+                                        imageUrl:
+                                            "$mainIP/${subjects[i]["image"]}",
+                                      ),
                                     ),
                                     SizedBox(height: 30),
                                     Expanded(
