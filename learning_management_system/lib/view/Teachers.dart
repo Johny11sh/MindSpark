@@ -3,6 +3,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import '../controller/FavoriteController.dart';
 import '../view/LogIn.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -31,6 +32,7 @@ class _TeachersState extends State<Teachers> {
   final NetworkController networkController = Get.find<NetworkController>();
   ScrollController scrollController = ScrollController();
   late SharedPrefs sharedPrefs;
+  late FavoriteController favoriteController;
 
   List<Map<String, dynamic>> teachers = [];
   Map<int, Uint8List> teachersImages = {};
@@ -44,6 +46,7 @@ class _TeachersState extends State<Teachers> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _initSharedPreferences().then((_) => _loadInitialData());
+    favoriteController = Get.put(FavoriteController());
   }
 
   Future<void> _initSharedPreferences() async {
@@ -360,51 +363,93 @@ class _TeachersState extends State<Teachers> {
                                 );
                               },
                               child: Card(
-                                child: Column(
+                                child: Stack(
                                   children: [
-                                    Expanded(
-                                      flex: 5,
-                                      child:
-                                          imageBytes != null
-                                              ? Image.memory(
-                                                imageBytes,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  return Image.asset(
-                                                    ImageAssets.teacher,
-                                                    height: 125,
-                                                    fit: BoxFit.cover,
-                                                  );
-                                                },
-                                              )
-                                              : Image.asset(
-                                                ImageAssets.teacher,
-                                              ),
-                                    ),
-                                    SizedBox(height: 30),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Text(
-                                        "${teachers[i]["name"]}".tr,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(255, 210, 209, 224),
+                                    Positioned(
+                                      right: 10,
+                                      top: 3,
+                                      child: InkWell(
+                                        onTap: () {
+                                          favoriteController.toggleFavorite(
+                                            teacherId.toString(),
+                                          );
+                                        },
+                                        child: GetBuilder<FavoriteController>(
+                                          builder: (controller) {
+                                            final isFav =
+                                                controller.isFavorite[teacherId
+                                                    .toString()] ??
+                                                false;
+
+                                            return Icon(
+                                              isFav
+                                                  ? Icons.favorite
+                                                  : Icons
+                                                      .favorite_border_outlined,
+                                              size: 30,
+                                              color: Colors.red,
+                                            );
+                                          },
                                         ),
+                                      ),
+                                    ),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          SizedBox(height: 20),
+                                          Expanded(
+                                            flex: 5,
+                                            child:
+                                                imageBytes != null
+                                                    ? Image.memory(
+                                                      imageBytes,
+                                                      fit: BoxFit.fill,
+                                                      errorBuilder: (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) {
+                                                        return Image.asset(
+                                                          ImageAssets.teacher,
+                                                          height: 125,
+                                                          fit: BoxFit.cover,
+                                                        );
+                                                      },
+                                                    )
+                                                    : Image.asset(
+                                                      ImageAssets.teacher,
+                                                    ),
+                                          ),
+                                          SizedBox(height: 30),
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              "${teachers[i]["name"]}".tr,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -510,10 +555,13 @@ class SearchCustom extends SearchDelegate {
                         ),
                 title: Text(
                   sortedItems![index]["name"],
-                  style: TextStyle(fontSize: 16, color:themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color:
+                        themeController.initialTheme == Themes.customLightTheme
+                            ? Color.fromARGB(255, 40, 41, 61)
+                            : Color.fromARGB(255, 210, 209, 224),
+                  ),
                 ),
               ),
             ),
@@ -569,10 +617,13 @@ class SearchCustom extends SearchDelegate {
               title: Center(
                 child: Text(
                   sortedItems![index]["name"],
-                  style: TextStyle(fontSize: 20, color:themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),),
+                  style: TextStyle(
+                    fontSize: 20,
+                    color:
+                        themeController.initialTheme == Themes.customLightTheme
+                            ? Color.fromARGB(255, 40, 41, 61)
+                            : Color.fromARGB(255, 210, 209, 224),
+                  ),
                 ),
               ),
               onTap: () {
