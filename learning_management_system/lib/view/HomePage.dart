@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:learning_management_system/view/CoursesLessons.dart';
@@ -774,14 +775,10 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadCachedRecentCourses() async {
     try {
-      final cachedRecent = sharedPrefs.prefs.getString(
-        'cached_recent_courses',
-      );
+      final cachedRecent = sharedPrefs.prefs.getString('cached_recent_courses');
       if (cachedRecent != null) {
         final List<dynamic> parsedRecentList = jsonDecode(cachedRecent);
-        cachedRecentCourses = List<Map<String, dynamic>>.from(
-          parsedRecentList,
-        );
+        cachedRecentCourses = List<Map<String, dynamic>>.from(parsedRecentList);
         recentCourses = List.from(cachedRecentCourses);
       }
       await _loadRecentCoursesImages();
@@ -814,7 +811,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _cacheRecentCourseImage(int courseId, Uint8List imageBytes) async {
+  Future<void> _cacheRecentCourseImage(
+    int courseId,
+    Uint8List imageBytes,
+  ) async {
     try {
       await sharedPrefs.prefs.setString(
         'recent_course_image_$courseId',
@@ -863,9 +863,7 @@ class _HomePageState extends State<HomePage> {
 
         if (mounted) {
           setState(() {
-            recentCourses = List<Map<String, dynamic>>.from(
-              recentCoursesList,
-            );
+            recentCourses = List<Map<String, dynamic>>.from(recentCoursesList);
           });
           await _cacheRecentCourses();
         }
@@ -894,7 +892,8 @@ class _HomePageState extends State<HomePage> {
           });
           if (recentCourses.isEmpty) {
             throw Exception(
-              "Failed to load recent courses: "+response.statusCode.toString(),
+              "Failed to load recent courses: " +
+                  response.statusCode.toString(),
             );
           }
         }
@@ -918,7 +917,7 @@ class _HomePageState extends State<HomePage> {
         if (recentCourses.isEmpty) {
           showErrorSnackbar("Failed to load recent courses");
         } else {
-          showErrorSnackbar("Using cached data - "+e.toString());
+          showErrorSnackbar("Using cached data - " + e.toString());
         }
       }
       debugPrint("Error fetching recent courses: $e");
@@ -964,7 +963,9 @@ class _HomePageState extends State<HomePage> {
         debugPrint("Recent course image not found for ID: $courseId");
         return null;
       } else {
-        throw Exception("Image fetch failed: "+response.statusCode.toString());
+        throw Exception(
+          "Image fetch failed: " + response.statusCode.toString(),
+        );
       }
     } on TimeoutException {
       debugPrint("Timeout loading image for recent course $courseId");
@@ -1017,7 +1018,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _cacheSubscribedCourseImage(int courseId, Uint8List imageBytes) async {
+  Future<void> _cacheSubscribedCourseImage(
+    int courseId,
+    Uint8List imageBytes,
+  ) async {
     try {
       await sharedPrefs.prefs.setString(
         'subscribed_course_image_$courseId',
@@ -1097,7 +1101,8 @@ class _HomePageState extends State<HomePage> {
           });
           if (subscribedCourses.isEmpty) {
             throw Exception(
-              "Failed to load subscribed courses: "+response.statusCode.toString(),
+              "Failed to load subscribed courses: " +
+                  response.statusCode.toString(),
             );
           }
         }
@@ -1121,7 +1126,7 @@ class _HomePageState extends State<HomePage> {
         if (subscribedCourses.isEmpty) {
           showErrorSnackbar("Failed to load subscribed courses");
         } else {
-          showErrorSnackbar("Using cached data - "+e.toString());
+          showErrorSnackbar("Using cached data - " + e.toString());
         }
       }
       debugPrint("Error fetching subscribed courses: $e");
@@ -1167,7 +1172,9 @@ class _HomePageState extends State<HomePage> {
         debugPrint("Subscribed course image not found for ID: $courseId");
         return null;
       } else {
-        throw Exception("Image fetch failed: "+response.statusCode.toString());
+        throw Exception(
+          "Image fetch failed: " + response.statusCode.toString(),
+        );
       }
     } on TimeoutException {
       debugPrint("Timeout loading image for subscribed course $courseId");
@@ -1392,9 +1399,8 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisCount: 1,
                               ),
                           controller: scrollController,
-                          itemCount: subjects.length ,
+                          itemCount: subjects.length,
                           itemBuilder: (context, i) {
-                            
                             int uniId = subjects[i]["id"];
                             Uint8List? imageBytes = subjectsImages[uniId];
 
@@ -1416,21 +1422,29 @@ class _HomePageState extends State<HomePage> {
                                     Expanded(
                                       flex: 3,
                                       child:
-                                          imageBytes != null
-                                              ? Image.memory(
-                                                imageBytes,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  return Image.asset(
-                                                    ImageAssets.subject,
-                                                    height: 125,
-                                                    fit: BoxFit.cover,
-                                                  );
-                                                },
+                                          // imageBytes != null
+                                          //     ? Image.memory(
+                                          //       imageBytes,
+                                          //       fit: BoxFit.fill,
+                                          //       errorBuilder: (
+                                          //         context,
+                                          //         error,
+                                          //         stackTrace,
+                                          //       ) {
+                                          //         return Image.asset(
+                                          //           ImageAssets.subject,
+                                          //           height: 125,
+                                          //           fit: BoxFit.cover,
+                                          //         );
+                                          //       },
+                                          //     )
+                                          //     : Image.asset(
+                                          //       ImageAssets.subject,
+                                          //     ),
+                                          subjects[i]["image"]
+                                              ? CachedNetworkImage(
+                                                imageUrl:
+                                                    "$mainIP/${subjects[i]["image"]}",
                                               )
                                               : Image.asset(
                                                 ImageAssets.subject,
@@ -1502,22 +1516,20 @@ class _HomePageState extends State<HomePage> {
                           itemBuilder: (context, i) {
                             if (i == recommendedCourses.length) {
                               return InkWell(
-                                onTap:() {
+                                onTap: () {
                                   Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => RecommendedCourses(
-                                        ),
-                                  ),
-                                );
-
-                                  
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => RecommendedCourses(),
+                                    ),
+                                  );
                                 },
                                 child: Card(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       SizedBox(
                                         child: Icon(
@@ -1678,22 +1690,22 @@ class _HomePageState extends State<HomePage> {
                           itemBuilder: (context, i) {
                             if (i == TopRatedCourses.length) {
                               return InkWell(
-                                onTap:() {
+                                onTap: () {
                                   Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => RatedCourses(
-                                          // CourseData: TopRatedCourses[i]
-                                        ),
-                                  ),
-                                );
-                                  
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => RatedCourses(
+                                            // CourseData: TopRatedCourses[i]
+                                          ),
+                                    ),
+                                  );
                                 },
                                 child: Card(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       SizedBox(
                                         child: Icon(
@@ -1760,7 +1772,6 @@ class _HomePageState extends State<HomePage> {
                                           CoursesData: recommendedCourses[i],
                                           index: i,
                                         ),
-                                        
                                   ),
                                 );
                               },
@@ -1855,22 +1866,22 @@ class _HomePageState extends State<HomePage> {
                           itemBuilder: (context, i) {
                             if (i == recentCourses.length) {
                               return InkWell(
-                                onTap:() {
-                                //   Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder:
-                                //         (context) => RatedCourses(
-                                //           // CourseData: TopRatedCourses[i]
-                                //         ),
-                                //   ),
-                                // );
-                                  
+                                onTap: () {
+                                  //   Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder:
+                                  //         (context) => RatedCourses(
+                                  //           // CourseData: TopRatedCourses[i]
+                                  //         ),
+                                  //   ),
+                                  // );
                                 },
                                 child: Card(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       SizedBox(
                                         child: Icon(
@@ -1924,8 +1935,7 @@ class _HomePageState extends State<HomePage> {
                             }
 
                             int uniId = recentCourses[i]["id"];
-                            Uint8List? imageBytes =
-                                recentCoursesImages[uniId];
+                            Uint8List? imageBytes = recentCoursesImages[uniId];
 
                             return InkWell(
                               onTap: () {
@@ -1937,7 +1947,6 @@ class _HomePageState extends State<HomePage> {
                                           CoursesData: recentCourses[i],
                                           index: i,
                                         ),
-                                        
                                   ),
                                 );
                               },
@@ -2032,22 +2041,22 @@ class _HomePageState extends State<HomePage> {
                           itemBuilder: (context, i) {
                             if (i == subscribedCourses.length) {
                               return InkWell(
-                                onTap:() {
-                                //   Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder:
-                                //         (context) => RatedCourses(
-                                //           // CourseData: TopRatedCourses[i]
-                                //         ),
-                                //   ),
-                                // );
-                                  
+                                onTap: () {
+                                  //   Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder:
+                                  //         (context) => RatedCourses(
+                                  //           // CourseData: TopRatedCourses[i]
+                                  //         ),
+                                  //   ),
+                                  // );
                                 },
                                 child: Card(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       SizedBox(
                                         child: Icon(
@@ -2114,7 +2123,6 @@ class _HomePageState extends State<HomePage> {
                                           CoursesData: subscribedCourses[i],
                                           index: i,
                                         ),
-                                        
                                   ),
                                 );
                               },
@@ -2178,7 +2186,7 @@ class _HomePageState extends State<HomePage> {
                           },
                         ),
                       ),
-                      SizedBox(height:30)
+                      SizedBox(height: 30),
                     ],
                   ),
                 ),
