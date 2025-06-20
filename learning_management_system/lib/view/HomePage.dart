@@ -1441,9 +1441,12 @@ class _HomePageState extends State<HomePage> {
                                       //     : Image.asset(
                                       //       ImageAssets.subject,
                                       //     ),
+                                      subjects[i]["image"] != null ?
                                       CachedNetworkImage(
                                         imageUrl:
                                             "$mainIP/${subjects[i]["image"]}",
+                                      )    : Image.asset(
+                                        ImageAssets.subject,
                                       ),
                                     ),
                                     SizedBox(height: 30),
