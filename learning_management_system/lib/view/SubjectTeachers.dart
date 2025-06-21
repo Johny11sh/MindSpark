@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import '../controller/FavoriteController.dart';
 import '../services/SharedPrefs.dart';
 import '../view/LogIn.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ import 'TeachersCourses.dart';
 
 class SubjectTeachers extends StatefulWidget {
   final Map<String, dynamic> SubjectData;
+
   const SubjectTeachers({super.key, required this.SubjectData});
 
   @override
@@ -31,6 +33,7 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
   final NetworkController networkController = Get.find<NetworkController>();
   ScrollController scrollController = ScrollController();
   late SharedPrefs sharedPrefs;
+  late FavoriteController favoriteController;
 
   List<Map<String, dynamic>> subjectTeachers = [];
   final Map<int, Uint8List> teachersImages = {};
@@ -45,6 +48,8 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _initSharedPreferences().then((_) => _loadInitialData());
+    favoriteController = Get.put(FavoriteController());
+
   }
 
   Future<void> _initSharedPreferences() async {
@@ -360,89 +365,95 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
                                   ),
                                 );
                               },
-                              child: Card(
-                                child: Column(
+                              child:  Card(
+                                child: Stack(
                                   children: [
-                                    Expanded(
-                                      flex: 5,
-                                      child:
-                                          imageBytes != null
-                                              ? Image.memory(
-                                                imageBytes,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (
+                                    Positioned(
+                                      right: 10,
+                                      top: 3,
+                                      child: InkWell(
+                                        onTap: () {
+                                          favoriteController.toggleFavorite(
+                                            teacherId.toString(),
+                                          );
+                                        },
+                                        child: GetBuilder<FavoriteController>(
+                                          builder: (controller) {
+                                            final isFav =
+                                                controller.isFavorite[teacherId
+                                                    .toString()] ??
+                                                    false;
+
+                                            return Icon(
+                                              isFav
+                                                  ? Icons.favorite
+                                                  : Icons
+                                                  .favorite_border_outlined,
+                                              size: 30,
+                                              color: Colors.red,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          SizedBox(height: 20),
+                                          Expanded(
+                                            flex: 5,
+                                            child:
+                                            imageBytes != null
+                                                ? Image.memory(
+                                              imageBytes,
+                                              fit: BoxFit.fill,
+                                              errorBuilder: (
                                                   context,
                                                   error,
                                                   stackTrace,
-                                                ) {
-                                                  return Image.asset(
-                                                    ImageAssets.teacher,
-                                                    height: 125,
-                                                    fit: BoxFit.cover,
-                                                  );
-                                                },
-                                              )
-                                              : Image.asset(
-                                                ImageAssets.teacher,
-                                              ),
-                                    ),
-                                    SizedBox(height: 30),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
+                                                  ) {
+                                                return Image.asset(
+                                                  ImageAssets.teacher,
+                                                  height: 125,
+                                                  fit: BoxFit.cover,
+                                                );
+                                              },
+                                            )
+                                                : Image.asset(
+                                              ImageAssets.teacher,
+                                            ),
+                                          ),
+                                          SizedBox(height: 30),
                                           Expanded(
                                             flex: 2,
                                             child: Text(
-                                              "${subjectTeachers[i]["name"]}"
-                                                  .tr,
-                                              textAlign: TextAlign.end,
+                                              "${subjectTeachers[i]["name"]}".tr,
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w400,
                                                 fontStyle: FontStyle.normal,
                                                 color:
-                                                    themeController
-                                                                .initialTheme ==
-                                                            Themes
-                                                                .customLightTheme
-                                                        ? Color.fromARGB(
-                                                          255,
-                                                          40,
-                                                          41,
-                                                          61,
-                                                        )
-                                                        : Color.fromARGB(
-                                                          255,
-                                                          210,
-                                                          209,
-                                                          224,
-                                                        ),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 1,
-                                            child: IconButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  isFavorite = !isFavorite;
-                                                });
-                                              },
-                                              icon: Icon(
-                                                Icons.favorite,
-                                                color:
-                                                    isFavorite
-                                                        ? Colors.red
-                                                        : Colors.grey,
+                                                themeController
+                                                    .initialTheme ==
+                                                    Themes
+                                                        .customLightTheme
+                                                    ? Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                )
+                                                    : Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      
                                     ),
                                   ],
                                 ),

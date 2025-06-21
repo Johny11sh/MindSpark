@@ -35,24 +35,94 @@ class _FavoriteState extends State<Favorites> {
                   child: Column(
                     children: [
                       SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              controller.change("teacher");
-                            },
-                            child: Text("Teacher"),
-                          ),
-                          SizedBox(width: 20),
-                          ElevatedButton(
-                            onPressed: () {
-                              controller.change("course");
-                            },
-                            child: Text("Course"),
-                          ),
-                        ],
+                      Container(
+                        width: 200,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Color(0xFFE0DEF0), // Light background
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(color: Color(0xFFE0DEF0)),
+                        ),
+                        child: Row(
+                          // mainAxisSize: MainAxisSize.min,
+                          // mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () {
+                                  controller.change("teacher");
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color:
+                                        controller.favCh == "teacher"
+                                            ? Color.fromARGB(255, 40, 41, 61)
+                                            : null,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(25),
+                                      bottomLeft: Radius.circular(25),
+                                    ),
+                                  ),
+
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "Teacher",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color:
+                                          controller.favCh == "teacher"
+                                              ? Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              )
+                                              : Color.fromARGB(255, 40, 41, 61),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () {
+                                  controller.change("course");
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color:
+                                        controller.favCh == "teacher"
+                                            ? null
+                                            : Color.fromARGB(255, 40, 41, 61),
+                                    borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(25),
+                                      bottomRight: Radius.circular(25),
+                                    ),
+                                  ),
+
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "Course",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color:
+                                          controller.favCh == "teacher"
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+
                       SizedBox(height: 10),
                       Expanded(
                         child: ListView(

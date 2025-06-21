@@ -14,6 +14,7 @@ class FavoriteController extends GetxController {
   late String token;
 
   Map isFavorite = {};
+  Map isFavoriteC = {};
 
   Future<void> toggleFavorite(String id) async {
     final url = Uri.parse('$mainIP/api/teacher/$id/favorite');
@@ -63,6 +64,55 @@ class FavoriteController extends GetxController {
     }
   }
 
+
+  Future<void> toggleFavoriteC(String id) async {
+    final url = Uri.parse('$mainIP/api/course/$id/favorite');
+
+    final response = await http.post(
+      url,
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      isFavoriteC[id] = data['is_favorited'];
+      update();
+    } else {
+      print('Error : ${response.body}');
+    }
+  }
+
+  Future<void> getTFavoriteC() async {
+    final response = await http.get(
+      Uri.parse("$mainIP/api/getfavoritecourses"),
+      headers: {
+        'Authorization': "Bearer $token",
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print("response statusCode = ${response.statusCode}");
+      final responseBody = jsonDecode(response.body);
+
+      final List favorites = responseBody["favorites"];
+
+      for (var course in favorites) {
+        final String id = course["id"].toString();
+        isFavoriteC[id] = true;
+      }
+      update();
+    } else {
+      Get.defaultDialog(
+        title: "Error",
+        backgroundColor: Colors.red,
+        middleText: "Check Connections",
+      );
+      Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -70,5 +120,6 @@ class FavoriteController extends GetxController {
     token = sharedPrefs.prefs.getString("token")!;
     print(token);
     getTFavorite();
+    getTFavoriteC();
   }
 }

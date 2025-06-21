@@ -1315,7 +1315,7 @@ class _HomePageState extends State<HomePage> {
                                 "Scientific".tr,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w400,
-                                  fontSize: 18,
+                                    fontSize: 18,
                                   color:
                                       themeController.initialTheme ==
                                               Themes.customLightTheme
