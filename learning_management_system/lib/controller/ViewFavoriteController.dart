@@ -12,6 +12,9 @@ import 'package:http/http.dart' as http;
 import '../view/NavBar.dart';
 
 class ViewFavoriteController extends GetxController {
+  bool loading = true;
+  bool loading2 = true;
+
   List<TFavoriteModel> tFav = [];
   List<CFavoriteModel> cFav = [];
 
@@ -19,10 +22,10 @@ class ViewFavoriteController extends GetxController {
 
   late SharedPrefs sharedPrefs;
 
-  String favCh = "teacher" ;
+  String favCh = "teacher";
 
-  change(val){
-    favCh = val ;
+  change(val) {
+    favCh = val;
     update();
   }
 
@@ -43,6 +46,7 @@ class ViewFavoriteController extends GetxController {
       List responseData = responseBody["favorites"];
       print(responseData);
       tFav.addAll(responseData.map((e) => TFavoriteModel.fromJson(e)));
+      loading = false ;
       update();
     } else {
       Get.defaultDialog(
@@ -69,6 +73,7 @@ class ViewFavoriteController extends GetxController {
       var responseBody = jsonDecode(response.body);
       List responseData = responseBody["favorites"];
       cFav.addAll(responseData.map((e) => CFavoriteModel.fromJson(e)));
+      loading2 = false ;
       update();
     } else {
       Get.defaultDialog(
@@ -80,6 +85,8 @@ class ViewFavoriteController extends GetxController {
     }
   }
 
+
+
   @override
   void onInit() {
     super.onInit();
@@ -87,6 +94,6 @@ class ViewFavoriteController extends GetxController {
     token = sharedPrefs.prefs.getString("token")!;
     print(token);
     getTFavorite();
-    getCFavorite();
+    // getCFavorite();
   }
 }
