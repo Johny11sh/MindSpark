@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:learning_management_system/view/NavBar.dart';
+import 'package:like_button/like_button.dart';
 
 import '../controller/FavoriteController.dart';
 import '../model/CFavoriteModel.dart';
@@ -25,29 +26,34 @@ class ViewCFavoriteCard extends StatelessWidget {
             Positioned(
               right: 10,
               top: 3,
-              child: InkWell(
-                onTap: () {
-                  favoriteController.toggleFavoriteC(
-                    cFavoriteModel.id.toString(),
+              child:  GetBuilder<FavoriteController>(
+                builder: (controller) {
+                  final isFav =
+                      controller.isFavoriteC[cFavoriteModel.id
+                          .toString()] ??
+                          false;
+
+                  return LikeButton(
+                    size: 30,
+                    isLiked: isFav,
+                    likeBuilder: (bool isLiked) {
+                      return Icon(
+                        isLiked
+                            ? Icons.favorite
+                            : Icons
+                            .favorite_border_outlined,
+                        color: Colors.red,
+                        size: 30,
+                      );
+                    },
+                    onTap: (bool isLiked) async {
+                      controller.toggleFavoriteC(
+                        cFavoriteModel.id.toString(),
+                      );
+                      return !isLiked;
+                    },
                   );
                 },
-                child: GetBuilder<FavoriteController>(
-                  builder: (controller) {
-                    final isFav =
-                        controller.isFavoriteC[cFavoriteModel.id
-                            .toString()] ??
-                            false;
-
-                    return Icon(
-                      isFav
-                          ? Icons.favorite
-                          : Icons
-                          .favorite_border_outlined,
-                      size: 30,
-                      color: Colors.red,
-                    );
-                  },
-                ),
               ),
             ),
             Center(

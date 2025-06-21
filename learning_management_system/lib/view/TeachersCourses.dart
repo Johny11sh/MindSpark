@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:like_button/like_button.dart';
 
 import '../controller/FavoriteController.dart';
 import '../view/LogIn.dart';
@@ -715,29 +716,34 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                     Positioned(
                                       right: 10,
                                       top: 3,
-                                      child: InkWell(
-                                        onTap: () {
-                                          favoriteController.toggleFavoriteC(
-                                            courseId.toString(),
+                                      child:    GetBuilder<FavoriteController>(
+                                        builder: (controller) {
+                                          final isFav =
+                                              controller.isFavoriteC[courseId
+                                                  .toString()] ??
+                                                  false;
+
+                                          return LikeButton(
+                                            size: 30,
+                                            isLiked: isFav,
+                                            likeBuilder: (bool isLiked) {
+                                              return Icon(
+                                                isLiked
+                                                    ? Icons.favorite
+                                                    : Icons
+                                                    .favorite_border_outlined,
+                                                color: Colors.red,
+                                                size: 30,
+                                              );
+                                            },
+                                            onTap: (bool isLiked) async {
+                                              controller.toggleFavoriteC(
+                                                courseId.toString(),
+                                              );
+                                              return !isLiked;
+                                            },
                                           );
                                         },
-                                        child: GetBuilder<FavoriteController>(
-                                          builder: (controller) {
-                                            final isFav =
-                                                controller.isFavoriteC[courseId
-                                                    .toString()] ??
-                                                    false;
-
-                                            return Icon(
-                                              isFav
-                                                  ? Icons.favorite
-                                                  : Icons
-                                                  .favorite_border_outlined,
-                                              size: 30,
-                                              color: Colors.red,
-                                            );
-                                          },
-                                        ),
                                       ),
                                     ),
                                     Center(

@@ -5,9 +5,11 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:learning_management_system/controller/FavoriteController.dart';
 import 'package:learning_management_system/view/CoursesLessons.dart';
 import 'package:learning_management_system/view/Favorites.dart';
 import 'package:learning_management_system/view/SubjectTeachers.dart';
+import 'package:like_button/like_button.dart';
 import '../controller/NetworkController.dart';
 import '../locale/LocaleController.dart';
 import '../services/SharedPrefs.dart';
@@ -64,6 +66,7 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> subscribedCourses = [];
   final Map<int, Uint8List> subscribedCoursesImages = {};
   List<Map<String, dynamic>> cachedSubscribedCourses = [];
+  late FavoriteController favoriteController ;
 
   @override
   void initState() {
@@ -74,6 +77,7 @@ class _HomePageState extends State<HomePage> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _initSharedPreferences().then((_) => _loadInitialData());
+    favoriteController = Get.put(FavoriteController());
   }
 
   Future<void> _initSharedPreferences() async {
@@ -1599,56 +1603,95 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                               child: Card(
-                                child: Column(
+                                child: Stack(
                                   children: [
-                                    Expanded(
-                                      flex: 3,
-                                      child:
-                                          imageBytes != null
-                                              ? Image.memory(
-                                                imageBytes,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  return Image.asset(
-                                                    ImageAssets.subject,
-                                                    height: 125,
-                                                    fit: BoxFit.cover,
-                                                  );
-                                                },
-                                              )
-                                              : Image.asset(
-                                                ImageAssets.subject,
-                                              ),
+                                    Positioned(
+                                      right: 10,
+                                      top: 3,
+                                      child:    GetBuilder<FavoriteController>(
+                                        builder: (controller) {
+                                          final isFav =
+                                              controller.isFavoriteC[recommendedCourses[i]["id"]
+                                                  .toString()] ??
+                                                  false;
+
+                                          return LikeButton(
+                                            size: 30,
+                                            isLiked: isFav,
+                                            likeBuilder: (bool isLiked) {
+                                              return Icon(
+                                                isLiked
+                                                    ? Icons.favorite
+                                                    : Icons
+                                                    .favorite_border_outlined,
+                                                color: Colors.red,
+                                                size: 30,
+                                              );
+                                            },
+                                            onTap: (bool isLiked) async {
+                                              controller.toggleFavoriteC(
+                                                recommendedCourses[i]["id"].toString(),
+                                              );
+                                              return !isLiked;
+                                            },
+                                          );
+                                        },
+                                      ),
                                     ),
-                                    SizedBox(height: 30),
-                                    Expanded(
-                                      flex: 1,
-                                      child: Text(
-                                        "${recommendedCourses[i]["name"]}".tr,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child:
+                                                imageBytes != null
+                                                    ? Image.memory(
+                                                      imageBytes,
+                                                      fit: BoxFit.fill,
+                                                      errorBuilder: (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) {
+                                                        return Image.asset(
+                                                          ImageAssets.subject,
+                                                          height: 125,
+                                                          fit: BoxFit.cover,
+                                                        );
+                                                      },
+                                                    )
+                                                    : Image.asset(
+                                                      ImageAssets.subject,
+                                                    ),
+                                          ),
+                                          SizedBox(height: 30),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              "${recommendedCourses[i]["name"]}".tr,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController.initialTheme ==
+                                                            Themes.customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -1775,56 +1818,95 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                               child: Card(
-                                child: Column(
+                                child: Stack(
                                   children: [
-                                    Expanded(
-                                      flex: 3,
-                                      child:
-                                          imageBytes != null
-                                              ? Image.memory(
-                                                imageBytes,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  return Image.asset(
-                                                    ImageAssets.subject,
-                                                    height: 125,
-                                                    fit: BoxFit.cover,
-                                                  );
-                                                },
-                                              )
-                                              : Image.asset(
-                                                ImageAssets.subject,
-                                              ),
+                                    Positioned(
+                                      right: 10,
+                                      top: 3,
+                                      child:    GetBuilder<FavoriteController>(
+                                        builder: (controller) {
+                                          final isFav =
+                                              controller.isFavoriteC[TopRatedCourses[i]["id"]
+                                                  .toString()] ??
+                                                  false;
+
+                                          return LikeButton(
+                                            size: 30,
+                                            isLiked: isFav,
+                                            likeBuilder: (bool isLiked) {
+                                              return Icon(
+                                                isLiked
+                                                    ? Icons.favorite
+                                                    : Icons
+                                                    .favorite_border_outlined,
+                                                color: Colors.red,
+                                                size: 30,
+                                              );
+                                            },
+                                            onTap: (bool isLiked) async {
+                                              controller.toggleFavoriteC(
+                                                TopRatedCourses[i]["id"].toString(),
+                                              );
+                                              return !isLiked;
+                                            },
+                                          );
+                                        },
+                                      ),
                                     ),
-                                    SizedBox(height: 30),
-                                    Expanded(
-                                      flex: 1,
-                                      child: Text(
-                                        "${TopRatedCourses[i]["name"]}".tr,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child:
+                                                imageBytes != null
+                                                    ? Image.memory(
+                                                      imageBytes,
+                                                      fit: BoxFit.fill,
+                                                      errorBuilder: (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) {
+                                                        return Image.asset(
+                                                          ImageAssets.subject,
+                                                          height: 125,
+                                                          fit: BoxFit.cover,
+                                                        );
+                                                      },
+                                                    )
+                                                    : Image.asset(
+                                                      ImageAssets.subject,
+                                                    ),
+                                          ),
+                                          SizedBox(height: 30),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              "${TopRatedCourses[i]["name"]}".tr,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController.initialTheme ==
+                                                            Themes.customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -1950,56 +2032,95 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                               child: Card(
-                                child: Column(
+                                child: Stack(
                                   children: [
-                                    Expanded(
-                                      flex: 3,
-                                      child:
-                                          imageBytes != null
-                                              ? Image.memory(
-                                                imageBytes,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  return Image.asset(
-                                                    ImageAssets.subject,
-                                                    height: 125,
-                                                    fit: BoxFit.cover,
-                                                  );
-                                                },
-                                              )
-                                              : Image.asset(
-                                                ImageAssets.subject,
-                                              ),
+                                    Positioned(
+                                      right: 10,
+                                      top: 3,
+                                      child:    GetBuilder<FavoriteController>(
+                                        builder: (controller) {
+                                          final isFav =
+                                              controller.isFavoriteC[recentCourses[i]["id"]
+                                                  .toString()] ??
+                                                  false;
+
+                                          return LikeButton(
+                                            size: 30,
+                                            isLiked: isFav,
+                                            likeBuilder: (bool isLiked) {
+                                              return Icon(
+                                                isLiked
+                                                    ? Icons.favorite
+                                                    : Icons
+                                                    .favorite_border_outlined,
+                                                color: Colors.red,
+                                                size: 30,
+                                              );
+                                            },
+                                            onTap: (bool isLiked) async {
+                                              controller.toggleFavoriteC(
+                                                recentCourses[i]["id"].toString(),
+                                              );
+                                              return !isLiked;
+                                            },
+                                          );
+                                        },
+                                      ),
                                     ),
-                                    SizedBox(height: 30),
-                                    Expanded(
-                                      flex: 1,
-                                      child: Text(
-                                        "${recentCourses[i]["name"]}".tr,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child:
+                                                imageBytes != null
+                                                    ? Image.memory(
+                                                      imageBytes,
+                                                      fit: BoxFit.fill,
+                                                      errorBuilder: (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) {
+                                                        return Image.asset(
+                                                          ImageAssets.subject,
+                                                          height: 125,
+                                                          fit: BoxFit.cover,
+                                                        );
+                                                      },
+                                                    )
+                                                    : Image.asset(
+                                                      ImageAssets.subject,
+                                                    ),
+                                          ),
+                                          SizedBox(height: 30),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              "${recentCourses[i]["name"]}".tr,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController.initialTheme ==
+                                                            Themes.customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -2126,56 +2247,95 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                               child: Card(
-                                child: Column(
+                                child: Stack(
                                   children: [
-                                    Expanded(
-                                      flex: 3,
-                                      child:
-                                          imageBytes != null
-                                              ? Image.memory(
-                                                imageBytes,
-                                                fit: BoxFit.fill,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  return Image.asset(
-                                                    ImageAssets.subject,
-                                                    height: 125,
-                                                    fit: BoxFit.cover,
-                                                  );
-                                                },
-                                              )
-                                              : Image.asset(
-                                                ImageAssets.subject,
-                                              ),
+                                    Positioned(
+                                      right: 10,
+                                      top: 3,
+                                      child:    GetBuilder<FavoriteController>(
+                                        builder: (controller) {
+                                          final isFav =
+                                              controller.isFavoriteC[subscribedCourses[i]["id"]
+                                                  .toString()] ??
+                                                  false;
+
+                                          return LikeButton(
+                                            size: 30,
+                                            isLiked: isFav,
+                                            likeBuilder: (bool isLiked) {
+                                              return Icon(
+                                                isLiked
+                                                    ? Icons.favorite
+                                                    : Icons
+                                                    .favorite_border_outlined,
+                                                color: Colors.red,
+                                                size: 30,
+                                              );
+                                            },
+                                            onTap: (bool isLiked) async {
+                                              controller.toggleFavoriteC(
+                                                subscribedCourses[i]["id"].toString(),
+                                              );
+                                              return !isLiked;
+                                            },
+                                          );
+                                        },
+                                      ),
                                     ),
-                                    SizedBox(height: 30),
-                                    Expanded(
-                                      flex: 1,
-                                      child: Text(
-                                        "${subscribedCourses[i]["name"]}".tr,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child:
+                                                imageBytes != null
+                                                    ? Image.memory(
+                                                      imageBytes,
+                                                      fit: BoxFit.fill,
+                                                      errorBuilder: (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) {
+                                                        return Image.asset(
+                                                          ImageAssets.subject,
+                                                          height: 125,
+                                                          fit: BoxFit.cover,
+                                                        );
+                                                      },
+                                                    )
+                                                    : Image.asset(
+                                                      ImageAssets.subject,
+                                                    ),
+                                          ),
+                                          SizedBox(height: 30),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              "${subscribedCourses[i]["name"]}".tr,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController.initialTheme ==
+                                                            Themes.customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],

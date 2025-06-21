@@ -4,6 +4,7 @@ import 'package:learning_management_system/controller/FavoriteController.dart';
 import 'package:learning_management_system/model/TFavoriteModel.dart';
 import 'package:learning_management_system/view/NavBar.dart';
 import 'package:get/get.dart';
+import 'package:like_button/like_button.dart';
 
 class ViewTFavoriteCard extends StatelessWidget {
   final TFavoriteModel tFavoriteModel;
@@ -22,29 +23,34 @@ class ViewTFavoriteCard extends StatelessWidget {
             Positioned(
               right: 10,
               top: 3,
-              child: InkWell(
-                onTap: () {
-                  favoriteController.toggleFavorite(
-                    tFavoriteModel.id.toString()
+              child: GetBuilder<FavoriteController>(
+                builder: (controller) {
+                  final isFav =
+                      controller.isFavorite[tFavoriteModel.id
+                          .toString()] ??
+                          false;
+
+                  return LikeButton(
+                    size: 30,
+                    isLiked: isFav,
+                    likeBuilder: (bool isLiked) {
+                      return Icon(
+                        isLiked
+                            ? Icons.favorite
+                            : Icons
+                            .favorite_border_outlined,
+                        color: Colors.red,
+                        size: 30,
+                      );
+                    },
+                    onTap: (bool isLiked) async {
+                      controller.toggleFavorite(
+                        tFavoriteModel.id.toString(),
+                      );
+                      return !isLiked;
+                    },
                   );
                 },
-                child: GetBuilder<FavoriteController>(
-                  builder: (controller) {
-                    final isFav =
-                        controller.isFavorite[tFavoriteModel.id
-                            .toString()] ??
-                            false;
-
-                    return Icon(
-                      isFav
-                          ? Icons.favorite
-                          : Icons
-                          .favorite_border_outlined,
-                      size: 30,
-                      color: Colors.red,
-                    );
-                  },
-                ),
               ),
             ),
             Center(
