@@ -66,7 +66,7 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> subscribedCourses = [];
   final Map<int, Uint8List> subscribedCoursesImages = {};
   List<Map<String, dynamic>> cachedSubscribedCourses = [];
-  late FavoriteController favoriteController ;
+  late FavoriteController favoriteController;
 
   @override
   void initState() {
@@ -1196,30 +1196,30 @@ class _HomePageState extends State<HomePage> {
       locale: localeController.initialLang,
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Favorites()),
-              );
-            },
-            icon: Icon(Icons.favorite),
-          ),
-          title: Text("Home Page".tr),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              onPressed: () {
-                showSearch(
-                  context: context,
-                  delegate: SearchCustom(subjects, subjectsImages),
-                );
-              },
-              icon: Icon(Icons.search_outlined),
-            ),
-          ],
-        ),
+        // appBar: AppBar(
+        //   leading: IconButton(
+        //     onPressed: () {
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(builder: (context) => Favorites()),
+        //       );
+        //     },
+        //     icon: Icon(Icons.favorite),
+        //   ),
+        //   title: Text("Home Page".tr),
+        //   centerTitle: true,
+        //   actions: [
+        //     IconButton(
+        //       onPressed: () {
+        //         showSearch(
+        //           context: context,
+        //           delegate: SearchCustom(subjects, subjectsImages),
+        //         );
+        //       },
+        //       icon: Icon(Icons.search_outlined),
+        //     ),
+        //   ],
+        // ),
         body:
             subjects.isEmpty
                 ? Center(
@@ -1243,133 +1243,62 @@ class _HomePageState extends State<HomePage> {
                     await networkController.checkConnectivityManually();
                     await getSubjectsData(subjectType);
                   },
-                  child: ListView(
-                    scrollDirection: Axis.vertical,
-                    physics: AlwaysScrollableScrollPhysics(),
+                  child: Column(
                     children: [
-                      SizedBox(height: 30),
-                      Center(
-                        child: ToggleButtons(
-                          isSelected: isSelected,
-                          direction: Axis.horizontal,
-                          constraints: BoxConstraints(
-                            minWidth: Get.width / 3,
-                            maxWidth: Get.width / 3,
-                          ),
-                          borderWidth: 3,
-                          borderRadius: BorderRadius.circular(25),
-                          borderColor:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                          selectedBorderColor:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                          fillColor:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                          selectedColor:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 210, 209, 224)
-                                  : Color.fromARGB(255, 40, 41, 61),
-                          onPressed: (int newIndex) {
-                            setState(() {
-                              for (
-                                int index = 0;
-                                index < isSelected.length;
-                                index++
-                              ) {
-                                isSelected[index] = index == newIndex;
-                              }
-                              isLiterary = newIndex == 1;
-                              subjectType =
-                                  isLiterary ? 'literary' : 'scientific';
-                              subjects =
-                                  subjectType == 'scientific'
-                                      ? scientificSubjects
-                                      : literarySubjects;
-                            });
-                            if (sharedPrefs.prefs.getBool('isConnected') ==
-                                true) {
-                              getSubjectsData(subjectType);
-                            }
-                          },
+                      Container(
+                        padding: EdgeInsets.only(top: 30),
+                        height: 100,
+                        color:
+                            themeController.initialTheme ==
+                                    Themes.customLightTheme
+                                ? Color.fromARGB(255, 210, 209, 224)
+                                : Color.fromARGB(255, 40, 41, 61),
+                        // color: Colors.red,
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  isSelected[0] = true;
-                                  isSelected[1] = false;
-                                  isLiterary = false;
-                                  subjectType = "scientific";
-                                  subjects = scientificSubjects;
-                                });
-                                if (sharedPrefs.prefs.getBool('isConnected') ==
-                                    true) {
-                                  getSubjectsData(subjectType);
-                                }
-                              },
-                              child: Text(
-                                "Scientific".tr,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                    fontSize: 18,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? isSelected[0]
-                                              ? Color.fromARGB(
-                                                255,
-                                                210,
-                                                209,
-                                                224,
-                                              )
-                                              : Color.fromARGB(255, 40, 41, 61)
-                                          : isSelected[0]
-                                          ? Color.fromARGB(255, 40, 41, 61)
-                                          : Color.fromARGB(255, 210, 209, 224),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  Get.to(Favorites());
+                                },
+                                icon: Icon(Icons.favorite, color: Colors.red),
+                              ),
+                            ),
+                            Expanded(
+                              child: Center(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    right: Get.width / 40,
+                                  ),
+                                  child: Text(
+                                    "Home Page".tr,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 23,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  isSelected[1] = true;
-                                  isSelected[0] = false;
-                                  isLiterary = true;
-                                  subjectType = "literary";
-                                  subjects = literarySubjects;
-                                });
-                                if (sharedPrefs.prefs.getBool('isConnected') ==
-                                    true) {
-                                  getSubjectsData(subjectType);
-                                }
-                              },
-                              child: Text(
-                                "Literary".tr,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 18,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? isSelected[1]
-                                              ? Color.fromARGB(
-                                                255,
-                                                210,
-                                                209,
-                                                224,
-                                              )
-                                              : Color.fromARGB(255, 40, 41, 61)
-                                          : isSelected[1]
-                                          ? Color.fromARGB(255, 40, 41, 61)
-                                          : Color.fromARGB(255, 210, 209, 224),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  showSearch(
+                                    context: context,
+                                    delegate: SearchCustom(
+                                      subjects,
+                                      subjectsImages,
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.search_outlined,
+                                  color: Color.fromARGB(255, 210, 209, 224),
                                 ),
                               ),
                             ),
@@ -1377,94 +1306,174 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       SizedBox(height: 30),
-                      Center(
-                        child: Text(
-                          "Subjects".tr,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.normal,
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.only(left: 20),
+                          decoration: BoxDecoration(
                             color:
                                 themeController.initialTheme ==
                                         Themes.customLightTheme
                                     ? Color.fromARGB(255, 40, 41, 61)
                                     : Color.fromARGB(255, 210, 209, 224),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30),
+                            ),
                           ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 200,
-                        child: GridView.builder(
-                          scrollDirection: Axis.horizontal,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 1,
-                              ),
-                          controller: scrollController,
-                          itemCount: subjects.length,
-                          itemBuilder: (context, i) {
-                            int uniId = subjects[i]["id"];
-                            Uint8List? imageBytes = subjectsImages[uniId];
-
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => SubjectTeachers(
-                                          SubjectData: subjects[i],
-                                        ),
+                          child: ListView(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.vertical,
+                            physics: AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(height: 20),
+                              Center(
+                                child: ToggleButtons(
+                                  isSelected: isSelected,
+                                  direction: Axis.horizontal,
+                                  constraints: BoxConstraints(
+                                    minWidth: Get.width / 3,
+                                    maxWidth: Get.width / 3,
                                   ),
-                                );
-                              },
-                              child: Card(
-                                child: Column(
+                                  borderWidth: 3,
+                                  borderRadius: BorderRadius.circular(25),
+                                  borderColor:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                  selectedBorderColor:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                  fillColor:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                  selectedColor:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                  onPressed: (int newIndex) {
+                                    setState(() {
+                                      for (
+                                        int index = 0;
+                                        index < isSelected.length;
+                                        index++
+                                      ) {
+                                        isSelected[index] = index == newIndex;
+                                      }
+                                      isLiterary = newIndex == 1;
+                                      subjectType =
+                                          isLiterary
+                                              ? 'literary'
+                                              : 'scientific';
+                                      subjects =
+                                          subjectType == 'scientific'
+                                              ? scientificSubjects
+                                              : literarySubjects;
+                                    });
+                                    if (sharedPrefs.prefs.getBool(
+                                          'isConnected',
+                                        ) ==
+                                        true) {
+                                      getSubjectsData(subjectType);
+                                    }
+                                  },
                                   children: [
-                                    Expanded(
-                                      flex: 3,
-                                      child:
-                                      // imageBytes != null
-                                      //     ? Image.memory(
-                                      //       imageBytes,
-                                      //       fit: BoxFit.fill,
-                                      //       errorBuilder: (
-                                      //         context,
-                                      //         error,
-                                      //         stackTrace,
-                                      //       ) {
-                                      //         return Image.asset(
-                                      //           ImageAssets.subject,
-                                      //           height: 125,
-                                      //           fit: BoxFit.cover,
-                                      //         );
-                                      //       },
-                                      //     )
-                                      //     : Image.asset(
-                                      //       ImageAssets.subject,
-                                      //     ),
-                                      subjects[i]["image"] != null ?
-                                      CachedNetworkImage(
-                                        imageUrl:
-                                            "$mainIP/${subjects[i]["image"]}",
-                                      )    : Image.asset(
-                                        ImageAssets.subject,
-                                      ),
-                                    ),
-                                    SizedBox(height: 30),
-                                    Expanded(
-                                      flex: 1,
+                                    TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          isSelected[0] = true;
+                                          isSelected[1] = false;
+                                          isLiterary = false;
+                                          subjectType = "scientific";
+                                          subjects = scientificSubjects;
+                                        });
+                                        if (sharedPrefs.prefs.getBool(
+                                              'isConnected',
+                                            ) ==
+                                            true) {
+                                          getSubjectsData(subjectType);
+                                        }
+                                      },
                                       child: Text(
-                                        "${subjects[i]["name"]}".tr,
+                                        "Scientific".tr,
                                         style: TextStyle(
-                                          fontSize: 16,
                                           fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
+                                          fontSize: 18,
                                           color:
                                               themeController.initialTheme ==
                                                       Themes.customLightTheme
+                                                  ? isSelected[0]
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
+                                                  : isSelected[0]
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  ),
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          isSelected[1] = true;
+                                          isSelected[0] = false;
+                                          isLiterary = true;
+                                          subjectType = "literary";
+                                          subjects = literarySubjects;
+                                        });
+                                        if (sharedPrefs.prefs.getBool(
+                                              'isConnected',
+                                            ) ==
+                                            true) {
+                                          getSubjectsData(subjectType);
+                                        }
+                                      },
+                                      child: Text(
+                                        "Literary".tr,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 18,
+                                          color:
+                                              themeController.initialTheme ==
+                                                      Themes.customLightTheme
+                                                  ? isSelected[0]
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      )
+                                                  : isSelected[0]
                                                   ? Color.fromARGB(
                                                     255,
                                                     40,
@@ -1483,869 +1492,1447 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-
-                      SizedBox(height: 30),
-                      Center(
-                        child: Text(
-                          "Recommended Courses".tr,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.normal,
-                            color:
-                                themeController.initialTheme ==
-                                        Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 200,
-                        child: GridView.builder(
-                          scrollDirection: Axis.horizontal,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 1,
-                              ),
-                          controller: scrollController,
-                          itemCount: recommendedCourses.length + 1,
-                          itemBuilder: (context, i) {
-                            if (i == recommendedCourses.length) {
-                              return InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => RecommendedCourses(),
-                                    ),
-                                  );
-                                },
-                                child: Card(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        child: Icon(
-                                          Icons.arrow_circle_right_outlined,
-                                          size: 40,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                      ),
-                                      Text(
-                                        "More".tr,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                      ),
-                                    ],
+                              SizedBox(height: 30),
+                              Center(
+                                child: Text(
+                                  "Subjects".tr,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FontStyle.normal,
+                                    color:
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                   ),
                                 ),
-                              );
-                            }
+                              ),
+                              SizedBox(height: 10),
+                              Container(
+                                height: 120,
+                                child: GridView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 1,
+                                      ),
+                                  controller: scrollController,
+                                  itemCount: subjects.length,
+                                  itemBuilder: (context, i) {
+                                    int uniId = subjects[i]["id"];
+                                    Uint8List? imageBytes =
+                                        subjectsImages[uniId];
 
-                            int uniId = recommendedCourses[i]["id"];
-                            Uint8List? imageBytes =
-                                recommendedCoursesImages[uniId];
-
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => CoursesLessons(
-                                          CoursesData: recommendedCourses[i],
-                                          index: i,
+                                    return InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => SubjectTeachers(
+                                                  SubjectData: subjects[i],
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.only(
+                                          right: 11,
+                                          left: 1,
                                         ),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      right: 10,
-                                      top: 3,
-                                      child:    GetBuilder<FavoriteController>(
-                                        builder: (controller) {
-                                          final isFav =
-                                              controller.isFavoriteC[recommendedCourses[i]["id"]
-                                                  .toString()] ??
-                                                  false;
+                                        padding: EdgeInsets.all(10),
+                                        height: 120,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          // color: Colors.red,
+                                          border: Border.all(
+                                            color: Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Expanded(
+                                              flex: 3,
+                                              child:
+                                                  // imageBytes != null
+                                                  //     ? Image.memory(
+                                                  //       imageBytes,
+                                                  //       fit: BoxFit.fill,
+                                                  //       errorBuilder: (
+                                                  //         context,
+                                                  //         error,
+                                                  //         stackTrace,
+                                                  //       ) {
+                                                  //         return Image.asset(
+                                                  //           ImageAssets.subject,
+                                                  //           height: 125,
+                                                  //           fit: BoxFit.cover,
+                                                  //         );
+                                                  //       },
+                                                  //     )
+                                                  //     : Image.asset(
+                                                  //       ImageAssets.subject,
+                                                  //     ),
+                                                  subjects[i]["image"] != null
+                                                      // ? CachedNetworkImage(
+                                                      //   imageUrl:
+                                                      //       "$mainIP/${subjects[i]["image"]}",
+                                                      // )
+                                                      ? Image.asset(
+                                                        ImageAssets.book,
+                                                      )
+                                                      : Image.asset(
+                                                        ImageAssets.book,
+                                                      ),
+                                            ),
+                                            SizedBox(height: 10),
+                                            Expanded(
+                                              flex: 1,
+                                              child: Text(
+                                                "${subjects[i]["name"]}".tr,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400,
+                                                  fontStyle: FontStyle.normal,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
 
-                                          return LikeButton(
-                                            size: 30,
-                                            isLiked: isFav,
-                                            likeBuilder: (bool isLiked) {
-                                              return Icon(
-                                                isLiked
-                                                    ? Icons.favorite
-                                                    : Icons
-                                                    .favorite_border_outlined,
-                                                color: Colors.red,
-                                                size: 30,
-                                              );
-                                            },
-                                            onTap: (bool isLiked) async {
-                                              controller.toggleFavoriteC(
-                                                recommendedCourses[i]["id"].toString(),
-                                              );
-                                              return !isLiked;
-                                            },
+                              SizedBox(height: 30),
+                              Center(
+                                child: Text(
+                                  "Recommended Courses".tr,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FontStyle.normal,
+                                    color:
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Container(
+                                height: 180,
+                                child: GridView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 1,
+                                      ),
+                                  controller: scrollController,
+                                  itemCount: recommendedCourses.length + 1,
+                                  itemBuilder: (context, i) {
+                                    if (i == recommendedCourses.length) {
+                                      return InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      RecommendedCourses(),
+                                            ),
                                           );
                                         },
-                                      ),
-                                    ),
-                                    Center(
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            flex: 3,
-                                            child:
-                                                imageBytes != null
-                                                    ? Image.memory(
-                                                      imageBytes,
-                                                      fit: BoxFit.fill,
-                                                      errorBuilder: (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) {
-                                                        return Image.asset(
-                                                          ImageAssets.subject,
-                                                          height: 125,
-                                                          fit: BoxFit.cover,
-                                                        );
-                                                      },
-                                                    )
-                                                    : Image.asset(
-                                                      ImageAssets.subject,
-                                                    ),
+                                        child: Card(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                child: Icon(
+                                                  Icons
+                                                      .arrow_circle_right_outlined,
+                                                  size: 40,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                ),
+                                              ),
+                                              Text(
+                                                "More".tr,
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w400,
+                                                  fontStyle: FontStyle.normal,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          SizedBox(height: 30),
-                                          Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              "${recommendedCourses[i]["name"]}".tr,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                                fontStyle: FontStyle.normal,
-                                                color:
-                                                    themeController.initialTheme ==
-                                                            Themes.customLightTheme
-                                                        ? Color.fromARGB(
+                                        ),
+                                      );
+                                    }
+
+                                    int uniId = recommendedCourses[i]["id"];
+                                    Uint8List? imageBytes =
+                                        recommendedCoursesImages[uniId];
+
+                                    return InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => CoursesLessons(
+                                                  CoursesData:
+                                                      recommendedCourses[i],
+                                                  index: i,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.only(
+                                          left: 1,
+                                          right: 10,
+                                        ),
+                                        // padding: EdgeInsets.only(left: 10,right: 10),
+                                        padding: EdgeInsets.all(10),
+                                        height: 130,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              top: 5,
+                                              left: 5,
+                                              right: 5,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  recommendedCourses[i]["rating"] !=
+                                                          null
+                                                      ? Container(
+                                                        height: 23,
+                                                        padding:
+                                                            EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: Color(
+                                                            0xFFCCF2E0,
+                                                          ),
+                                                          border: Border.all(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                ),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.star,
+                                                              color: Color(
+                                                                0XFFE6D827,
+                                                              ),
+                                                              size: 20,
+                                                            ),
+                                                            SizedBox(width: 2),
+                                                            Text(
+                                                              // "${recommendedCourses[i]["rating"]}",
+                                                              double.parse(
+                                                                recommendedCourses[i]["rating"]
+                                                                    .toString(),
+                                                              ).toStringAsFixed(
+                                                                1,
+                                                              ),
+                                                              style: TextStyle(
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .clip,
+                                                                fontSize: 16,
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                                                            Themes.customLightTheme
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                      : SizedBox.shrink(),
+
+                                                  // Like button on the right
+                                                  GetBuilder<
+                                                    FavoriteController
+                                                  >(
+                                                    builder: (controller) {
+                                                      final isFav =
+                                                          controller
+                                                              .isFavoriteC[recommendedCourses[i]["id"]
+                                                              .toString()] ??
+                                                          false;
+
+                                                      return LikeButton(
+                                                        size: 30,
+                                                        isLiked: isFav,
+                                                        likeBuilder: (
+                                                          bool isLiked,
+                                                        ) {
+                                                          return Icon(
+                                                            isLiked
+                                                                ? Icons.favorite
+                                                                : Icons
+                                                                    .favorite_border_outlined,
+                                                            color: Colors.red,
+                                                            size: 30,
+                                                          );
+                                                        },
+                                                        onTap: (
+                                                          bool isLiked,
+                                                        ) async {
+                                                          controller
+                                                              .toggleFavoriteC(
+                                                                recommendedCourses[i]["id"]
+                                                                    .toString(),
+                                                              );
+                                                          return !isLiked;
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  const SizedBox(height: 36),
+                                                  imageBytes != null
+                                                      ? Image.asset(
+                                                        ImageAssets.book,
+                                                        height: 90,
+                                                        width: 90,
+                                                      )
+                                                      : Image.asset(
+                                                        ImageAssets.subject,
+                                                      ),
+
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Text(
+                                                      "${recommendedCourses[i]["name"]}"
+                                                          .tr,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            themeController
+                                                                        .initialTheme ==
+                                                                    Themes
+                                                                        .customLightTheme
+                                                                ? Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(height: 30),
+                              Center(
+                                child: Text(
+                                  "Top Rated Courses".tr,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FontStyle.normal,
+                                    color:
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Container(
+                                height: 180,
+                                child: GridView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 1,
+                                      ),
+                                  controller: scrollController,
+                                  itemCount: TopRatedCourses.length + 1,
+                                  itemBuilder: (context, i) {
+                                    if (i == TopRatedCourses.length) {
+                                      return InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => RatedCourses(
+                                                    // CourseData: TopRatedCourses[i]
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        child: Card(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                child: Icon(
+                                                  Icons
+                                                      .arrow_circle_right_outlined,
+                                                  size: 40,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                ),
+                                              ),
+                                              Text(
+                                                "More".tr,
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w400,
+                                                  fontStyle: FontStyle.normal,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    int uniId = TopRatedCourses[i]["id"];
+                                    Uint8List? imageBytes =
+                                        TopRatedCoursesImages[uniId];
+
+                                    return InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => CoursesLessons(
+                                                  CoursesData:
+                                                      recommendedCourses[i],
+                                                  index: i,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.only(
+                                          left: 1,
+                                          right: 10,
+                                        ),
+                                        // padding: EdgeInsets.only(left: 10,right: 10),
+                                        padding: EdgeInsets.all(10),
+                                        height: 130,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              top: 5,
+                                              left: 5,
+                                              right: 5,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  TopRatedCourses[i]["rating"] !=
+                                                          null
+                                                      ? Container(
+                                                        height: 23,
+                                                        padding:
+                                                            EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: Color(
+                                                            0xFFCCF2E0,
+                                                          ),
+                                                          border: Border.all(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                ),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.star,
+                                                              color: Color(
+                                                                0XFFE6D827,
+                                                              ),
+                                                              size: 20,
+                                                            ),
+                                                            SizedBox(width: 2),
+                                                            Text(
+                                                              // "${recommendedCourses[i]["rating"]}",
+                                                              double.parse(
+                                                                TopRatedCourses[i]["rating"]
+                                                                    .toString(),
+                                                              ).toStringAsFixed(
+                                                                1,
+                                                              ),
+                                                              style: TextStyle(
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .clip,
+                                                                fontSize: 16,
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                                                            Themes.customLightTheme
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                      : SizedBox.shrink(),
+                                                  SizedBox.shrink(),
+
+                                                  GetBuilder<
+                                                    FavoriteController
+                                                  >(
+                                                    builder: (controller) {
+                                                      final isFav =
+                                                          controller
+                                                              .isFavoriteC[TopRatedCourses[i]["id"]
+                                                              .toString()] ??
+                                                          false;
+
+                                                      return LikeButton(
+                                                        size: 30,
+                                                        isLiked: isFav,
+                                                        likeBuilder: (
+                                                          bool isLiked,
+                                                        ) {
+                                                          return Icon(
+                                                            isLiked
+                                                                ? Icons.favorite
+                                                                : Icons
+                                                                    .favorite_border_outlined,
+                                                            color: Colors.red,
+                                                            size: 30,
+                                                          );
+                                                        },
+                                                        onTap: (
+                                                          bool isLiked,
+                                                        ) async {
+                                                          controller
+                                                              .toggleFavoriteC(
+                                                                TopRatedCourses[i]["id"]
+                                                                    .toString(),
+                                                              );
+                                                          return !isLiked;
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  const SizedBox(height: 35),
+                                                  imageBytes != null
+                                                      ? Image.asset(
+                                                        ImageAssets.book,
+                                                        height: 90,
+                                                        width: 90,
+                                                      )
+                                                      : Image.asset(
+                                                        ImageAssets.subject,
+                                                      ),
+
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Text(
+                                                      "${TopRatedCourses[i]["name"]}"
+                                                          .tr,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            themeController
+                                                                        .initialTheme ==
+                                                                    Themes
+                                                                        .customLightTheme
+                                                                ? Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(height: 30),
+                              Center(
+                                child: Text(
+                                  "Most Recent Courses".tr,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FontStyle.normal,
+                                    color:
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Container(
+                                height: 180,
+                                child: GridView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 1,
+                                      ),
+                                  controller: scrollController,
+                                  itemCount: recentCourses.length + 1,
+                                  itemBuilder: (context, i) {
+                                    if (i == recentCourses.length) {
+                                      return InkWell(
+                                        onTap: () {
+                                          //   Navigator.push(
+                                          //   context,
+                                          //   MaterialPageRoute(
+                                          //     builder:
+                                          //         (context) => RatedCourses(
+                                          //           // CourseData: TopRatedCourses[i]
+                                          //         ),
+                                          //   ),
+                                          // );
+                                        },
+                                        child: Card(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                child: Icon(
+                                                  Icons
+                                                      .arrow_circle_right_outlined,
+                                                  size: 40,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                ),
+                                              ),
+                                              Text(
+                                                "More".tr,
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w400,
+                                                  fontStyle: FontStyle.normal,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    int uniId = recentCourses[i]["id"];
+                                    Uint8List? imageBytes =
+                                        recentCoursesImages[uniId];
+
+                                    return InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => CoursesLessons(
+                                                  CoursesData: recentCourses[i],
+                                                  index: i,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.only(
+                                          left: 1,
+                                          right: 10,
+                                        ),
+                                        // padding: EdgeInsets.only(left: 10,right: 10),
+                                        padding: EdgeInsets.all(10),
+                                        height: 130,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              top: 5,
+                                              left: 5,
+                                              right: 5,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  recentCourses[i]["rating"] != null?
+
+                                                  Container(
+                                                    height: 23,
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(0xFFCCF2E0),
+                                                      border: Border.all(
+                                                        color: Color.fromARGB(
                                                           255,
                                                           40,
                                                           41,
                                                           61,
-                                                        )
-                                                        : Color.fromARGB(
-                                                          255,
-                                                          210,
-                                                          209,
-                                                          224,
                                                         ),
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
+                                                          ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.star,
+                                                          color: Color(
+                                                            0XFFE6D827,
+                                                          ),
+                                                          size: 20,
+                                                        ),
+                                                        SizedBox(width: 2),
+                                                        Text(
+                                                          // "${recentCourses[i]["rating"]}",
+                                                          double.parse(recentCourses[i]["rating"].toString()).toStringAsFixed(1),
+                                                          style: TextStyle(
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .clip,
+                                                            fontSize: 16,
+                                                            color:
+                                                                themeController
+                                                                            .initialTheme ==
+                                                                        Themes
+                                                                            .customLightTheme
+                                                                    ? Color.fromARGB(
+                                                                      255,
+                                                                      210,
+                                                                      209,
+                                                                      224,
+                                                                    )
+                                                                    : Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ):                                                    SizedBox.shrink(),
+                                          SizedBox.shrink(),
+
+                                                  GetBuilder<
+                                                    FavoriteController
+                                                  >(
+                                                    builder: (controller) {
+                                                      final isFav =
+                                                          controller
+                                                              .isFavoriteC[recentCourses[i]["id"]
+                                                              .toString()] ??
+                                                          false;
+
+                                                      return LikeButton(
+                                                        size: 30,
+                                                        isLiked: isFav,
+                                                        likeBuilder: (
+                                                          bool isLiked,
+                                                        ) {
+                                                          return Icon(
+                                                            isLiked
+                                                                ? Icons.favorite
+                                                                : Icons
+                                                                    .favorite_border_outlined,
+                                                            color: Colors.red,
+                                                            size: 30,
+                                                          );
+                                                        },
+                                                        onTap: (
+                                                          bool isLiked,
+                                                        ) async {
+                                                          controller
+                                                              .toggleFavoriteC(
+                                                                recentCourses[i]["id"]
+                                                                    .toString(),
+                                                              );
+                                                          return !isLiked;
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 30),
-                      Center(
-                        child: Text(
-                          "Top Rated Courses".tr,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.normal,
-                            color:
-                                themeController.initialTheme ==
-                                        Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 200,
-                        child: GridView.builder(
-                          scrollDirection: Axis.horizontal,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 1,
-                              ),
-                          controller: scrollController,
-                          itemCount: TopRatedCourses.length + 1,
-                          itemBuilder: (context, i) {
-                            if (i == TopRatedCourses.length) {
-                              return InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => RatedCourses(
-                                            // CourseData: TopRatedCourses[i]
-                                          ),
-                                    ),
-                                  );
-                                },
-                                child: Card(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        child: Icon(
-                                          Icons.arrow_circle_right_outlined,
-                                          size: 40,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                      ),
-                                      Text(
-                                        "More".tr,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
+                                            Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  const SizedBox(height: 34),
+                                                  imageBytes != null
+                                                      ? Image.asset(
+                                                        ImageAssets.book,
+                                                        height: 90,
+                                                        width: 90,
+                                                      )
+                                                      : Image.asset(
+                                                        ImageAssets.subject,
+                                                      ),
 
-                            int uniId = TopRatedCourses[i]["id"];
-                            Uint8List? imageBytes =
-                                TopRatedCoursesImages[uniId];
-
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => CoursesLessons(
-                                          CoursesData: recommendedCourses[i],
-                                          index: i,
-                                        ),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      right: 10,
-                                      top: 3,
-                                      child:    GetBuilder<FavoriteController>(
-                                        builder: (controller) {
-                                          final isFav =
-                                              controller.isFavoriteC[TopRatedCourses[i]["id"]
-                                                  .toString()] ??
-                                                  false;
-
-                                          return LikeButton(
-                                            size: 30,
-                                            isLiked: isFav,
-                                            likeBuilder: (bool isLiked) {
-                                              return Icon(
-                                                isLiked
-                                                    ? Icons.favorite
-                                                    : Icons
-                                                    .favorite_border_outlined,
-                                                color: Colors.red,
-                                                size: 30,
-                                              );
-                                            },
-                                            onTap: (bool isLiked) async {
-                                              controller.toggleFavoriteC(
-                                                TopRatedCourses[i]["id"].toString(),
-                                              );
-                                              return !isLiked;
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    Center(
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            flex: 3,
-                                            child:
-                                                imageBytes != null
-                                                    ? Image.memory(
-                                                      imageBytes,
-                                                      fit: BoxFit.fill,
-                                                      errorBuilder: (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) {
-                                                        return Image.asset(
-                                                          ImageAssets.subject,
-                                                          height: 125,
-                                                          fit: BoxFit.cover,
-                                                        );
-                                                      },
-                                                    )
-                                                    : Image.asset(
-                                                      ImageAssets.subject,
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Text(
+                                                      "${recentCourses[i]["name"]}"
+                                                          .tr,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            themeController
+                                                                        .initialTheme ==
+                                                                    Themes
+                                                                        .customLightTheme
+                                                                ? Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                ),
+                                                      ),
                                                     ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(height: 30),
+                              Center(
+                                child: Text(
+                                  "Subscribed Courses".tr,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FontStyle.normal,
+                                    color:
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Container(
+                                height: 180,
+                                child: GridView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 1,
+                                      ),
+                                  controller: scrollController,
+                                  itemCount: subscribedCourses.length + 1,
+                                  itemBuilder: (context, i) {
+                                    if (i == subscribedCourses.length) {
+                                      return InkWell(
+                                        onTap: () {
+                                          //   Navigator.push(
+                                          //   context,
+                                          //   MaterialPageRoute(
+                                          //     builder:
+                                          //         (context) => RatedCourses(
+                                          //           // CourseData: TopRatedCourses[i]
+                                          //         ),
+                                          //   ),
+                                          // );
+                                        },
+                                        child: Card(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                child: Icon(
+                                                  Icons
+                                                      .arrow_circle_right_outlined,
+                                                  size: 40,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                ),
+                                              ),
+                                              Text(
+                                                "More".tr,
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w400,
+                                                  fontStyle: FontStyle.normal,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          SizedBox(height: 30),
-                                          Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              "${TopRatedCourses[i]["name"]}".tr,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                                fontStyle: FontStyle.normal,
-                                                color:
-                                                    themeController.initialTheme ==
-                                                            Themes.customLightTheme
-                                                        ? Color.fromARGB(
+                                        ),
+                                      );
+                                    }
+
+                                    int uniId = subscribedCourses[i]["id"];
+                                    Uint8List? imageBytes =
+                                        subscribedCoursesImages[uniId];
+
+                                    return InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => CoursesLessons(
+                                                  CoursesData:
+                                                      subscribedCourses[i],
+                                                  index: i,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.only(
+                                          left: 1,
+                                          right: 10,
+                                        ),
+                                        // padding: EdgeInsets.only(left: 10,right: 10),
+                                        padding: EdgeInsets.all(10),
+                                        height: 130,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              top: 5,
+                                              left: 5,
+                                              right: 5,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                                children: [
+                                                  subscribedCourses[i]["rating"] != null?
+
+                                                  Container(
+                                                    height: 23,
+                                                    padding:
+                                                    EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(0xFFCCF2E0),
+                                                      border: Border.all(
+                                                        color: Color.fromARGB(
                                                           255,
                                                           40,
                                                           41,
                                                           61,
-                                                        )
-                                                        : Color.fromARGB(
-                                                          255,
-                                                          210,
-                                                          209,
-                                                          224,
                                                         ),
+                                                      ),
+                                                      borderRadius:
+                                                      BorderRadius.circular(
+                                                        10,
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                      MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.star,
+                                                          color: Color(
+                                                            0XFFE6D827,
+                                                          ),
+                                                          size: 20,
+                                                        ),
+                                                        SizedBox(width: 2),
+                                                        Text(
+                                                          // "${subscribedCourses[i]["rating"]}",
+                                                          double.parse(subscribedCourses[i]["rating"].toString()).toStringAsFixed(1),
+                                                          style: TextStyle(
+                                                            overflow:
+                                                            TextOverflow
+                                                                .clip,
+                                                            fontSize: 16,
+                                                            color:
+                                                            themeController
+                                                                .initialTheme ==
+                                                                Themes
+                                                                    .customLightTheme
+                                                                ? Color.fromARGB(
+                                                              255,
+                                                              210,
+                                                              209,
+                                                              224,
+                                                            )
+                                                                : Color.fromARGB(
+                                                              255,
+                                                              40,
+                                                              41,
+                                                              61,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ):                                                    SizedBox.shrink(),
+                                                  SizedBox.shrink(),
+
+                                                  GetBuilder<
+                                                      FavoriteController
+                                                  >(
+                                                    builder: (controller) {
+                                                      final isFav =
+                                                          controller
+                                                              .isFavoriteC[subscribedCourses[i]["id"]
+                                                              .toString()] ??
+                                                              false;
+
+                                                      return LikeButton(
+                                                        size: 30,
+                                                        isLiked: isFav,
+                                                        likeBuilder: (
+                                                            bool isLiked,
+                                                            ) {
+                                                          return Icon(
+                                                            isLiked
+                                                                ? Icons.favorite
+                                                                : Icons
+                                                                .favorite_border_outlined,
+                                                            color: Colors.red,
+                                                            size: 30,
+                                                          );
+                                                        },
+                                                        onTap: (
+                                                            bool isLiked,
+                                                            ) async {
+                                                          controller
+                                                              .toggleFavoriteC(
+                                                            subscribedCourses[i]["id"]
+                                                                .toString(),
+                                                          );
+                                                          return !isLiked;
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                            Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  const SizedBox(height: 34),
+                                                  imageBytes != null
+                                                      ? Image.asset(
+                                                        ImageAssets.book,
+                                                        height: 90,
+                                                        width: 90,
+                                                      )
+                                                      : Image.asset(
+                                                        ImageAssets.subject,
+                                                      ),
+
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Text(
+                                                      "${subscribedCourses[i]["name"]}"
+                                                          .tr,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            themeController
+                                                                        .initialTheme ==
+                                                                    Themes
+                                                                        .customLightTheme
+                                                                ? Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 30),
-                      Center(
-                        child: Text(
-                          "Most Recent Courses".tr,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.normal,
-                            color:
-                                themeController.initialTheme ==
-                                        Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
+                              SizedBox(height: 30),
+                            ],
                           ),
                         ),
                       ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 200,
-                        child: GridView.builder(
-                          scrollDirection: Axis.horizontal,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 1,
-                              ),
-                          controller: scrollController,
-                          itemCount: recentCourses.length + 1,
-                          itemBuilder: (context, i) {
-                            if (i == recentCourses.length) {
-                              return InkWell(
-                                onTap: () {
-                                  //   Navigator.push(
-                                  //   context,
-                                  //   MaterialPageRoute(
-                                  //     builder:
-                                  //         (context) => RatedCourses(
-                                  //           // CourseData: TopRatedCourses[i]
-                                  //         ),
-                                  //   ),
-                                  // );
-                                },
-                                child: Card(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        child: Icon(
-                                          Icons.arrow_circle_right_outlined,
-                                          size: 40,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                      ),
-                                      Text(
-                                        "More".tr,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-
-                            int uniId = recentCourses[i]["id"];
-                            Uint8List? imageBytes = recentCoursesImages[uniId];
-
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => CoursesLessons(
-                                          CoursesData: recentCourses[i],
-                                          index: i,
-                                        ),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      right: 10,
-                                      top: 3,
-                                      child:    GetBuilder<FavoriteController>(
-                                        builder: (controller) {
-                                          final isFav =
-                                              controller.isFavoriteC[recentCourses[i]["id"]
-                                                  .toString()] ??
-                                                  false;
-
-                                          return LikeButton(
-                                            size: 30,
-                                            isLiked: isFav,
-                                            likeBuilder: (bool isLiked) {
-                                              return Icon(
-                                                isLiked
-                                                    ? Icons.favorite
-                                                    : Icons
-                                                    .favorite_border_outlined,
-                                                color: Colors.red,
-                                                size: 30,
-                                              );
-                                            },
-                                            onTap: (bool isLiked) async {
-                                              controller.toggleFavoriteC(
-                                                recentCourses[i]["id"].toString(),
-                                              );
-                                              return !isLiked;
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    Center(
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            flex: 3,
-                                            child:
-                                                imageBytes != null
-                                                    ? Image.memory(
-                                                      imageBytes,
-                                                      fit: BoxFit.fill,
-                                                      errorBuilder: (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) {
-                                                        return Image.asset(
-                                                          ImageAssets.subject,
-                                                          height: 125,
-                                                          fit: BoxFit.cover,
-                                                        );
-                                                      },
-                                                    )
-                                                    : Image.asset(
-                                                      ImageAssets.subject,
-                                                    ),
-                                          ),
-                                          SizedBox(height: 30),
-                                          Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              "${recentCourses[i]["name"]}".tr,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                                fontStyle: FontStyle.normal,
-                                                color:
-                                                    themeController.initialTheme ==
-                                                            Themes.customLightTheme
-                                                        ? Color.fromARGB(
-                                                          255,
-                                                          40,
-                                                          41,
-                                                          61,
-                                                        )
-                                                        : Color.fromARGB(
-                                                          255,
-                                                          210,
-                                                          209,
-                                                          224,
-                                                        ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 30),
-                      Center(
-                        child: Text(
-                          "Subscribed Courses".tr,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.normal,
-                            color:
-                                themeController.initialTheme ==
-                                        Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 200,
-                        child: GridView.builder(
-                          scrollDirection: Axis.horizontal,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 1,
-                              ),
-                          controller: scrollController,
-                          itemCount: subscribedCourses.length + 1,
-                          itemBuilder: (context, i) {
-                            if (i == subscribedCourses.length) {
-                              return InkWell(
-                                onTap: () {
-                                  //   Navigator.push(
-                                  //   context,
-                                  //   MaterialPageRoute(
-                                  //     builder:
-                                  //         (context) => RatedCourses(
-                                  //           // CourseData: TopRatedCourses[i]
-                                  //         ),
-                                  //   ),
-                                  // );
-                                },
-                                child: Card(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        child: Icon(
-                                          Icons.arrow_circle_right_outlined,
-                                          size: 40,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                      ),
-                                      Text(
-                                        "More".tr,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.normal,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-
-                            int uniId = subscribedCourses[i]["id"];
-                            Uint8List? imageBytes =
-                                subscribedCoursesImages[uniId];
-
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => CoursesLessons(
-                                          CoursesData: subscribedCourses[i],
-                                          index: i,
-                                        ),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      right: 10,
-                                      top: 3,
-                                      child:    GetBuilder<FavoriteController>(
-                                        builder: (controller) {
-                                          final isFav =
-                                              controller.isFavoriteC[subscribedCourses[i]["id"]
-                                                  .toString()] ??
-                                                  false;
-
-                                          return LikeButton(
-                                            size: 30,
-                                            isLiked: isFav,
-                                            likeBuilder: (bool isLiked) {
-                                              return Icon(
-                                                isLiked
-                                                    ? Icons.favorite
-                                                    : Icons
-                                                    .favorite_border_outlined,
-                                                color: Colors.red,
-                                                size: 30,
-                                              );
-                                            },
-                                            onTap: (bool isLiked) async {
-                                              controller.toggleFavoriteC(
-                                                subscribedCourses[i]["id"].toString(),
-                                              );
-                                              return !isLiked;
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    Center(
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            flex: 3,
-                                            child:
-                                                imageBytes != null
-                                                    ? Image.memory(
-                                                      imageBytes,
-                                                      fit: BoxFit.fill,
-                                                      errorBuilder: (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) {
-                                                        return Image.asset(
-                                                          ImageAssets.subject,
-                                                          height: 125,
-                                                          fit: BoxFit.cover,
-                                                        );
-                                                      },
-                                                    )
-                                                    : Image.asset(
-                                                      ImageAssets.subject,
-                                                    ),
-                                          ),
-                                          SizedBox(height: 30),
-                                          Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              "${subscribedCourses[i]["name"]}".tr,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                                fontStyle: FontStyle.normal,
-                                                color:
-                                                    themeController.initialTheme ==
-                                                            Themes.customLightTheme
-                                                        ? Color.fromARGB(
-                                                          255,
-                                                          40,
-                                                          41,
-                                                          61,
-                                                        )
-                                                        : Color.fromARGB(
-                                                          255,
-                                                          210,
-                                                          209,
-                                                          224,
-                                                        ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 30),
                     ],
                   ),
                 ),

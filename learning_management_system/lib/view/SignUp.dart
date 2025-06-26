@@ -88,6 +88,7 @@ class _SignUpState extends State<SignUp> {
           }
 
           await sharedPrefs.prefs.setString('token', responseBody['token']);
+          await sharedPrefs.prefs.setString('userName', responseBody["user"]['userName']);
           await sharedPrefs.prefs.setBool('isLoggedIn', true);
 
           return responseBody;

@@ -86,6 +86,7 @@ class _LogInState extends State<LogIn> {
         final String token = responseBody['token'];
 
         await sharedPrefs.prefs.setString('token', token);
+        await sharedPrefs.prefs.setString('userName', responseBody["user"]['userName']);
         await sharedPrefs.prefs.setBool('isLoggedIn', true);
 
         final savedToken = sharedPrefs.prefs.getString('token');

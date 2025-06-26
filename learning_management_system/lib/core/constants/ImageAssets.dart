@@ -22,8 +22,16 @@ class ImageAssets {
   static const String course = '$ImageRoute/course.png';
   static const String UserLightMode = '$ImageRoute/Default User Profile.png';
   static const String UserDarkMode = '$ImageRoute/Default User Profile Dark Mode.png';
+  static const String UserAvatar = '$ImageRoute/userAvatar.png';
+  static const String teacherAvatar = '$ImageRoute/teacherAvatar.png';
+  static const String book = '$ImageRoute/book.png';
 
   static const String lottieRoute = "assets/lottie";
   static const String loadingLottie = "$lottieRoute/loading.json";
   static const String noDataLottie = "$lottieRoute/noData.json";
+  static const String lampLottie = "$lottieRoute/lamp.json";
+  static const String personAndLaptopLottie = "$lottieRoute/personAndLaptop.json";
+  static const String studentLottie = "$lottieRoute/student.json";
+  static const String studentandteacherLottie = "$lottieRoute/studentandteacher.json";
+  static const String subjectLottie = "$lottieRoute/subject.json";
 }

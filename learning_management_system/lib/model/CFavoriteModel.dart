@@ -7,23 +7,28 @@ class CFavoriteModel {
   int? lecturesCount;
   int? subscriptions;
   String? image;
+  String? sources;
   String? createdAt;
   String? updatedAt;
+  var rating;
+  int? subscriptionCount;
   Pivot? pivot;
 
-  CFavoriteModel({
-    this.id,
-    this.name,
-    this.description,
-    this.teacherId,
-    this.subjectId,
-    this.lecturesCount,
-    this.subscriptions,
-    this.image,
-    this.createdAt,
-    this.updatedAt,
-    this.pivot,
-  });
+  CFavoriteModel(
+      {this.id,
+        this.name,
+        this.description,
+        this.teacherId,
+        this.subjectId,
+        this.lecturesCount,
+        this.subscriptions,
+        this.image,
+        this.sources,
+        this.createdAt,
+        this.updatedAt,
+        this.rating,
+        this.subscriptionCount,
+        this.pivot});
 
   CFavoriteModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -34,8 +39,11 @@ class CFavoriteModel {
     lecturesCount = json['lecturesCount'];
     subscriptions = json['subscriptions'];
     image = json['image'];
+    sources = json['sources'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
+    rating = json['rating'];
+    subscriptionCount = json['subscription_count'];
     pivot = json['pivot'] != null ? new Pivot.fromJson(json['pivot']) : null;
   }
 
@@ -49,8 +57,11 @@ class CFavoriteModel {
     data['lecturesCount'] = this.lecturesCount;
     data['subscriptions'] = this.subscriptions;
     data['image'] = this.image;
+    data['sources'] = this.sources;
     data['created_at'] = this.createdAt;
     data['updated_at'] = this.updatedAt;
+    data['rating'] = this.rating;
+    data['subscription_count'] = this.subscriptionCount;
     if (this.pivot != null) {
       data['pivot'] = this.pivot!.toJson();
     }

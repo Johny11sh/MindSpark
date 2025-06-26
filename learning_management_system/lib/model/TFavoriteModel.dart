@@ -11,19 +11,18 @@ class TFavoriteModel {
   String? updatedAt;
   Pivot? pivot;
 
-  TFavoriteModel({
-    this.id,
-    this.name,
-    this.userName,
-    this.countryCode,
-    this.number,
-    this.password,
-    this.image,
-    this.links,
-    this.createdAt,
-    this.updatedAt,
-    this.pivot,
-  });
+  TFavoriteModel(
+      {this.id,
+        this.name,
+        this.userName,
+        this.countryCode,
+        this.number,
+        this.password,
+        this.image,
+        this.links,
+        this.createdAt,
+        this.updatedAt,
+        this.pivot});
 
   TFavoriteModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];

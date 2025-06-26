@@ -23,6 +23,7 @@ import 'OnBoarding.dart';
 
 class TeachersCourses extends StatefulWidget {
   final Map<String, dynamic> TeacherData;
+
   const TeachersCourses({super.key, required this.TeacherData});
 
   @override
@@ -36,7 +37,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   ScrollController scrollController = ScrollController();
   late SharedPrefs sharedPrefs;
   late FavoriteController favoriteController;
-
 
   List<Map<String, dynamic>> teacherData = [];
   final Map<int, Uint8List> coursesImages = {};
@@ -71,7 +71,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       await getCoursesData();
       // await getTopRatedCoursesData();
       // await getRecentCoursesData();
-
     }
   }
 
@@ -278,7 +277,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     );
   }
 
-
   Future<void> _loadCachedRecentCourses() async {
     try {
       final cacheKey = 'cached_recent_courses_${widget.TeacherData['id']}';
@@ -307,13 +305,19 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   Future<void> _cacheRecentCourses() async {
     try {
       final cacheKey = 'cached_recent_courses_${widget.TeacherData['id']}';
-      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(recentCoursesData));
+      await sharedPrefs.prefs.setString(
+        cacheKey,
+        jsonEncode(recentCoursesData),
+      );
     } catch (e) {
       debugPrint("Error caching recent courses: $e");
     }
   }
 
-  Future<void> _cacheRecentCourseImage(int courseId, Uint8List imageBytes) async {
+  Future<void> _cacheRecentCourseImage(
+    int courseId,
+    Uint8List imageBytes,
+  ) async {
     try {
       await sharedPrefs.prefs.setString(
         'recent_course_image_$courseId',
@@ -339,7 +343,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         'API_BASE_URL',
         defaultValue: mainIP,
       );
-      final APIurl = '$baseUrl/api/getteachercoursesrecent/${widget.TeacherData['id']}';
+      final APIurl =
+          '$baseUrl/api/getteachercoursesrecent/${widget.TeacherData['id']}';
       final response = await http
           .get(
             Uri.parse(APIurl),
@@ -350,7 +355,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
             },
           )
           .timeout(const Duration(seconds: 15));
-      debugPrint("Recent Courses API response: "+response.statusCode.toString());
+      debugPrint(
+        "Recent Courses API response: " + response.statusCode.toString(),
+      );
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         final List<dynamic> coursesList =
@@ -382,7 +389,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         });
       } else {
         if (recentCoursesData.isEmpty) {
-          throw Exception("Failed to load recent courses: "+response.statusCode.toString());
+          throw Exception(
+            "Failed to load recent courses: " + response.statusCode.toString(),
+          );
         }
       }
     } on TimeoutException {
@@ -395,7 +404,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       if (recentCoursesData.isEmpty) {
         showErrorSnackbar("Failed to load recent courses");
       } else {
-        showErrorSnackbar("Using cached data - "+e.toString());
+        showErrorSnackbar("Using cached data - " + e.toString());
       }
       debugPrint("Error fetching recent courses: $e");
     }
@@ -403,7 +412,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
 
   Future<Uint8List?> getRecentCourseImage(dynamic course) async {
     final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString('recent_course_image_$courseId');
+    final cachedImage = sharedPrefs.prefs.getString(
+      'recent_course_image_$courseId',
+    );
     if (cachedImage != null) {
       return base64Decode(cachedImage);
     }
@@ -433,7 +444,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         debugPrint("Recent course image not found for ID: $courseId");
         return null;
       } else {
-        throw Exception("Image fetch failed: "+response.statusCode.toString());
+        throw Exception(
+          "Image fetch failed: " + response.statusCode.toString(),
+        );
       }
     } on TimeoutException {
       debugPrint("Timeout loading image for recent course $courseId");
@@ -476,13 +489,19 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   Future<void> _cacheTopRatedCourses() async {
     try {
       final cacheKey = 'cached_top_rated_courses_${widget.TeacherData['id']}';
-      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(topRatedCoursesData));
+      await sharedPrefs.prefs.setString(
+        cacheKey,
+        jsonEncode(topRatedCoursesData),
+      );
     } catch (e) {
       debugPrint("Error caching top rated courses: $e");
     }
   }
 
-  Future<void> _cacheTopRatedCourseImage(int courseId, Uint8List imageBytes) async {
+  Future<void> _cacheTopRatedCourseImage(
+    int courseId,
+    Uint8List imageBytes,
+  ) async {
     try {
       await sharedPrefs.prefs.setString(
         'top_rated_course_image_$courseId',
@@ -508,7 +527,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         'API_BASE_URL',
         defaultValue: mainIP,
       );
-      final APIurl = '$baseUrl/api/getteachercoursesrated/${widget.TeacherData['id']}';
+      final APIurl =
+          '$baseUrl/api/getteachercoursesrated/${widget.TeacherData['id']}';
       final response = await http
           .get(
             Uri.parse(APIurl),
@@ -519,7 +539,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
             },
           )
           .timeout(const Duration(seconds: 15));
-      debugPrint("Top Rated Courses API response: "+response.statusCode.toString());
+      debugPrint(
+        "Top Rated Courses API response: " + response.statusCode.toString(),
+      );
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         final List<dynamic> coursesList =
@@ -551,7 +573,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         });
       } else {
         if (topRatedCoursesData.isEmpty) {
-          throw Exception("Failed to load top rated courses: "+response.statusCode.toString());
+          throw Exception(
+            "Failed to load top rated courses: " +
+                response.statusCode.toString(),
+          );
         }
       }
     } on TimeoutException {
@@ -564,7 +589,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       if (topRatedCoursesData.isEmpty) {
         showErrorSnackbar("Failed to load top rated courses");
       } else {
-        showErrorSnackbar("Using cached data - "+e.toString());
+        showErrorSnackbar("Using cached data - " + e.toString());
       }
       debugPrint("Error fetching top rated courses: $e");
     }
@@ -572,7 +597,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
 
   Future<Uint8List?> getTopRatedCourseImage(dynamic course) async {
     final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString('top_rated_course_image_$courseId');
+    final cachedImage = sharedPrefs.prefs.getString(
+      'top_rated_course_image_$courseId',
+    );
     if (cachedImage != null) {
       return base64Decode(cachedImage);
     }
@@ -602,7 +629,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         debugPrint("Top rated course image not found for ID: $courseId");
         return null;
       } else {
-        throw Exception("Image fetch failed: "+response.statusCode.toString());
+        throw Exception(
+          "Image fetch failed: " + response.statusCode.toString(),
+        );
       }
     } on TimeoutException {
       debugPrint("Timeout loading image for top rated course $courseId");
@@ -620,30 +649,30 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       locale: localeController.initialLang,
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Favorites()),
-              );
-            },
-            icon: Icon(Icons.favorite),
-          ),
-          title: Text("Home Page".tr),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              onPressed: () {
-                showSearch(
-                  context: context,
-                  delegate: SearchCustom(teacherData, coursesImages),
-                );
-              },
-              icon: Icon(Icons.search_outlined),
-            ),
-          ],
-        ),
+        // appBar: AppBar(
+        //   leading: IconButton(
+        //     onPressed: () {
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(builder: (context) => Favorites()),
+        //       );
+        //     },
+        //     icon: Icon(Icons.favorite),
+        //   ),
+        //   title: Text("Home Page".tr),
+        //   centerTitle: true,
+        //   actions: [
+        //     IconButton(
+        //       onPressed: () {
+        //         showSearch(
+        //           context: context,
+        //           delegate: SearchCustom(teacherData, coursesImages),
+        //         );
+        //       },
+        //       icon: Icon(Icons.search_outlined),
+        //     ),
+        //   ],
+        // ),
         body:
             teacherData.isEmpty
                 ? Center(
@@ -669,147 +698,333 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                   },
                   child: Column(
                     children: [
-                      SizedBox(height: 50),
-                      Text(
-                        "Choose a course".tr,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.normal,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      SizedBox(height: 50),
-                      Expanded(
-                        child: GridView.builder(
-                          scrollDirection: Axis.vertical,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
+                      Container(
+                        padding: EdgeInsets.only(top: 30),
+                        height: 100,
+                        color:
+                            themeController.initialTheme ==
+                                    Themes.customLightTheme
+                                ? Color.fromARGB(255, 210, 209, 224)
+                                : Color.fromARGB(255, 40, 41, 61),
+                        // color: Colors.red,
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  Get.to(Favorites());
+                                },
+                                icon: Icon(Icons.favorite, color: Colors.red),
                               ),
-                          controller: scrollController,
-                          itemCount: teacherData.length,
-                          itemBuilder: (context, i) {
-                            int courseId = teacherData[i]["id"];
-                            Uint8List? imageBytes = coursesImages[courseId];
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => CoursesLessons(
-                                          CoursesData: teacherData[i],
-                                          index: i,
-                                        ),
+                            ),
+                            Expanded(
+                              child: Center(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    right: Get.width / 40,
                                   ),
-                                );
-                              },
-                              child:  Card(
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      right: 10,
-                                      top: 3,
-                                      child:    GetBuilder<FavoriteController>(
-                                        builder: (controller) {
-                                          final isFav =
-                                              controller.isFavoriteC[courseId
-                                                  .toString()] ??
-                                                  false;
-
-                                          return LikeButton(
-                                            size: 30,
-                                            isLiked: isFav,
-                                            likeBuilder: (bool isLiked) {
-                                              return Icon(
-                                                isLiked
-                                                    ? Icons.favorite
-                                                    : Icons
-                                                    .favorite_border_outlined,
-                                                color: Colors.red,
-                                                size: 30,
-                                              );
-                                            },
-                                            onTap: (bool isLiked) async {
-                                              controller.toggleFavoriteC(
-                                                courseId.toString(),
-                                              );
-                                              return !isLiked;
-                                            },
-                                          );
-                                        },
-                                      ),
+                                  child: Text(
+                                    " Teachers Course ".tr,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 23,
                                     ),
-                                    Center(
-                                      child: Column(
-                                        children: [
-                                          SizedBox(height: 20),
-                                          Expanded(
-                                            flex: 5,
-                                            child:
-                                            imageBytes != null
-                                                ? Image.memory(
-                                              imageBytes,
-                                              fit: BoxFit.fill,
-                                              errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                  ) {
-                                                return Image.asset(
-                                                  ImageAssets.course,
-                                                  height: 125,
-                                                  fit: BoxFit.cover,
-                                                );
-                                              },
-                                            )
-                                                : Image.asset(
-                                              ImageAssets.course,
-                                            ),
-                                          ),
-                                          SizedBox(height: 30),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              "${teacherData[i]["name"]}".tr,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                                fontStyle: FontStyle.normal,
-                                                color:
-                                                themeController
-                                                    .initialTheme ==
-                                                    Themes
-                                                        .customLightTheme
-                                                    ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                    : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  showSearch(
+                                    context: context,
+                                    delegate: SearchCustom(
+                                      teacherData,
+                                      coursesImages,
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.search_outlined,
+                                  color: Color.fromARGB(255, 210, 209, 224),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.only(left: 20, right: 20),
+                          decoration: BoxDecoration(
+                            color:
+                                themeController.initialTheme ==
+                                        Themes.customLightTheme
+                                    ? Color.fromARGB(255, 40, 41, 61)
+                                    : Color.fromARGB(255, 210, 209, 224),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              SizedBox(height: 21),
+                              Text(
+                                "Choose a course".tr,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FontStyle.normal,
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Expanded(
+                                child: GridView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        mainAxisSpacing: 10,
+                                        crossAxisSpacing: 10,
+                                      ),
+                                  controller: scrollController,
+                                  itemCount: teacherData.length,
+                                  itemBuilder: (context, i) {
+                                    int courseId = teacherData[i]["id"];
+                                    Uint8List? imageBytes =
+                                        coursesImages[courseId];
+                                    return InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => CoursesLessons(
+                                                  CoursesData: teacherData[i],
+                                                  index: i,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.only(
+                                          left: 1,
+                                          right: 10,
+                                        ),
+                                        // padding: EdgeInsets.only(left: 10,right: 10),
+                                        padding: EdgeInsets.all(10),
+                                        height: 130,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              top: 5,
+                                              left: 5,
+                                              right: 5,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  teacherData[i]["rating"] !=
+                                                          null
+                                                      ? Container(
+                                                        height: 23,
+                                                        padding:
+                                                            EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: Color(
+                                                            0xFFCCF2E0,
+                                                          ),
+                                                          border: Border.all(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                ),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.star,
+                                                              color: Color(
+                                                                0XFFE6D827,
+                                                              ),
+                                                              size: 20,
+                                                            ),
+                                                            SizedBox(width: 2),
+                                                            Text(
+                                                              // "${subscribedCourses[i]["rating"]}",
+                                                              double.parse(
+                                                                teacherData[i]["rating"]
+                                                                    .toString(),
+                                                              ).toStringAsFixed(
+                                                                1,
+                                                              ),
+                                                              style: TextStyle(
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .clip,
+                                                                fontSize: 16,
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                                                            Themes.customLightTheme
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                      : SizedBox.shrink(),
+
+                                                  GetBuilder<
+                                                    FavoriteController
+                                                  >(
+                                                    builder: (controller) {
+                                                      final isFav =
+                                                          controller
+                                                              .isFavoriteC[teacherData[i]["id"]
+                                                              .toString()] ??
+                                                          false;
+
+                                                      return LikeButton(
+                                                        size: 30,
+                                                        isLiked: isFav,
+                                                        likeBuilder: (
+                                                          bool isLiked,
+                                                        ) {
+                                                          return Icon(
+                                                            isLiked
+                                                                ? Icons.favorite
+                                                                : Icons
+                                                                    .favorite_border_outlined,
+                                                            color: Colors.red,
+                                                            size: 30,
+                                                          );
+                                                        },
+                                                        onTap: (
+                                                          bool isLiked,
+                                                        ) async {
+                                                          controller
+                                                              .toggleFavoriteC(
+                                                                teacherData[i]["id"]
+                                                                    .toString(),
+                                                              );
+                                                          return !isLiked;
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  const SizedBox(height: 34),
+                                                  imageBytes != null
+                                                      ? Image.asset(
+                                                        ImageAssets.book,
+                                                        height: 90,
+                                                        width: 90,
+                                                      )
+                                                      : Image.asset(
+                                                        ImageAssets.subject,
+                                                      ),
+
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Text(
+                                                      "${teacherData[i]["name"]}"
+                                                          .tr,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            themeController
+                                                                        .initialTheme ==
+                                                                    Themes
+                                                                        .customLightTheme
+                                                                ? Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -818,7 +1033,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       ),
     );
   }
-
 }
 
 class SearchCustom extends SearchDelegate {

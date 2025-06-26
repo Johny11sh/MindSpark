@@ -50,7 +50,6 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _initSharedPreferences().then((_) => _loadInitialData());
     favoriteController = Get.put(FavoriteController());
-
   }
 
   Future<void> _initSharedPreferences() async {
@@ -277,30 +276,6 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
       locale: localeController.initialLang,
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Favorites()),
-              );
-            },
-            icon: Icon(Icons.favorite),
-          ),
-          title: Text("Home Page".tr),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              onPressed: () {
-                showSearch(
-                  context: context,
-                  delegate: SearchCustom(subjectTeachers, teachersImages),
-                );
-              },
-              icon: Icon(Icons.search_outlined),
-            ),
-          ],
-        ),
         body:
             subjectTeachers.isEmpty
                 ? Center(
@@ -326,148 +301,274 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
                   },
                   child: Column(
                     children: [
-                      SizedBox(height: 50),
-                      Text(
-                        "Choose a teacher".tr,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.normal,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
+                      Container(
+                        padding: EdgeInsets.only(top: 30),
+                        height: 100,
+                        color:
+                            themeController.initialTheme ==
+                                    Themes.customLightTheme
+                                ? Color.fromARGB(255, 210, 209, 224)
+                                : Color.fromARGB(255, 40, 41, 61),
+                        // color: Colors.red,
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  Get.to(Favorites());
+                                },
+                                icon: Icon(Icons.favorite, color: Colors.red),
+                              ),
+                            ),
+                            Expanded(
+                              child: Center(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    right: Get.width / 40,
+                                  ),
+                                  child: Text(
+                                    "Teachers Subject ".tr,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 23,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  showSearch(
+                                    context: context,
+                                    delegate: SearchCustom(
+                                      subjectTeachers,
+                                      teachersImages,
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.search_outlined,
+                                  color: Color.fromARGB(255, 210, 209, 224),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 50),
+                      SizedBox(height: 30),
                       Expanded(
-                        child: GridView.builder(
-                          scrollDirection: Axis.vertical,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                              ),
-                          controller: scrollController,
-                          itemCount: subjectTeachers.length,
-                          itemBuilder: (context, i) {
-                            int teacherId = subjectTeachers[i]["id"];
-                            Uint8List? imageBytes = teachersImages[teacherId];
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => TeachersCourses(
-                                          TeacherData: subjectTeachers[i],
-                                        ),
-                                  ),
-                                );
-                              },
-                              child:  Card(
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      right: 10,
-                                      top: 3,
-                                      child:   GetBuilder<FavoriteController>(
-                                        builder: (controller) {
-                                          final isFav =
-                                              controller.isFavorite[teacherId
-                                                  .toString()] ??
-                                                  false;
+                        child: Container(
+                          padding: EdgeInsets.only(left: 20, right: 20),
+                          decoration: BoxDecoration(
+                            color:
+                                themeController.initialTheme ==
+                                        Themes.customLightTheme
+                                    ? Color.fromARGB(255, 40, 41, 61)
+                                    : Color.fromARGB(255, 210, 209, 224),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30),
+                            ),
+                          ),
+                          child: Column(children: [
+                            SizedBox(height: 20),
+                            Text(
+                              "Choose a teacher".tr,
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.normal,
+                                color:
+                                themeController.initialTheme ==
+                                    Themes.customLightTheme
+                                    ?
+                                Color.fromARGB(255, 210, 209, 224)
+                                    :
+                                Color.fromARGB(255, 40, 41, 61)
 
-                                          return LikeButton(
-                                            size: 30,
-                                            isLiked: isFav,
-                                            likeBuilder: (bool isLiked) {
-                                              return Icon(
-                                                isLiked
-                                                    ? Icons.favorite
-                                                    : Icons
-                                                    .favorite_border_outlined,
-                                                color: Colors.red,
-                                                size: 30,
-                                              );
-                                            },
-                                            onTap: (bool isLiked) async {
-                                              controller.toggleFavorite(
-                                                teacherId.toString(),
-                                              );
-                                              return !isLiked;
-                                            },
-                                          );
-                                        },
+                                ,
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            Expanded(
+                              child: GridView.builder(
+                                scrollDirection: Axis.vertical,
+                                physics: AlwaysScrollableScrollPhysics(),
+                                gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10
+                                ),
+                                controller: scrollController,
+                                itemCount: subjectTeachers.length,
+                                itemBuilder: (context, i) {
+                                  int teacherId = subjectTeachers[i]["id"];
+                                  Uint8List? imageBytes = teachersImages[teacherId];
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => TeachersCourses(
+                                            TeacherData: subjectTeachers[i],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      margin: EdgeInsets.only(
+                                        left: 1,
+                                        right: 1,
+                                        top: 2,
                                       ),
-                                    ),
-                                    Center(
-                                      child: Column(
+                                      padding: EdgeInsets.all(10),
+                                      height: 120,
+                                      width: 120,
+                                      decoration: BoxDecoration(
+                                        // color: Colors.red,
+                                        border: Border.all(
+                                          color: Color.fromARGB(
+                                            255,
+                                            40,
+                                            41,
+                                            61,
+                                          ),
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          15,
+                                        ),
+                                      ),
+                                      child: Stack(
                                         children: [
-                                          SizedBox(height: 20),
-                                          Expanded(
-                                            flex: 5,
+                                          Positioned(
+                                            right: 10,
+                                            top: 3,
                                             child:
-                                            imageBytes != null
-                                                ? Image.memory(
-                                              imageBytes,
-                                              fit: BoxFit.fill,
-                                              errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                  ) {
-                                                return Image.asset(
-                                                  ImageAssets.teacher,
-                                                  height: 125,
-                                                  fit: BoxFit.cover,
+                                            // InkWell(
+                                            //   onTap: () {
+                                            //     favoriteController.toggleFavorite(
+                                            //       teacherId.toString(),
+                                            //     );
+                                            //   },
+                                            //   child: GetBuilder<FavoriteController>(
+                                            //     builder: (controller) {
+                                            //       final isFav =
+                                            //           controller.isFavorite[teacherId
+                                            //               .toString()] ??
+                                            //           false;
+                                            //
+                                            //       return Icon(
+                                            //         isFav
+                                            //             ? Icons.favorite
+                                            //             : Icons
+                                            //                 .favorite_border_outlined,
+                                            //         size: 30,
+                                            //         color: Colors.red,
+                                            //       );
+                                            //     },
+                                            //   ),
+                                            // ),
+                                            GetBuilder<FavoriteController>(
+                                              builder: (controller) {
+                                                final isFav =
+                                                    controller
+                                                        .isFavorite[teacherId
+                                                        .toString()] ??
+                                                        false;
+
+                                                return LikeButton(
+                                                  size: 30,
+                                                  isLiked: isFav,
+                                                  likeBuilder: (
+                                                      bool isLiked,
+                                                      ) {
+                                                    return Icon(
+                                                      isLiked
+                                                          ? Icons.favorite
+                                                          : Icons
+                                                          .favorite_border_outlined,
+                                                      color: Colors.red,
+                                                      size: 30,
+                                                    );
+                                                  },
+                                                  onTap: (
+                                                      bool isLiked,
+                                                      ) async {
+                                                    controller.toggleFavorite(
+                                                      teacherId.toString(),
+                                                    );
+                                                    return !isLiked;
+                                                  },
                                                 );
                                               },
-                                            )
-                                                : Image.asset(
-                                              ImageAssets.teacher,
                                             ),
                                           ),
-                                          SizedBox(height: 30),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              "${subjectTeachers[i]["name"]}".tr,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                                fontStyle: FontStyle.normal,
-                                                color:
-                                                themeController
-                                                    .initialTheme ==
-                                                    Themes
-                                                        .customLightTheme
-                                                    ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
+                                          Center(
+                                            child: Column(
+                                              children: [
+                                                SizedBox(height: 15),
+                                                imageBytes != null
+                                                    ? Image.asset(
+                                                  ImageAssets
+                                                      .teacherAvatar,
+                                                  height: 100,
+                                                  width: 100,
                                                 )
-                                                    : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
+                                                    : Image.asset(
+                                                  ImageAssets.teacherAvatar,
                                                 ),
-                                              ),
+                                                SizedBox(height: 10),
+                                                Text(
+                                                  "${subjectTeachers[i]["name"]}".tr,
+                                                  style: TextStyle(
+                                                    overflow:
+                                                    TextOverflow.ellipsis,
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                    FontWeight.w400,
+                                                    fontStyle:
+                                                    FontStyle.normal,
+                                                    color:
+                                                    themeController
+                                                        .initialTheme ==
+                                                        Themes
+                                                            .customLightTheme
+                                                        ? Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    )
+                                                        : Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
-                            );
-                          },
+                            ),
+                          ],),
                         ),
                       ),
+
                     ],
                   ),
                 ),

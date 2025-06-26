@@ -3,6 +3,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:learning_management_system/core/classes/WatchList.dart';
+import 'package:learning_management_system/view/HelpCenter.dart';
+import 'package:learning_management_system/view/Management.dart';
+import 'package:learning_management_system/view/MyInfo.dart';
+import 'package:learning_management_system/view/Settings.dart';
 
 import '../core/classes/AboutUs.dart';
 import '../core/classes/ChangeTheme.dart';
@@ -36,7 +40,9 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   bool? isConnected;
   late SharedPrefs sharedPrefs;
-  Map<String, dynamic> profileData = {};
+  late String userName;
+
+  // Map<String, dynamic> profileData = {};
 
   @override
   void initState() {
@@ -46,122 +52,124 @@ class _ProfileState extends State<Profile> {
       DeviceOrientation.portraitDown,
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    _initSharedPreferences().then((_) => _loadInitialData());
-  }
-
-  Future<void> _initSharedPreferences() async {
+    // _initSharedPreferences();
     sharedPrefs = SharedPrefs.instance;
+    userName = sharedPrefs.prefs.getString("userName")!;
   }
 
-  Future<void> _loadInitialData() async {
-    // Try to load from cache first
-    await _loadCachedProfile();
+  // Future<void> _initSharedPreferences() async {
+  //   sharedPrefs = SharedPrefs.instance;
+  // }
 
-    // Then try to fetch fresh data if online
-    if (sharedPrefs.prefs.getBool('isConnected') == true) {
-      await getProfileData();
-    }
-  }
-
-  Future<void> _loadCachedProfile() async {
-    try {
-      final cachedData = sharedPrefs.prefs.getString('cached_profile');
-      if (cachedData != null) {
-        final Map<String, dynamic> parsedData = jsonDecode(cachedData);
-        setState(() {
-          profileData = parsedData;
-        });
-      }
-    } catch (e) {
-      debugPrint("Error loading cached profile: $e");
-    }
-  }
-
-  Future<void> _cacheProfile() async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'cached_profile',
-        jsonEncode(profileData),
-      );
-    } catch (e) {
-      debugPrint("Error caching profile: $e");
-    }
-  }
-
-  Future<void> getProfileData() async {
-    final token = sharedPrefs.prefs.getString('token') ?? '';
-    if (token.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAll(() => LogIn());
-        showErrorSnackbar("Session expired. Please log in again.".tr);
-      });
-      return;
-    }
-
-    try {
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final APIurl = '$baseUrl/api/getuser';
-
-      final response = await http
-          .get(
-            Uri.parse(APIurl),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-
-        // Extract only the needed fields from the user object
-        if (responseBody['user'] is Map) {
-          final userData = Map<String, dynamic>.from(responseBody['user']);
-
-          // Remove unwanted fields
-          userData.remove('subjects');
-          userData.remove('created_at');
-          userData.remove('updated_at');
-
-          // Keep all other fields including subs and lecturesNum
-          if (mounted) {
-            setState(() {
-              profileData = userData;
-            });
-            await _cacheProfile();
-          }
-        }
-      } else if (response.statusCode == 401) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.offAll(() => LogIn());
-        });
-      } else {
-        // If API fails but we have cached data, don't throw error
-        if (profileData.isEmpty) {
-          throw Exception("Failed to load profile: ${response.statusCode}");
-        }
-      }
-    } on TimeoutException {
-      // If we have cached data, just show a warning
-      if (profileData.isEmpty) {
-        showErrorSnackbar("Request timeout. Please try again.".tr);
-      } else {
-        showErrorSnackbar("Using cached data - connection is slow".tr);
-      }
-    } catch (e) {
-      // If we have cached data, just show a warning
-      if (profileData.isEmpty) {
-        showErrorSnackbar("Failed to load profile".tr);
-      } else {
-        showErrorSnackbar("Using cached data - ${e.toString()}".tr);
-      }
-      debugPrint("Error fetching profile: $e");
-    }
-  }
+  // Future<void> _loadInitialData() async {
+  //   // Try to load from cache first
+  //   await _loadCachedProfile();
+  //
+  //   // Then try to fetch fresh data if online
+  //   if (sharedPrefs.prefs.getBool('isConnected') == true) {
+  //     await getProfileData();
+  //   }
+  // }
+  //
+  // Future<void> _loadCachedProfile() async {
+  //   try {
+  //     final cachedData = sharedPrefs.prefs.getString('cached_profile');
+  //     if (cachedData != null) {
+  //       final Map<String, dynamic> parsedData = jsonDecode(cachedData);
+  //       setState(() {
+  //         profileData = parsedData;
+  //       });
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Error loading cached profile: $e");
+  //   }
+  // }
+  //
+  // Future<void> _cacheProfile() async {
+  //   try {
+  //     await sharedPrefs.prefs.setString(
+  //       'cached_profile',
+  //       jsonEncode(profileData),
+  //     );
+  //   } catch (e) {
+  //     debugPrint("Error caching profile: $e");
+  //   }
+  // }
+  //
+  // Future<void> getProfileData() async {
+  //   final token = sharedPrefs.prefs.getString('token') ?? '';
+  //   if (token.isEmpty) {
+  //     WidgetsBinding.instance.addPostFrameCallback((_) {
+  //       Get.offAll(() => LogIn());
+  //       showErrorSnackbar("Session expired. Please log in again.".tr);
+  //     });
+  //     return;
+  //   }
+  //
+  //   try {
+  //     var baseUrl = String.fromEnvironment(
+  //       'API_BASE_URL',
+  //       defaultValue: mainIP,
+  //     );
+  //     final APIurl = '$baseUrl/api/getuser';
+  //
+  //     final response = await http
+  //         .get(
+  //           Uri.parse(APIurl),
+  //           headers: {
+  //             'Authorization': "Bearer $token",
+  //             'Content-Type': 'application/json; charset=UTF-8',
+  //           },
+  //         )
+  //         .timeout(const Duration(seconds: 15));
+  //
+  //     if (response.statusCode == 200) {
+  //       final responseBody = jsonDecode(response.body);
+  //
+  //       // Extract only the needed fields from the user object
+  //       if (responseBody['user'] is Map) {
+  //         final userData = Map<String, dynamic>.from(responseBody['user']);
+  //
+  //         // Remove unwanted fields
+  //         userData.remove('subjects');
+  //         userData.remove('created_at');
+  //         userData.remove('updated_at');
+  //
+  //         // Keep all other fields including subs and lecturesNum
+  //         if (mounted) {
+  //           setState(() {
+  //             profileData = userData;
+  //           });
+  //           await _cacheProfile();
+  //         }
+  //       }
+  //     } else if (response.statusCode == 401) {
+  //       WidgetsBinding.instance.addPostFrameCallback((_) {
+  //         Get.offAll(() => LogIn());
+  //       });
+  //     } else {
+  //       // If API fails but we have cached data, don't throw error
+  //       if (profileData.isEmpty) {
+  //         throw Exception("Failed to load profile: ${response.statusCode}");
+  //       }
+  //     }
+  //   } on TimeoutException {
+  //     // If we have cached data, just show a warning
+  //     if (profileData.isEmpty) {
+  //       showErrorSnackbar("Request timeout. Please try again.".tr);
+  //     } else {
+  //       showErrorSnackbar("Using cached data - connection is slow".tr);
+  //     }
+  //   } catch (e) {
+  //     // If we have cached data, just show a warning
+  //     if (profileData.isEmpty) {
+  //       showErrorSnackbar("Failed to load profile".tr);
+  //     } else {
+  //       showErrorSnackbar("Using cached data - ${e.toString()}".tr);
+  //     }
+  //     debugPrint("Error fetching profile: $e");
+  //   }
+  // }
 
   void showErrorSnackbar(String message) {
     Get.rawSnackbar(
@@ -177,6 +185,7 @@ class _ProfileState extends State<Profile> {
     try {
       // 1. Token validation with early return
       final token = sharedPrefs.prefs.getString('token') ?? '';
+      print(token);
       if (token.isEmpty) {
         debugPrint("No token found, already logged out");
         return null;
@@ -207,6 +216,7 @@ class _ProfileState extends State<Profile> {
       await sharedPrefs.prefs.remove('token');
       await sharedPrefs.prefs.setBool('isLoggedIn', false);
       await sharedPrefs.prefs.remove('cached_profile');
+      await sharedPrefs.prefs.clear();
 
       // 5. Response handling
       if (response.statusCode == 200) {
@@ -245,550 +255,408 @@ class _ProfileState extends State<Profile> {
       locale: localeController.initialLang,
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(title: Text("Profile".tr), centerTitle: true),
-        body: RefreshIndicator(
-          color:
-              themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 40, 41, 61)
-                  : Color.fromARGB(255, 210, 209, 224),
-          backgroundColor:
-              themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 210, 209, 224)
-                  : Color.fromARGB(255, 46, 48, 97),
-          onRefresh: () async {
-            await networkController.checkConnectivityManually();
-            await getProfileData();
-          },
-          child: ListView(
-            children: [
-              SizedBox(height: 30),
-              Card(
-                  elevation: 0,
-                  child: ListTile(
-                    isThreeLine: true,
-                    leading: Image.asset( 
+        // appBar: AppBar(title: Text("Profile".tr), centerTitle: true),
+        body: Column(
+          children: [
+            // SizedBox(height: 50),
+            Container(
+              padding: EdgeInsets.only(top: 25),
+              height: 120,
+              color:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 40, 41, 61),
+              // color: Colors.red,
+              child: Center(
+                child: Text(
+                  "Profile".tr,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 23,
+                  ),
+                ),
+              ),
+            ),
+
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color:
                       themeController.initialTheme == Themes.customLightTheme
-                      ? ImageAssets.UserLightMode 
-                      : ImageAssets.UserDarkMode ,
-                      width: 60,
-                      height: 60,
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    Container(
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            // ImageAssets.UserDarkMode,
+                            ImageAssets.UserAvatar,
+                            height: 130,
+                            width: 130,
+                          ),
+                          // const SizedBox(height: 10),
+                          Text(
+                            userName,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall!.copyWith(
+                              fontSize: 22,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                onTap: () async {
+                                  await networkController
+                                      .checkConnectivityManually();
+                                  isConnected = sharedPrefs.prefs.getBool(
+                                    'isConnected',
+                                  );
+                                  if (isConnected == true) {
+                                    sendLogOutData();
+                                    SharedPrefs.instance.prefs.clear();
+                                    Future.microtask(() {
+                                      Get.offAll(() => OnBoarding());
+                                    });
+                                  } else {
+                                    Get.snackbar(
+                                      "Connection error".tr,
+                                      "Connection access is needed".tr,
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  height: 36,
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: Colors.red,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "Log Out".tr,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall!.copyWith(
+                                        fontSize: 20,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  Get.to(MyInfo());
+                                },
+                                icon: Icon(Icons.edit),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    title: Text(
-                      profileData.isEmpty
-                          ? "Username".tr
-                          : "${profileData["userName"]}".tr,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.normal,
-                        color:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 40, 41, 61)
-                                : Color.fromARGB(255, 210, 209, 224),
+                    // SizedBox(height: 30),
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: ListView(
+                          shrinkWrap: true,
+                          children: [
+
+                            InkWell(
+                              onTap: () {
+                                Get.to(() => Management());
+                              },
+                              child: Card(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Icon(
+                                        Icons.format_list_numbered_outlined,
+                                        size: 25,
+                                        color:
+                                        themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                            ? Color.fromARGB(
+                                          255,
+                                          40,
+                                          41,
+                                          61,
+                                        )
+                                            : Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        padding: EdgeInsets.only(
+                                          top: 10,
+                                          bottom: 10,
+                                        ),
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          "Management".tr,
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            fontStyle: FontStyle.normal,
+                                            color:
+                                            themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            )
+                                                : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Icon(
+                                        Icons.arrow_forward_ios_outlined,
+                                        size: 17,
+                                        color:
+                                        themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                            ? Color.fromARGB(
+                                          255,
+                                          40,
+                                          41,
+                                          61,
+                                        )
+                                            : Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+
+
+                            InkWell(
+                              onTap: () {
+                                Get.to(() => Settings());
+                              },
+                              child: Card(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Icon(
+                                        Icons.settings,
+                                        size: 25,
+                                        color:
+                                        themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                            ? Color.fromARGB(
+                                          255,
+                                          40,
+                                          41,
+                                          61,
+                                        )
+                                            : Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        padding: EdgeInsets.only(
+                                          top: 10,
+                                          bottom: 10,
+                                        ),
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          "Settings".tr,
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            fontStyle: FontStyle.normal,
+                                            color:
+                                            themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            )
+                                                : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Icon(
+                                        Icons.arrow_forward_ios_outlined,
+                                        size: 17,
+
+                                        color:
+                                        themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                            ? Color.fromARGB(
+                                          255,
+                                          40,
+                                          41,
+                                          61,
+                                        )
+                                            : Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            InkWell(
+                              onTap: () {
+                                Get.to(() => HelpCenter());
+                              },
+                              child: Card(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Icon(
+                                        Icons.help_center_outlined,
+                                        size: 25,
+                                        color:
+                                        themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                            ? Color.fromARGB(
+                                          255,
+                                          40,
+                                          41,
+                                          61,
+                                        )
+                                            : Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        padding: EdgeInsets.only(
+                                          top: 10,
+                                          bottom: 10,
+                                        ),
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          "Help Center".tr,
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            fontStyle: FontStyle.normal,
+                                            color:
+                                            themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                              255,
+                                              40,
+                                              41,
+                                              61,
+                                            )
+                                                : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Icon(
+                                        Icons.arrow_forward_ios_outlined,
+                                        size: 17,
+
+                                        color:
+                                        themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                            ? Color.fromARGB(
+                                          255,
+                                          40,
+                                          41,
+                                          61,
+                                        )
+                                            : Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                          ],
+                        ),
                       ),
                     ),
-                    trailing: Text(
-                      profileData.isEmpty
-                          ? "09XXXXXXXX"
-                          : "0${profileData["number"]}".tr,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.normal,
-                        color:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 40, 41, 61)
-                                : Color.fromARGB(255, 210, 209, 224),
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          profileData.isEmpty
-                              ? "● Subscriptions:\n".tr
-                              : "● Subscriptions:\n[ ${profileData["subs"]} ]"
-                                  .tr,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.normal,
-                            color:
-                                themeController.initialTheme ==
-                                        Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
-                          ),
-                        ),
-                        Text(
-                          profileData.isEmpty
-                              ? "\n● Lectures number: X".tr
-                              : "\n● Lectures number: ${profileData["lecturesNum"]}"
-                                  .tr,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.normal,
-                            color:
-                                themeController.initialTheme ==
-                                        Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
-                          ),
-                        ),
-                      ],
-                  ),
+                  ],
                 ),
               ),
-              SizedBox(height: 30),
-              InkWell(
-                onTap: () {
-                  Get.to(() => WatchList());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.format_list_numbered_outlined,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "WatchList".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Get.to(() => ChangeUsername());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.person,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Change Username".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Get.to(() => ChangePassword());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.password_outlined,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Change Password".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Get.to(() => Language());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.language_outlined,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Language".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Get.to(() => ChangeTheme());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.sunny,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Theme".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  // Get.to(() => ContactUs());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.font_download_outlined,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Fonts".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Get.to(() => ContactUs());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.call,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Contact Us".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Get.to(() => AboutUs());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.question_mark,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "About Us".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Get.to(() => PrivacyPolicy());
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.shield_sharp,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Privacy Policy".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 30),
-              InkWell(
-                onTap: () async {
-                  await networkController.checkConnectivityManually();
-                  isConnected = sharedPrefs.prefs.getBool('isConnected');
-                  if (isConnected == true) {
-                    sendLogOutData();
-                    SharedPrefs.instance.prefs.clear();
-                    Future.microtask(() {
-                      Get.offAll(() => OnBoarding());
-                    });
-                  } else {
-                    Get.snackbar(
-                      "Connection error".tr,
-                      "Connection access is needed".tr,
-                    );
-                  }
-                },
-                child: Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Icon(
-                          Icons.logout_outlined,
-                          size: 25,
-                          color:
-                              themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 40, 41, 61)
-                                  : Color.fromARGB(255, 210, 209, 224),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Log Out".tr,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal,
-                              color:
-                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
