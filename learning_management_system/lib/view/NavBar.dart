@@ -16,8 +16,7 @@ import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
 final ThemeController themeController = Get.find<ThemeController>();
 final LocaleController localeController = Get.find<LocaleController>();
-String mainIP = "http://127.0.0.1:8000";
-// String mainIP = "http://192.168.1.107:8000";
+String mainIP = "http://192.168.1.20:8000";
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -221,12 +220,8 @@ class NavBarState extends State<NavBar> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: themeController.initialTheme,
-      locale: localeController.initialLang,
-      home: Scaffold(
-        body: PersistentTabView(
+    return Scaffold(
+      body: PersistentTabView(
         tabs: [
           PersistentTabConfig(
             screen: HomePage(),
@@ -281,16 +276,18 @@ class NavBarState extends State<NavBar> {
             ),
           ),
         ],
-          navBarBuilder: (navBarConfig) => CustomNavBar(navBarConfig: navBarConfig),
-        ),
-        floatingActionButton: isNavBarVisible ? Container(
-          width: 150,
-          height: 40,
-          margin: EdgeInsets.only(bottom: 58),
-          child: _buildMusicControls(),
-        ) : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        navBarBuilder: (navBarConfig) =>
+            CustomNavBar(navBarConfig: navBarConfig),
       ),
+      floatingActionButton: isNavBarVisible
+          ? Container(
+              width: 150,
+              height: 40,
+              margin: EdgeInsets.only(bottom: 58),
+              child: _buildMusicControls(),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

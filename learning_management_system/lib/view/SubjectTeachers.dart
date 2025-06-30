@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:like_button/like_button.dart';
 import '../controller/FavoriteController.dart';
@@ -18,6 +19,7 @@ import '../themes/Themes.dart';
 import 'Favorites.dart';
 import 'NavBar.dart';
 import 'TeachersCourses.dart';
+import '../core/function/DynamicSearch.dart';
 
 class SubjectTeachers extends StatefulWidget {
   final Map<String, dynamic> SubjectData;
@@ -271,44 +273,47 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: themeController.initialTheme,
-      locale: localeController.initialLang,
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body:
-            subjectTeachers.isEmpty
-                ? Center(
-                  child: CircularProgressIndicator(
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                )
-                : RefreshIndicator(
+    return
+    // MaterialApp(
+    //   theme: themeController.initialTheme,
+    //   locale: localeController.initialLang,
+    //   debugShowCheckedModeBanner: false,
+    //   home:
+    Scaffold(
+      body:
+          subjectTeachers.isEmpty
+              ? Center(
+                child: CircularProgressIndicator(
                   color:
                       themeController.initialTheme == Themes.customLightTheme
                           ? Color.fromARGB(255, 40, 41, 61)
                           : Color.fromARGB(255, 210, 209, 224),
-                  backgroundColor:
+                ),
+              )
+              : RefreshIndicator(
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
+                backgroundColor:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 210, 209, 224)
+                        : Color.fromARGB(255, 46, 48, 97),
+                onRefresh: () async {
+                  await networkController.checkConnectivityManually();
+                  await getSubTeachersData();
+                },
+                child: Container(
+                  color:
                       themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 210, 209, 224)
-                          : Color.fromARGB(255, 46, 48, 97),
-                  onRefresh: () async {
-                    await networkController.checkConnectivityManually();
-                    await getSubTeachersData();
-                  },
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                   child: Column(
                     children: [
                       Container(
                         padding: EdgeInsets.only(top: 30),
                         height: 100,
-                        color:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 210, 209, 224)
-                                : Color.fromARGB(255, 40, 41, 61),
+
                         // color: Colors.red,
                         child: Row(
                           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -333,6 +338,16 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodySmall!.copyWith(
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              )
+                                              : Color.fromARGB(255, 40, 41, 61),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 23,
                                     ),
@@ -346,15 +361,30 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
                                 onPressed: () {
                                   showSearch(
                                     context: context,
-                                    delegate: SearchCustom(
-                                      subjectTeachers,
-                                      teachersImages,
+                                    delegate: DynamicSearch(
+                                      elements: subjectTeachers,
+                                      elementsImages: teachersImages,
+                                      searchType: 'teachers',
+                                      onItemTap: (teacher) {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => TeachersCourses(
+                                              TeacherData: teacher,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   );
                                 },
                                 icon: Icon(
                                   Icons.search_outlined,
-                                  color: Color.fromARGB(255, 210, 209, 224),
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
                                 ),
                               ),
                             ),
@@ -369,385 +399,221 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
                             color:
                                 themeController.initialTheme ==
                                         Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
+                                    ? Color.fromARGB(255, 210, 209, 224)
+                                    : Color.fromARGB(255, 40, 41, 61),
                             borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30),
+                              topLeft: Radius.circular(60),
+                              topRight: Radius.circular(60),
                             ),
                           ),
-                          child: Column(children: [
-                            SizedBox(height: 20),
-                            Text(
-                              "Choose a teacher".tr,
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                fontStyle: FontStyle.normal,
-                                color:
-                                themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                    ?
-                                Color.fromARGB(255, 210, 209, 224)
-                                    :
-                                Color.fromARGB(255, 40, 41, 61)
-
-                                ,
-                              ),
-                            ),
-                            SizedBox(height: 20),
-                            Expanded(
-                              child: GridView.builder(
-                                scrollDirection: Axis.vertical,
-                                physics: AlwaysScrollableScrollPhysics(),
-                                gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10
+                          child: Column(
+                            children: [
+                              SizedBox(height: 20),
+                              Text(
+                                "Choose a teacher".tr,
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FontStyle.normal,
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
                                 ),
-                                controller: scrollController,
-                                itemCount: subjectTeachers.length,
-                                itemBuilder: (context, i) {
-                                  int teacherId = subjectTeachers[i]["id"];
-                                  Uint8List? imageBytes = teachersImages[teacherId];
-                                  return InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) => TeachersCourses(
-                                            TeacherData: subjectTeachers[i],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Container(
-                                      margin: EdgeInsets.only(
-                                        left: 1,
-                                        right: 1,
-                                        top: 2,
+                              ),
+                              SizedBox(height: 20),
+                              Expanded(
+                                child: GridView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 10,
+                                        mainAxisSpacing: 10,
                                       ),
-                                      padding: EdgeInsets.all(10),
-                                      height: 120,
-                                      width: 120,
-                                      decoration: BoxDecoration(
-                                        // color: Colors.red,
-                                        border: Border.all(
-                                          color: Color.fromARGB(
-                                            255,
-                                            40,
-                                            41,
-                                            61,
-                                          ),
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                          15,
-                                        ),
-                                      ),
-                                      child: Stack(
-                                        children: [
-                                          Positioned(
-                                            right: 10,
-                                            top: 3,
-                                            child:
-                                            // InkWell(
-                                            //   onTap: () {
-                                            //     favoriteController.toggleFavorite(
-                                            //       teacherId.toString(),
-                                            //     );
-                                            //   },
-                                            //   child: GetBuilder<FavoriteController>(
-                                            //     builder: (controller) {
-                                            //       final isFav =
-                                            //           controller.isFavorite[teacherId
-                                            //               .toString()] ??
-                                            //           false;
-                                            //
-                                            //       return Icon(
-                                            //         isFav
-                                            //             ? Icons.favorite
-                                            //             : Icons
-                                            //                 .favorite_border_outlined,
-                                            //         size: 30,
-                                            //         color: Colors.red,
-                                            //       );
-                                            //     },
-                                            //   ),
-                                            // ),
-                                            GetBuilder<FavoriteController>(
-                                              builder: (controller) {
-                                                final isFav =
-                                                    controller
-                                                        .isFavorite[teacherId
-                                                        .toString()] ??
-                                                        false;
-
-                                                return LikeButton(
-                                                  size: 30,
-                                                  isLiked: isFav,
-                                                  likeBuilder: (
-                                                      bool isLiked,
-                                                      ) {
-                                                    return Icon(
-                                                      isLiked
-                                                          ? Icons.favorite
-                                                          : Icons
-                                                          .favorite_border_outlined,
-                                                      color: Colors.red,
-                                                      size: 30,
-                                                    );
-                                                  },
-                                                  onTap: (
-                                                      bool isLiked,
-                                                      ) async {
-                                                    controller.toggleFavorite(
-                                                      teacherId.toString(),
-                                                    );
-                                                    return !isLiked;
-                                                  },
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                          Center(
-                                            child: Column(
-                                              children: [
-                                                SizedBox(height: 15),
-                                                imageBytes != null
-                                                    ? Image.asset(
-                                                  ImageAssets
-                                                      .teacherAvatar,
-                                                  height: 100,
-                                                  width: 100,
-                                                )
-                                                    : Image.asset(
-                                                  ImageAssets.teacherAvatar,
+                                  controller: scrollController,
+                                  itemCount: subjectTeachers.length,
+                                  itemBuilder: (context, i) {
+                                    int teacherId = subjectTeachers[i]["id"];
+                                    Uint8List? imageBytes =
+                                        teachersImages[teacherId];
+                                    return InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => TeachersCourses(
+                                                  TeacherData:
+                                                      subjectTeachers[i],
                                                 ),
-                                                SizedBox(height: 10),
-                                                Text(
-                                                  "${subjectTeachers[i]["name"]}".tr,
-                                                  style: TextStyle(
-                                                    overflow:
-                                                    TextOverflow.ellipsis,
-                                                    fontSize: 16,
-                                                    fontWeight:
-                                                    FontWeight.w400,
-                                                    fontStyle:
-                                                    FontStyle.normal,
-                                                    color:
-                                                    themeController
-                                                        .initialTheme ==
-                                                        Themes
-                                                            .customLightTheme
-                                                        ? Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    )
-                                                        : Color.fromARGB(
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.only(
+                                          left: 1,
+                                          right: 1,
+                                          top: 2,
+                                        ),
+                                        padding: EdgeInsets.all(10),
+                                        height: 120,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          // color: Colors.red,
+                                          border: Border.all(
+                                            color:
+                                                themeController.initialTheme ==
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
                                                       255,
                                                       40,
                                                       41,
                                                       61,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              right: 10,
+                                              top: 3,
+                                              child:
+                                              // InkWell(
+                                              //   onTap: () {
+                                              //     favoriteController.toggleFavorite(
+                                              //       teacherId.toString(),
+                                              //     );
+                                              //   },
+                                              //   child: GetBuilder<FavoriteController>(
+                                              //     builder: (controller) {
+                                              //       final isFav =
+                                              //           controller.isFavorite[teacherId
+                                              //               .toString()] ??
+                                              //           false;
+                                              //
+                                              //       return Icon(
+                                              //         isFav
+                                              //             ? Icons.favorite
+                                              //             : Icons
+                                              //                 .favorite_border_outlined,
+                                              //         size: 30,
+                                              //         color: Colors.red,
+                                              //       );
+                                              //     },
+                                              //   ),
+                                              // ),
+                                              GetBuilder<FavoriteController>(
+                                                builder: (controller) {
+                                                  final isFav =
+                                                      controller
+                                                          .isFavorite[teacherId
+                                                          .toString()] ??
+                                                      false;
+
+                                                  return LikeButton(
+                                                    size: 30,
+                                                    isLiked: isFav,
+                                                    likeBuilder: (
+                                                      bool isLiked,
+                                                    ) {
+                                                      return Icon(
+                                                        isLiked
+                                                            ? Icons.favorite
+                                                            : Icons
+                                                                .favorite_border_outlined,
+                                                        color: Colors.red,
+                                                        size: 30,
+                                                      );
+                                                    },
+                                                    onTap: (
+                                                      bool isLiked,
+                                                    ) async {
+                                                      controller.toggleFavorite(
+                                                        teacherId.toString(),
+                                                      );
+                                                      return !isLiked;
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            Center(
+                                              child: Column(
+                                                children: [
+                                                  SizedBox(height: 15),
+                                                  imageBytes != null
+                                                      ? Image.asset(
+                                                        ImageAssets
+                                                            .teacherAvatar,
+                                                        height: 100,
+                                                        width: 100,
+                                                      )
+                                                      : Image.asset(
+                                                        ImageAssets
+                                                            .teacherAvatar,
+                                                      ),
+                                                  SizedBox(height: 10),
+                                                  Text(
+                                                    "${subjectTeachers[i]["name"]}"
+                                                        .tr,
+                                                    style: TextStyle(
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      color:
+                                                          themeController
+                                                                      .initialTheme ==
+                                                                  Themes
+                                                                      .customLightTheme
+                                                              ? Color.fromARGB(
+                                                                255,
+                                                                40,
+                                                                41,
+                                                                61,
+                                                              )
+                                                              : Color.fromARGB(
+                                                                255,
+                                                                210,
+                                                                209,
+                                                                224,
+                                                              ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                },
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          ],),
+                            ],
+                          ),
                         ),
                       ),
-
                     ],
                   ),
                 ),
-      ),
-    );
-  }
-}
-
-class SearchCustom extends SearchDelegate {
-  final List elements;
-  final Map<int, Uint8List> elementsImages;
-
-  SearchCustom(this.elements, this.elementsImages);
-
-  List? sortedItems;
-
-  @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-        onPressed: () {
-          query = "";
-        },
-        icon: const Icon(Icons.cleaning_services),
-      ),
-    ];
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    return IconButton(
-      onPressed: () {
-        close(context, null);
-      },
-      icon: const Icon(Icons.arrow_back),
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    sortedItems =
-        elements
-            .where(
-              (element) =>
-                  element["name"].toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
-
-    return ListView.builder(
-      itemCount: sortedItems!.length,
-      itemBuilder: (context, index) {
-        int elementsId = sortedItems![index]["id"];
-        Uint8List? imageBytes =
-            elementsImages[elementsId]; // Fetch from storeImages map
-
-        return InkWell(
-          onTap: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) =>
-                        TeachersCourses(TeacherData: sortedItems![index]),
               ),
-            );
-          },
-          child: SizedBox(
-            height: 100,
-            child: Card(
-              child: ListTile(
-                leading:
-                    imageBytes != null
-                        ? Image.memory(
-                          imageBytes,
-                          height: 60,
-                          width: 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              ImageAssets.teacher,
-                              height: 50,
-                              width: 50,
-                              fit: BoxFit.cover,
-                            );
-                          },
-                        )
-                        : Image.asset(
-                          ImageAssets.teacher,
-                          height: 50,
-                          width: 50,
-                          fit: BoxFit.cover,
-                        ),
-                title: Text(
-                  sortedItems![index]["name"],
-                  style: TextStyle(
-                    fontSize: 16,
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    sortedItems =
-        elements
-            .where(
-              (element) =>
-                  element["name"].toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
-
-    return ListView.builder(
-      itemCount: sortedItems!.length,
-      itemBuilder: (context, index) {
-        int elementsId = sortedItems![index]["id"];
-        Uint8List? imageBytes =
-            elementsImages[elementsId]; // Fetch from storeImages map
-
-        return SizedBox(
-          height: 100,
-          child: Card(
-            child: ListTile(
-              leading:
-                  imageBytes != null
-                      ? Image.memory(
-                        imageBytes,
-                        // height: 80,
-                        // width:80,
-                        fit: BoxFit.fill,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            ImageAssets.teacher,
-                            height: 50,
-                            width: 50,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      )
-                      : Image.asset(
-                        ImageAssets.teacher,
-                        height: 50,
-                        width: 50,
-                        fit: BoxFit.cover,
-                      ),
-              title: Center(
-                child: Text(
-                  sortedItems![index]["name"],
-                  style: TextStyle(
-                    fontSize: 20,
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                ),
-              ),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            TeachersCourses(TeacherData: sortedItems![index]),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
+      // ),
     );
   }
 }

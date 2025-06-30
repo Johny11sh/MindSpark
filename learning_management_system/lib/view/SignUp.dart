@@ -88,7 +88,6 @@ class _SignUpState extends State<SignUp> {
           }
 
           await sharedPrefs.prefs.setString('token', responseBody['token']);
-          await sharedPrefs.prefs.setString('userName', responseBody["user"]['userName']);
           await sharedPrefs.prefs.setBool('isLoggedIn', true);
 
           return responseBody;
@@ -153,7 +152,7 @@ class _SignUpState extends State<SignUp> {
     visibilityIcon1 = const Icon(
       Icons.visibility,
       size: 25,
-      color: Color.fromARGB(255, 40, 41, 61),
+      color: Color.fromARGB(255, 210, 209, 224),
     );
     invisibilityIcon1 = const Icon(
       Icons.visibility_off,
@@ -163,7 +162,7 @@ class _SignUpState extends State<SignUp> {
     visibilityIcon2 = const Icon(
       Icons.visibility,
       size: 25,
-      color: Color.fromARGB(255, 40, 41, 61),
+      color: Color.fromARGB(255, 210, 209, 224),
     );
     invisibilityIcon2 = const Icon(
       Icons.visibility_off,
@@ -188,16 +187,17 @@ class _SignUpState extends State<SignUp> {
       home: Scaffold(
         body: Container(
           width: Get.width,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 40, 41, 61),
-                Color.fromARGB(255, 210, 209, 224),
-              ],
-              begin: Alignment.bottomLeft,
-              end: Alignment.topRight,
-            ),
-          ),
+          // decoration: const BoxDecoration(
+          //   gradient: LinearGradient(
+          //     colors: [
+          //       Color.fromARGB(255, 40, 41, 61),
+          //       Color.fromARGB(255, 210, 209, 224),
+          //     ],
+          //     begin: Alignment.bottomLeft,
+          //     end: Alignment.topRight,
+          //   ),
+          // ),
+          color: Color.fromARGB(255, 210, 209, 224),
           child: ListView(
             scrollDirection: Axis.vertical,
             physics: AlwaysScrollableScrollPhysics(),
@@ -205,27 +205,49 @@ class _SignUpState extends State<SignUp> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Padding(padding: EdgeInsets.all(30)),
-                  Center(
-                    child: CircleAvatar(
-                      radius: 80,
-                      child: Image.asset(
-                        ImageAssets.AppLogo,
-                        width: 220,
-                        height: 220,
-                      ),
-                    ),
-                  ),
-                  Padding(padding: EdgeInsets.all(20)),
-                  Text(
-                    "Sign Up".tr,
-                    style: const TextStyle(
+                  Padding(padding: EdgeInsets.all(10)),
+                  Row( mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(width: 20,),
+                      IconButton(
+                                    onPressed: () {
+                                      Get.to(()=>OnBoarding());
+                                    },
+                                    icon: Icon(
+                                      Icons.arrow_back_outlined,
+                                      size: 35,
+                                      color: Color.fromARGB(255, 40, 41, 61),
+                                    ),
+                                  ),
+                      SizedBox(width: Get.width/10,),
+                    Text("Create New Account".tr,style: const TextStyle(
                       color: Color.fromARGB(255, 40, 41, 61),
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
+                    ),)
+                  ],),
+                  Padding(padding: EdgeInsets.all(10)),
+
+                  Container(
+                    width: Get.width,
+                    height: Get.height - 50,
+                    decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 40, 41, 61),
+
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(40),topRight: Radius.circular(40)),
                     ),
+                      child: Column(
+                        children: [
+                          Padding(padding: EdgeInsets.all(20)),
+                          Center(
+                    child: Image.asset(
+                        ImageAssets.AppIconNoBackGround,
+                        width: 140,
+                        height: 140,
+                      ),
                   ),
                   Padding(padding: EdgeInsets.all(20)),
+                  
                   Container(
                     margin: const EdgeInsets.only(
                       bottom: 20,
@@ -240,6 +262,7 @@ class _SignUpState extends State<SignUp> {
                             height: 80,
                             padding: const EdgeInsets.only(right: 20, left: 20),
                             child: TextFormField(
+                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                               controller: userNameController,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
@@ -276,7 +299,7 @@ class _SignUpState extends State<SignUp> {
                                   borderRadius: BorderRadius.circular(6),
                                   borderSide: const BorderSide(
                                     width: 2,
-                                    color: Color.fromARGB(255, 40, 41, 61),
+                                    color: Color.fromARGB(255, 210, 209, 224),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -321,6 +344,7 @@ class _SignUpState extends State<SignUp> {
                             height: 80,
                             padding: const EdgeInsets.only(right: 20, left: 20),
                             child: TextFormField(
+                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                               controller: numberController,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
@@ -354,7 +378,7 @@ class _SignUpState extends State<SignUp> {
                                   borderRadius: BorderRadius.circular(6),
                                   borderSide: const BorderSide(
                                     width: 2,
-                                    color: Color.fromARGB(255, 40, 41, 61),
+                                    color: Color.fromARGB(255, 210, 209, 224),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -401,6 +425,7 @@ class _SignUpState extends State<SignUp> {
                             height: 80,
                             padding: const EdgeInsets.only(right: 20, left: 20),
                             child: TextFormField(
+                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                               controller: passwordController,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
@@ -415,6 +440,7 @@ class _SignUpState extends State<SignUp> {
                               obscuringCharacter: '*',
                               keyboardType: TextInputType.visiblePassword,
                               decoration: InputDecoration(
+                                helperStyle: TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                                 prefixIcon: const Icon(
                                   Icons.lock_outline_rounded,
                                   size: 30,
@@ -449,7 +475,7 @@ class _SignUpState extends State<SignUp> {
                                   borderRadius: BorderRadius.circular(6),
                                   borderSide: const BorderSide(
                                     width: 2,
-                                    color: Color.fromARGB(255, 40, 41, 61),
+                                    color: Color.fromARGB(255, 210, 209, 224),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -490,6 +516,7 @@ class _SignUpState extends State<SignUp> {
                             height: 80,
                             padding: const EdgeInsets.only(right: 20, left: 20),
                             child: TextFormField(
+                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                               controller: confirmPasswordController,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
@@ -504,6 +531,7 @@ class _SignUpState extends State<SignUp> {
                               obscuringCharacter: '*',
                               keyboardType: TextInputType.visiblePassword,
                               decoration: InputDecoration(
+                                helperStyle: TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                                 prefixIcon: const Icon(
                                   Icons.lock_outline_rounded,
                                   size: 30,
@@ -533,7 +561,7 @@ class _SignUpState extends State<SignUp> {
                                   borderRadius: BorderRadius.circular(6),
                                   borderSide: const BorderSide(
                                     width: 2,
-                                    color: Color.fromARGB(255, 40, 41, 61),
+                                    color: Color.fromARGB(255, 210, 209, 224),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -573,7 +601,7 @@ class _SignUpState extends State<SignUp> {
                             borderRadius: BorderRadius.circular(6),
                             child: Container(
                               alignment: Alignment.center,
-                              width: Get.width / 2.5,
+                              width: Get.width / 1.5,
                               height: 35,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(6),
@@ -609,17 +637,16 @@ class _SignUpState extends State<SignUp> {
                                     );
                                   }
                                 },
-                                color: Color.fromARGB(255, 40, 41, 61),
-                                minWidth: Get.width / 2.5,
+                                color: Color.fromARGB(255, 210, 209, 224),
+                                minWidth: Get.width / 1.5,
                                 height: 35,
-                                elevation: 5,
                                 child: Text(
                                   "Sign Up".tr,
                                   style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w400,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FontStyle.normal,
-                                    color: Color.fromARGB(255, 153, 151, 188),
+                                    color: Color.fromARGB(255, 40, 41, 61),
                                   ),
                                 ),
                               ),
@@ -649,10 +676,21 @@ class _SignUpState extends State<SignUp> {
                                 child: Text(
                                   "Log In".tr,
                                   style: const TextStyle(
-                                    color: Color.fromARGB(255, 40, 41, 61),
+                                    color: Color.fromARGB(
+                                255,
+                                254,
+                                233,
+                                204,
+                              ),
                                     fontSize: 15,
                                     fontWeight: FontWeight.w400,
                                     decoration: TextDecoration.underline,
+                                    decorationColor: Color.fromARGB(
+                                255,
+                                254,
+                                233,
+                                204,
+                              ),
                                   ),
                                 ),
                               ),
@@ -662,6 +700,9 @@ class _SignUpState extends State<SignUp> {
                       ),
                     ),
                   ),
+                        ],
+                      )
+                  )
                 ],
               ),
             ],

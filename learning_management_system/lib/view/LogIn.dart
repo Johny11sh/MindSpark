@@ -86,7 +86,6 @@ class _LogInState extends State<LogIn> {
         final String token = responseBody['token'];
 
         await sharedPrefs.prefs.setString('token', token);
-        await sharedPrefs.prefs.setString('userName', responseBody["user"]['userName']);
         await sharedPrefs.prefs.setBool('isLoggedIn', true);
 
         final savedToken = sharedPrefs.prefs.getString('token');
@@ -142,7 +141,7 @@ class _LogInState extends State<LogIn> {
     visibilityIcon = const Icon(
       Icons.visibility,
       size: 25,
-      color: Color.fromARGB(255, 40, 41, 61),
+      color: Color.fromARGB(255, 210, 209, 224),
     );
     invisibilityIcon = const Icon(
       Icons.visibility_off,
@@ -174,16 +173,17 @@ class _LogInState extends State<LogIn> {
       home: Scaffold(
         body: Container(
           width: Get.width,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 40, 41, 61),
-                Color.fromARGB(255, 210, 209, 224),
-              ],
-              begin: Alignment.bottomLeft,
-              end: Alignment.topRight,
-            ),
-          ),
+          // decoration: const BoxDecoration(
+          //   gradient: LinearGradient(
+          //     colors: [
+          //       Color.fromARGB(255, 40, 41, 61),
+          //       Color.fromARGB(255, 210, 209, 224),
+          //     ],
+          //     begin: Alignment.bottomLeft,
+          //     end: Alignment.topRight,
+          //   ),
+          // ),
+          color: Color.fromARGB(255, 210, 209, 224),
           child: ListView(
             scrollDirection: Axis.vertical,
             physics: AlwaysScrollableScrollPhysics(),
@@ -191,25 +191,46 @@ class _LogInState extends State<LogIn> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Padding(padding: EdgeInsets.all(30)),
-                  Center(
-                    child: CircleAvatar(
-                      radius: 80,
-                      child: Image.asset(
-                        ImageAssets.AppLogo,
-                        width: 220,
-                        height: 220,
-                      ),
-                    ),
-                  ),
-                  Padding(padding: EdgeInsets.all(20)),
-                  Text(
-                    "Log In".tr,
-                    style: const TextStyle(
+                  Padding(padding: EdgeInsets.all(10)),
+                  Row( mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(width: 20,),
+                      IconButton(
+                                    onPressed: () {
+                                      Get.to(()=>OnBoarding());
+                                    },
+                                    icon: Icon(
+                                      Icons.arrow_back_outlined,
+                                      size: 35,
+                                      color: Color.fromARGB(255, 40, 41, 61),
+                                    ),
+                                  ),
+                      SizedBox(width: Get.width/10,),
+                    Text("Welcome Back!".tr,style: const TextStyle(
                       color: Color.fromARGB(255, 40, 41, 61),
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
+                    ),)
+                  ],),
+                  Padding(padding: EdgeInsets.all(10)),
+
+                  Container(
+                    width: Get.width,
+                    height: Get.height - 50,
+                    decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 40, 41, 61),
+
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(40),topRight: Radius.circular(40)),
                     ),
+                      child: Column(
+                        children: [
+                          Padding(padding: EdgeInsets.all(20)),
+                          Center(
+                    child: Image.asset(
+                        ImageAssets.AppIconNoBackGround,
+                        width: 140,
+                        height: 140,
+                      ),
                   ),
                   Padding(padding: EdgeInsets.all(20)),
                   Container(
@@ -226,6 +247,7 @@ class _LogInState extends State<LogIn> {
                             height: 80,
                             padding: const EdgeInsets.only(right: 20, left: 20),
                             child: TextFormField(
+                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                               controller: userNameController,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
@@ -262,7 +284,7 @@ class _LogInState extends State<LogIn> {
                                   borderRadius: BorderRadius.circular(6),
                                   borderSide: const BorderSide(
                                     width: 2,
-                                    color: Color.fromARGB(255, 40, 41, 61),
+                                    color: Color.fromARGB(255, 210, 209, 224),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -307,6 +329,7 @@ class _LogInState extends State<LogIn> {
                             height: 80,
                             padding: const EdgeInsets.only(right: 20, left: 20),
                             child: TextFormField(
+                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                               controller: passwordController,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
@@ -321,6 +344,7 @@ class _LogInState extends State<LogIn> {
                               obscuringCharacter: '*',
                               keyboardType: TextInputType.visiblePassword,
                               decoration: InputDecoration(
+                                helperStyle: TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
                                 prefixIcon: const Icon(
                                   Icons.lock_outline_rounded,
                                   size: 30,
@@ -355,7 +379,7 @@ class _LogInState extends State<LogIn> {
                                   borderRadius: BorderRadius.circular(6),
                                   borderSide: const BorderSide(
                                     width: 2,
-                                    color: Color.fromARGB(255, 40, 41, 61),
+                                    color: Color.fromARGB(255, 210, 209, 224),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -394,9 +418,10 @@ class _LogInState extends State<LogIn> {
                           const SizedBox(height: 20),
                           Container(
                             alignment: Alignment.center,
-                            width: Get.width / 2.5,
+                            width: Get.width / 1.5,
                             height: 35,
                             decoration: BoxDecoration(
+                              color: Color.fromARGB(255, 210, 209, 224),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: MaterialButton(
@@ -430,56 +455,26 @@ class _LogInState extends State<LogIn> {
                                   );
                                 }
                               },
-                              color: Color.fromARGB(255, 40, 41, 61),
-                              minWidth: Get.width / 2.5,
+                              minWidth: Get.width / 1.5,
                               height: 35,
                               elevation: 5,
                               child: Text(
                                 "Log In".tr,
                                 style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FontStyle.normal,
-                                  color: Color.fromARGB(255, 153, 151, 188),
+                                  color: Color.fromARGB(255, 40, 41, 61),
                                 ),
                               ),
                             ),
                           ),
                           
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Don't have an account?".tr,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color: Color.fromARGB(255, 210, 209, 224),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Get.toNamed("/SignUp");
-                                },
-                                child: Text(
-                                  "Sign Up".tr,
-                                  style: const TextStyle(
-                                    color: Color.fromARGB(255, 40, 41, 61),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w400,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
+                          SizedBox(height: 40),
                           Text(
                             "Support team".tr,
                             style: const TextStyle(
-                              color: Color.fromARGB(255, 40, 41, 61),
+                              color: Color.fromARGB(255, 210, 209, 224),
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
@@ -533,6 +528,47 @@ class _LogInState extends State<LogIn> {
                                 ),
                               ),
                             ],
+                            
+                          ),
+                          SizedBox(height: 60,),
+                            Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account?".tr,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  fontStyle: FontStyle.normal,
+                                  color: Color.fromARGB(255, 210, 209, 224),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Get.toNamed("/SignUp");
+                                },
+                                child: Text(
+                                  "Sign Up".tr,
+                                  style: const TextStyle(
+                                    color: Color.fromARGB(
+                                255,
+                                254,
+                                233,
+                                204,
+                              ),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w400,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: Color.fromARGB(
+                                255,
+                                254,
+                                233,
+                                204,
+                              ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -540,10 +576,10 @@ class _LogInState extends State<LogIn> {
                   ),
                 ],
               ),
-            ],
+               ) ],
           ),
-        ),
+        ]),
       ),
-    );
+    ));
   }
 }

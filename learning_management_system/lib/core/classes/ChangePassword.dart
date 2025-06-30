@@ -14,6 +14,7 @@ import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
 import '../../view/LogIn.dart';
 import '../constants/ImageAssets.dart';
+import '../../controller/ProfileController.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({super.key});
@@ -46,6 +47,7 @@ class _ChangePasswordState extends State<ChangePassword> {
   late Widget temp;
   String? success;
   bool? isConnected;
+  final ProfileController profileController = Get.find<ProfileController>();
 
   Future<Map<String, dynamic>?> changePasswordData() async {
     try {

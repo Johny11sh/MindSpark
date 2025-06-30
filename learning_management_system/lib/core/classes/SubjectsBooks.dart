@@ -16,6 +16,7 @@ import '../../themes/Themes.dart';
 import '../../controller/NetworkController.dart';
 import '../../locale/LocaleController.dart';
 import '../../view/NavBar.dart';
+import '../function/DynamicSearch.dart';
 
 class SubjectsBooks extends StatefulWidget {
   final int subjectId;
@@ -36,6 +37,7 @@ class _SubjectsBooksState extends State<SubjectsBooks> {
   final ThemeController themeController = Get.find<ThemeController>();
   final NetworkController networkController = Get.find<NetworkController>();
   final LocaleController localeController = Get.find<LocaleController>();
+  ScrollController scrollController = ScrollController();
 
   List<Map<String, dynamic>> subjectBooks = [];
   final Map<int, Uint8List> subjectBooksImages = {};
@@ -203,7 +205,7 @@ class _SubjectsBooksState extends State<SubjectsBooks> {
         final List<dynamic> subjectBooksList =
             responseBody is List
                 ? responseBody
-                : (responseBody['books'] ?? [responseBody]);
+                : (responseBody['resources'] ?? [responseBody]);
 
         debugPrint("Parsed books list: ${subjectBooksList.length} books");
 
@@ -332,21 +334,7 @@ class _SubjectsBooksState extends State<SubjectsBooks> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: themeController.initialTheme,
-      locale: localeController.initialLang,
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("${widget.subjectName} Books".tr),
-          centerTitle: true,
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.arrow_back),
-          ),
-        ),
+    return Scaffold(
         body: subjectBooks.isEmpty
             ? Center(
                 child: CircularProgressIndicator(
@@ -367,24 +355,136 @@ class _SubjectsBooksState extends State<SubjectsBooks> {
                   await networkController.checkConnectivityManually();
                   await getSubjectBooksData();
                 },
-                child: ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: subjectBooks.length + 1, // +1 for bottom spacing
-                  itemBuilder: (context, index) {
-                    if (index == subjectBooks.length) {
-                      // Bottom spacing item
-                      return SizedBox(height: 30);
-                    }
-
-                    try {
-                      final book = subjectBooks[index];
+              child: Container(
+                color: themeController.initialTheme == Themes.customLightTheme
+                    ? Color.fromARGB(255, 40, 41, 61)
+                    : Color.fromARGB(255, 210, 209, 224),
+                child: Column(
+                  children: [
+                    // Header section
+                    Container(
+                      padding: EdgeInsets.only(top: 30),
+                      height: 100,
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: Icon(
+                                Icons.arrow_back_outlined,
+                                color: themeController.initialTheme == Themes.customLightTheme
+                                    ? Color.fromARGB(255, 210, 209, 224)
+                                    : Color.fromARGB(255, 40, 41, 61),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  right: Get.width / 40,
+                                ),
+                                child: Text(
+                                  "${widget.subjectName} Books".tr,
+                                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                                    color: themeController.initialTheme == Themes.customLightTheme
+                                        ? Color.fromARGB(255, 210, 209, 224)
+                                        : Color.fromARGB(255, 40, 41, 61),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 23,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: IconButton(
+                              onPressed: () {
+                                showSearch(
+                                  context: context,
+                                  delegate: DynamicSearch(
+                                    elements: subjectBooks,
+                                    elementsImages: subjectBooksImages,
+                                    searchType: 'books',
+                                    subjectName: widget.subjectName,
+                                    onItemTap: (book) {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => BookDetails(
+                                            BookData: book,
+                                            bookImage: subjectBooksImages[book['id']],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.search_outlined,
+                                color: themeController.initialTheme == Themes.customLightTheme
+                                    ? Color.fromARGB(255, 210, 209, 224)
+                                    : Color.fromARGB(255, 40, 41, 61),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 30),
+                    
+                    // Main content section with rounded container
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.only(left: 20, right: 20),
+                        decoration: BoxDecoration(
+                          color: themeController.initialTheme == Themes.customLightTheme
+                              ? Color.fromARGB(255, 210, 209, 224)
+                              : Color.fromARGB(255, 40, 41, 61),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(60),
+                            topRight: Radius.circular(60),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Text(
+                              "Choose a book".tr,
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.normal,
+                                color: themeController.initialTheme == Themes.customLightTheme
+                                    ? Color.fromARGB(255, 40, 41, 61)
+                                    : Color.fromARGB(255, 210, 209, 224),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            Expanded(
+                              child: GridView.builder(
+                                scrollDirection: Axis.vertical,
+                                physics: AlwaysScrollableScrollPhysics(),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                ),
+                                controller: scrollController,
+                                itemCount: subjectBooks.length,
+                                itemBuilder: (context, i) {
+                                  try {
+                                    final book = subjectBooks[i];
                       final bookId = book["id"] as int? ?? 0;
                       Uint8List? imageBytes = subjectBooksImages[bookId];
                       final bookName = book["name"]?.toString() ?? "Unknown Book";
 
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 16),
-                        child: InkWell(
+                                    return InkWell(
                           onTap: () {
                             Navigator.push(
                               context,
@@ -396,79 +496,86 @@ class _SubjectsBooksState extends State<SubjectsBooks> {
                               ),
                             );
                           },
-                          child: Card(
-                            elevation: 4,
                             child: Container(
+                                        margin: EdgeInsets.only(
+                                          left: 1,
+                                          right: 1,
+                                          top: 2,
+                                        ),
+                                        padding: EdgeInsets.all(10),
                               height: 120,
-                              child: Row(
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: themeController.initialTheme == Themes.customLightTheme
+                                                ? Color.fromARGB(255, 40, 41, 61)
+                                                : Color.fromARGB(255, 210, 209, 224),
+                                          ),
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                        child: Column(
                                 children: [
                                   // Book Image
                                   Container(
-                                    width: 120,
-                                    height: 120,
+                                              height: 60,
+                                              width: 60,
                                     child: imageBytes != null
                                         ? Image.memory(
                                             imageBytes,
                                             fit: BoxFit.cover,
                                             errorBuilder: (context, error, stackTrace) {
                                               return Image.asset(
-                                                ImageAssets.subject,
+                                                          ImageAssets.book,
                                                 fit: BoxFit.cover,
                                               );
                                             },
                                           )
                                         : Image.asset(
-                                            ImageAssets.subject,
+                                                      ImageAssets.book,
                                             fit: BoxFit.cover,
                                           ),
                                   ),
-                                  // Book Details
-                                  Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(16),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
+                                            SizedBox(height: 8),
+                                            
+                                            // Book Name
                                           Text(
                                             bookName.tr,
                                             style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: themeController.initialTheme ==
-                                                      Themes.customLightTheme
+                                                overflow: TextOverflow.ellipsis,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                fontStyle: FontStyle.normal,
+                                                color: themeController.initialTheme == Themes.customLightTheme
                                                   ? Color.fromARGB(255, 40, 41, 61)
                                                   : Color.fromARGB(255, 210, 209, 224),
                                             ),
                                             maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
                                           ),
-                                          SizedBox(height: 8),
-                                          Text(
-                                            "Book ID: $bookId",
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(255, 40, 41, 61).withOpacity(0.7)
-                                                  : Color.fromARGB(255, 210, 209, 224).withOpacity(0.7),
-                                            ),
-                                          ),
-                                          SizedBox(height: 4),
+                                            
+                                            SizedBox(height: 4),
+                                            
+                                            // Subject Name with Icon
                                           Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               Icon(
                                                 Icons.book,
-                                                size: 16,
+                                                  size: 12,
                                                 color: Colors.blue,
                                               ),
-                                              SizedBox(width: 4),
-                                              Text(
+                                                SizedBox(width: 2),
+                                                Expanded(
+                                                  child: Text(
                                                 widget.subjectName,
                                                 style: TextStyle(
-                                                  fontSize: 12,
+                                                      fontSize: 10,
                                                   color: Colors.blue,
                                                   fontWeight: FontWeight.w500,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    textAlign: TextAlign.center,
                                                 ),
                                               ),
                                             ],
@@ -476,41 +583,45 @@ class _SubjectsBooksState extends State<SubjectsBooks> {
                                         ],
                                       ),
                                     ),
-                                  ),
-                                  // Arrow Icon
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 16),
-                                    child: Icon(
-                                      Icons.arrow_forward_ios,
-                                      color: themeController.initialTheme ==
-                                              Themes.customLightTheme
+                                    );
+                                  } catch (e) {
+                                    debugPrint("Error rendering book at index $i: $e");
+                                    return Container(
+                                      margin: EdgeInsets.only(
+                                        left: 1,
+                                        right: 1,
+                                        top: 2,
+                                      ),
+                                      padding: EdgeInsets.all(10),
+                                      height: 120,
+                                      width: 120,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: themeController.initialTheme == Themes.customLightTheme
                                           ? Color.fromARGB(255, 40, 41, 61)
                                           : Color.fromARGB(255, 210, 209, 224),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          "Error".tr,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.red,
                             ),
                           ),
                         ),
                       );
-                    } catch (e) {
-                      debugPrint("Error rendering book at index $index: $e");
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 16),
-                        child: Card(
-                          child: ListTile(
-                            title: Text("Error loading book"),
-                            subtitle: Text("Tap to retry"),
-                            onTap: () {
-                              // Retry loading data
-                              getSubjectBooksData();
-                            },
-                          ),
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    }
-                  },
+                      ),
+                    ),
+                  ],
                 ),
               ),
       ),

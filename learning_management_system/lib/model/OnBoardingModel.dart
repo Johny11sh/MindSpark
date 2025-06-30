@@ -2,8 +2,9 @@
 
 class OnBoardingModel {
   final String? title;
+  final String? subtitle;
   final String? image;
   final String? body;
 
-  OnBoardingModel({this.title, this.image, this.body});
+  OnBoardingModel({this.title, this.subtitle, this.image, this.body});
 }

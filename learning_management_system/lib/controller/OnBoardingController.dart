@@ -32,4 +32,12 @@ class OnboardingController extends GetxController {
     currentPage = index;
     update();
   }
+  onSkip(int index) {
+    currentPage = index;
+    pageController.animateToPage(
+          currentPage,
+          duration: Duration(milliseconds: 900),
+          curve: Curves.easeInOut);
+    update();
+  }
 }

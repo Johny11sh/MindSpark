@@ -291,9 +291,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
+    return Scaffold(
         backgroundColor: themeController.initialTheme == Themes.customLightTheme
             ? const Color.fromARGB(255, 210, 209, 224)
             : const Color.fromARGB(255, 40, 41, 61),
@@ -358,7 +356,6 @@ class _VideoPlayerState extends State<VideoPlayer> {
               : SizedBox()
             ],
            
-          ),
         ),
       ),
     );

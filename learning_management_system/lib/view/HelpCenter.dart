@@ -37,7 +37,10 @@ class HelpCenter extends StatelessWidget {
                     },
                     icon: Icon(
                       Icons.arrow_back,
-                      color: Color.fromARGB(255, 210, 209, 224),
+                      color: themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                     ),
                   ),
                 ),
@@ -49,6 +52,10 @@ class HelpCenter extends StatelessWidget {
                       child: Text(
                         "Help Center".tr,
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          color: themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                           fontWeight: FontWeight.bold,
                           fontSize: 23,
                         ),
@@ -64,12 +71,13 @@ class HelpCenter extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
+                    themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+                  topLeft: Radius.circular(60),
+                  topRight: Radius.circular(60),
                 ),
               ),
               child: Column(

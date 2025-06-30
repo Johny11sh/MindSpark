@@ -2,26 +2,27 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:learning_management_system/controller/FavoriteController.dart';
-import 'package:learning_management_system/view/CoursesLessons.dart';
-import 'package:learning_management_system/view/Favorites.dart';
-import 'package:learning_management_system/view/SubjectTeachers.dart';
+import 'package:get/get.dart';
 import 'package:like_button/like_button.dart';
-import '../controller/NetworkController.dart';
-import '../locale/LocaleController.dart';
+import '../core/classes/Courses.dart';
+import 'LogIn.dart';
+import 'SubjectTeachers.dart';
+import '../core/classes/SubjectsBooks.dart';
+import 'Favorites.dart';
+import 'CoursesLessons.dart';
 import '../services/SharedPrefs.dart';
 import '../core/constants/ImageAssets.dart';
 import '../themes/ThemeController.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'LogIn.dart';
-import 'NavBar.dart';
 import '../themes/Themes.dart';
-import '../core/classes/RecommendedCourses.dart';
-import '../core/classes/RatedCourses.dart';
+import '../controller/NetworkController.dart';
+import '../locale/LocaleController.dart';
+import '../controller/FavoriteController.dart';
+import 'NavBar.dart';
+import '../core/function/DynamicSearch.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -31,6 +32,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  
   ScrollController scrollController = ScrollController();
   late SharedPrefs sharedPrefs;
 
@@ -67,6 +69,8 @@ class _HomePageState extends State<HomePage> {
   final Map<int, Uint8List> subscribedCoursesImages = {};
   List<Map<String, dynamic>> cachedSubscribedCourses = [];
   late FavoriteController favoriteController;
+
+  
 
   @override
   void initState() {
@@ -1191,68 +1195,70 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: themeController.initialTheme,
-      locale: localeController.initialLang,
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        // appBar: AppBar(
-        //   leading: IconButton(
-        //     onPressed: () {
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(builder: (context) => Favorites()),
-        //       );
-        //     },
-        //     icon: Icon(Icons.favorite),
-        //   ),
-        //   title: Text("Home Page".tr),
-        //   centerTitle: true,
-        //   actions: [
-        //     IconButton(
-        //       onPressed: () {
-        //         showSearch(
-        //           context: context,
-        //           delegate: SearchCustom(subjects, subjectsImages),
-        //         );
-        //       },
-        //       icon: Icon(Icons.search_outlined),
-        //     ),
-        //   ],
-        // ),
-        body:
-            subjects.isEmpty
-                ? Center(
-                  child: CircularProgressIndicator(
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                )
-                : RefreshIndicator(
+    return
+    // MaterialApp(
+    //   theme: themeController.initialTheme,
+    //   locale: localeController.initialLang,
+    //   debugShowCheckedModeBanner: false,
+    //   home:
+    Scaffold(
+      // appBar: AppBar(
+      //   leading: IconButton(
+      //     onPressed: () {
+      //       Navigator.push(
+      //         context,
+      //         MaterialPageRoute(builder: (context) => Favorites()),
+      //       );
+      //     },
+      //     icon: Icon(Icons.favorite),
+      //   ),
+      //   title: Text("Home Page".tr),
+      //   centerTitle: true,
+      //   actions: [
+      //     IconButton(
+      //       onPressed: () {
+      //         showSearch(
+      //           context: context,
+      //           delegate: SearchCustom(subjects, subjectsImages),
+      //         );
+      //       },
+      //       icon: Icon(Icons.search_outlined),
+      //     ),
+      //   ],
+      // ),
+      body:
+          subjects.isEmpty
+              ? Center(
+                child: CircularProgressIndicator(
                   color:
                       themeController.initialTheme == Themes.customLightTheme
                           ? Color.fromARGB(255, 40, 41, 61)
                           : Color.fromARGB(255, 210, 209, 224),
-                  backgroundColor:
+                ),
+              )
+              : RefreshIndicator(
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
+                backgroundColor:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 210, 209, 224)
+                        : Color.fromARGB(255, 46, 48, 97),
+                onRefresh: () async {
+                  await networkController.checkConnectivityManually();
+                  await getSubjectsData(subjectType);
+                },
+                child: Container(
+                  color:
                       themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 210, 209, 224)
-                          : Color.fromARGB(255, 46, 48, 97),
-                  onRefresh: () async {
-                    await networkController.checkConnectivityManually();
-                    await getSubjectsData(subjectType);
-                  },
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                   child: Column(
                     children: [
                       Container(
                         padding: EdgeInsets.only(top: 30),
                         height: 100,
-                        color:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 210, 209, 224)
-                                : Color.fromARGB(255, 40, 41, 61),
                         // color: Colors.red,
                         child: Row(
                           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1277,6 +1283,16 @@ class _HomePageState extends State<HomePage> {
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodySmall!.copyWith(
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              )
+                                              : Color.fromARGB(255, 40, 41, 61),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 23,
                                     ),
@@ -1290,15 +1306,45 @@ class _HomePageState extends State<HomePage> {
                                 onPressed: () {
                                   showSearch(
                                     context: context,
-                                    delegate: SearchCustom(
-                                      subjects,
-                                      subjectsImages,
+                                    delegate: DynamicSearch(
+                                      elements: subjects,
+                                      elementsImages: subjectsImages,
+                                      searchType: 'subjects',
+                                      onItemTap: (subject) {
+                                        // Navigate based on the current view
+                                        if (isSelected[0]) {
+                                          // Scientific view - navigate to teachers
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => SubjectTeachers(
+                                                SubjectData: subject,
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          // Literary view - navigate to books
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => SubjectsBooks(
+                                                subjectId: subject['id'],
+                                                subjectName: subject['name'],
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
                                     ),
                                   );
                                 },
                                 icon: Icon(
                                   Icons.search_outlined,
-                                  color: Color.fromARGB(255, 210, 209, 224),
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
                                 ),
                               ),
                             ),
@@ -1313,11 +1359,11 @@ class _HomePageState extends State<HomePage> {
                             color:
                                 themeController.initialTheme ==
                                         Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
+                                    ? Color.fromARGB(255, 210, 209, 224)
+                                    : Color.fromARGB(255, 40, 41, 61),
                             borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30),
+                              topLeft: Radius.circular(60),
+                              topRight: Radius.circular(60),
                             ),
                           ),
                           child: ListView(
@@ -1325,7 +1371,7 @@ class _HomePageState extends State<HomePage> {
                             scrollDirection: Axis.vertical,
                             physics: AlwaysScrollableScrollPhysics(),
                             children: [
-                              SizedBox(height: 20),
+                              SizedBox(height: 30),
                               Center(
                                 child: ToggleButtons(
                                   isSelected: isSelected,
@@ -1339,23 +1385,23 @@ class _HomePageState extends State<HomePage> {
                                   borderColor:
                                       themeController.initialTheme ==
                                               Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
                                   selectedBorderColor:
                                       themeController.initialTheme ==
                                               Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
                                   fillColor:
                                       themeController.initialTheme ==
                                               Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
                                   selectedColor:
                                       themeController.initialTheme ==
                                               Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
                                   onPressed: (int newIndex) {
                                     setState(() {
                                       for (
@@ -1410,28 +1456,28 @@ class _HomePageState extends State<HomePage> {
                                                   ? isSelected[0]
                                                       ? Color.fromARGB(
                                                         255,
-                                                        210,
-                                                        209,
-                                                        224,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
                                                         40,
                                                         41,
                                                         61,
                                                       )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      )
                                                   : isSelected[0]
                                                   ? Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  )
-                                                  : Color.fromARGB(
                                                     255,
                                                     40,
                                                     41,
                                                     61,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
                                                   ),
                                         ),
                                       ),
@@ -1463,28 +1509,28 @@ class _HomePageState extends State<HomePage> {
                                                   ? isSelected[0]
                                                       ? Color.fromARGB(
                                                         255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
                                                         210,
                                                         209,
                                                         224,
                                                       )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
                                                   : isSelected[0]
                                                   ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
                                                     255,
                                                     210,
                                                     209,
                                                     224,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
                                                   ),
                                         ),
                                       ),
@@ -1503,8 +1549,13 @@ class _HomePageState extends State<HomePage> {
                                     color:
                                         themeController.initialTheme ==
                                                 Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                            ? Color.fromARGB(255, 40, 41, 61)
+                                            : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
                                   ),
                                 ),
                               ),
@@ -1548,12 +1599,21 @@ class _HomePageState extends State<HomePage> {
                                         decoration: BoxDecoration(
                                           // color: Colors.red,
                                           border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            ),
+                                            color:
+                                                themeController.initialTheme ==
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    ),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             15,
@@ -1611,15 +1671,15 @@ class _HomePageState extends State<HomePage> {
                                                                   .customLightTheme
                                                           ? Color.fromARGB(
                                                             255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
                                                             40,
                                                             41,
                                                             61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
                                                           ),
                                                 ),
                                               ),
@@ -1643,8 +1703,13 @@ class _HomePageState extends State<HomePage> {
                                     color:
                                         themeController.initialTheme ==
                                                 Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                            ? Color.fromARGB(255, 40, 41, 61)
+                                            : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
                                   ),
                                 ),
                               ),
@@ -1665,13 +1730,14 @@ class _HomePageState extends State<HomePage> {
                                       return InkWell(
                                         onTap: () {
                                           Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) =>
-                                                      RecommendedCourses(),
-                                            ),
-                                          );
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => Courses(courses: recommendedCourses, CoursesImages: recommendedCoursesImages,
+                                                    title:"Recommended Courses"
+                                                    ),
+                                              ),
+                                            );
                                         },
                                         child: Card(
                                           child: Column(
@@ -1750,6 +1816,7 @@ class _HomePageState extends State<HomePage> {
                                                   CoursesData:
                                                       recommendedCourses[i],
                                                   index: i,
+                                                  CoursesImage: imageBytes,
                                                 ),
                                           ),
                                         );
@@ -1765,12 +1832,21 @@ class _HomePageState extends State<HomePage> {
                                         width: 120,
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            ),
+                                            color:
+                                                themeController.initialTheme ==
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    ),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             15,
@@ -1801,12 +1877,22 @@ class _HomePageState extends State<HomePage> {
                                                           ),
                                                           border: Border.all(
                                                             color:
-                                                                Color.fromARGB(
-                                                                  255,
-                                                                  40,
-                                                                  41,
-                                                                  61,
-                                                                ),
+                                                                themeController
+                                                                            .initialTheme ==
+                                                                        Themes
+                                                                            .customLightTheme
+                                                                    ? Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    )
+                                                                    : Color.fromARGB(
+                                                                      255,
+                                                                      210,
+                                                                      209,
+                                                                      224,
+                                                                    ),
                                                           ),
                                                           borderRadius:
                                                               BorderRadius.circular(
@@ -1936,15 +2022,15 @@ class _HomePageState extends State<HomePage> {
                                                                         .customLightTheme
                                                                 ? Color.fromARGB(
                                                                   255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
                                                                   40,
                                                                   41,
                                                                   61,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
                                                                 ),
                                                       ),
                                                     ),
@@ -1970,8 +2056,13 @@ class _HomePageState extends State<HomePage> {
                                     color:
                                         themeController.initialTheme ==
                                                 Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                            ? Color.fromARGB(255, 40, 41, 61)
+                                            : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
                                   ),
                                 ),
                               ),
@@ -1992,14 +2083,14 @@ class _HomePageState extends State<HomePage> {
                                       return InkWell(
                                         onTap: () {
                                           Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) => RatedCourses(
-                                                    // CourseData: TopRatedCourses[i]
-                                                  ),
-                                            ),
-                                          );
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => Courses(courses: TopRatedCourses, CoursesImages: TopRatedCoursesImages,
+                                                    title:"Top Courses"
+                                                    ),
+                                              ),
+                                            );
                                         },
                                         child: Card(
                                           child: Column(
@@ -2078,6 +2169,7 @@ class _HomePageState extends State<HomePage> {
                                                   CoursesData:
                                                       recommendedCourses[i],
                                                   index: i,
+                                                  CoursesImage: imageBytes,
                                                 ),
                                           ),
                                         );
@@ -2093,12 +2185,21 @@ class _HomePageState extends State<HomePage> {
                                         width: 120,
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            ),
+                                            color:
+                                                themeController.initialTheme ==
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    ),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             15,
@@ -2129,12 +2230,22 @@ class _HomePageState extends State<HomePage> {
                                                           ),
                                                           border: Border.all(
                                                             color:
-                                                                Color.fromARGB(
-                                                                  255,
-                                                                  40,
-                                                                  41,
-                                                                  61,
-                                                                ),
+                                                                themeController
+                                                                            .initialTheme ==
+                                                                        Themes
+                                                                            .customLightTheme
+                                                                    ? Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    )
+                                                                    : Color.fromARGB(
+                                                                      255,
+                                                                      210,
+                                                                      209,
+                                                                      224,
+                                                                    ),
                                                           ),
                                                           borderRadius:
                                                               BorderRadius.circular(
@@ -2264,15 +2375,15 @@ class _HomePageState extends State<HomePage> {
                                                                         .customLightTheme
                                                                 ? Color.fromARGB(
                                                                   255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
                                                                   40,
                                                                   41,
                                                                   61,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
                                                                 ),
                                                       ),
                                                     ),
@@ -2298,8 +2409,13 @@ class _HomePageState extends State<HomePage> {
                                     color:
                                         themeController.initialTheme ==
                                                 Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                            ? Color.fromARGB(255, 40, 41, 61)
+                                            : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
                                   ),
                                 ),
                               ),
@@ -2319,15 +2435,15 @@ class _HomePageState extends State<HomePage> {
                                     if (i == recentCourses.length) {
                                       return InkWell(
                                         onTap: () {
-                                          //   Navigator.push(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //     builder:
-                                          //         (context) => RatedCourses(
-                                          //           // CourseData: TopRatedCourses[i]
-                                          //         ),
-                                          //   ),
-                                          // );
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => Courses(courses: recentCourses, CoursesImages: recentCoursesImages,
+                                                    title:"recent Courses"
+                                                    ),
+                                              ),
+                                            );
                                         },
                                         child: Card(
                                           child: Column(
@@ -2405,6 +2521,7 @@ class _HomePageState extends State<HomePage> {
                                                 (context) => CoursesLessons(
                                                   CoursesData: recentCourses[i],
                                                   index: i,
+                                                  CoursesImage: imageBytes,
                                                 ),
                                           ),
                                         );
@@ -2420,12 +2537,21 @@ class _HomePageState extends State<HomePage> {
                                         width: 120,
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            ),
+                                            color:
+                                                themeController.initialTheme ==
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    ),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             15,
@@ -2442,49 +2568,19 @@ class _HomePageState extends State<HomePage> {
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: [
-                                                  recentCourses[i]["rating"] != null?
-
-                                                  Container(
-                                                    height: 23,
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                          horizontal: 6,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: Color(0xFFCCF2E0),
-                                                      border: Border.all(
-                                                        color: Color.fromARGB(
-                                                          255,
-                                                          40,
-                                                          41,
-                                                          61,
-                                                        ),
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
-                                                          ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.star,
+                                                  recentCourses[i]["rating"] !=
+                                                          null
+                                                      ? Container(
+                                                        height: 23,
+                                                        padding:
+                                                            EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                            ),
+                                                        decoration: BoxDecoration(
                                                           color: Color(
-                                                            0XFFE6D827,
+                                                            0xFFCCF2E0,
                                                           ),
-                                                          size: 20,
-                                                        ),
-                                                        SizedBox(width: 2),
-                                                        Text(
-                                                          // "${recentCourses[i]["rating"]}",
-                                                          double.parse(recentCourses[i]["rating"].toString()).toStringAsFixed(1),
-                                                          style: TextStyle(
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .clip,
-                                                            fontSize: 16,
+                                                          border: Border.all(
                                                             color:
                                                                 themeController
                                                                             .initialTheme ==
@@ -2492,22 +2588,69 @@ class _HomePageState extends State<HomePage> {
                                                                             .customLightTheme
                                                                     ? Color.fromARGB(
                                                                       255,
-                                                                      210,
-                                                                      209,
-                                                                      224,
-                                                                    )
-                                                                    : Color.fromARGB(
-                                                                      255,
                                                                       40,
                                                                       41,
                                                                       61,
+                                                                    )
+                                                                    : Color.fromARGB(
+                                                                      255,
+                                                                      210,
+                                                                      209,
+                                                                      224,
                                                                     ),
                                                           ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
                                                         ),
-                                                      ],
-                                                    ),
-                                                  ):                                                    SizedBox.shrink(),
-                                          SizedBox.shrink(),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.star,
+                                                              color: Color(
+                                                                0XFFE6D827,
+                                                              ),
+                                                              size: 20,
+                                                            ),
+                                                            SizedBox(width: 2),
+                                                            Text(
+                                                              // "${recentCourses[i]["rating"]}",
+                                                              double.parse(
+                                                                recentCourses[i]["rating"]
+                                                                    .toString(),
+                                                              ).toStringAsFixed(
+                                                                1,
+                                                              ),
+                                                              style: TextStyle(
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .clip,
+                                                                fontSize: 16,
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                                                            Themes.customLightTheme
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                      : SizedBox.shrink(),
+                                                  SizedBox.shrink(),
 
                                                   GetBuilder<
                                                     FavoriteController
@@ -2584,15 +2727,15 @@ class _HomePageState extends State<HomePage> {
                                                                         .customLightTheme
                                                                 ? Color.fromARGB(
                                                                   255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
                                                                   40,
                                                                   41,
                                                                   61,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
                                                                 ),
                                                       ),
                                                     ),
@@ -2610,7 +2753,7 @@ class _HomePageState extends State<HomePage> {
                               SizedBox(height: 30),
                               Center(
                                 child: Text(
-                                  "Subscribed Courses".tr,
+                                  "Most Subscribed Courses".tr,
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
@@ -2618,8 +2761,13 @@ class _HomePageState extends State<HomePage> {
                                     color:
                                         themeController.initialTheme ==
                                                 Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                            ? Color.fromARGB(255, 40, 41, 61)
+                                            : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
                                   ),
                                 ),
                               ),
@@ -2639,15 +2787,15 @@ class _HomePageState extends State<HomePage> {
                                     if (i == subscribedCourses.length) {
                                       return InkWell(
                                         onTap: () {
-                                          //   Navigator.push(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //     builder:
-                                          //         (context) => RatedCourses(
-                                          //           // CourseData: TopRatedCourses[i]
-                                          //         ),
-                                          //   ),
-                                          // );
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => Courses(courses: subscribedCourses, CoursesImages: subscribedCoursesImages,
+                                                    title:"Most Subscribed Courses"
+                                                    ),
+                                              ),
+                                            );
                                         },
                                         child: Card(
                                           child: Column(
@@ -2726,6 +2874,7 @@ class _HomePageState extends State<HomePage> {
                                                   CoursesData:
                                                       subscribedCourses[i],
                                                   index: i,
+                                                  CoursesImage: imageBytes,
                                                 ),
                                           ),
                                         );
@@ -2741,12 +2890,21 @@ class _HomePageState extends State<HomePage> {
                                         width: 120,
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            ),
+                                            color:
+                                                themeController.initialTheme ==
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    ),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             15,
@@ -2760,109 +2918,126 @@ class _HomePageState extends State<HomePage> {
                                               right: 5,
                                               child: Row(
                                                 mainAxisAlignment:
-                                                MainAxisAlignment
-                                                    .spaceBetween,
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
                                                 children: [
-                                                  subscribedCourses[i]["rating"] != null?
-
-                                                  Container(
-                                                    height: 23,
-                                                    padding:
-                                                    EdgeInsets.symmetric(
-                                                      horizontal: 6,
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                      color: Color(0xFFCCF2E0),
-                                                      border: Border.all(
-                                                        color: Color.fromARGB(
-                                                          255,
-                                                          40,
-                                                          41,
-                                                          61,
-                                                        ),
-                                                      ),
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                        10,
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                      MainAxisSize.min,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.star,
-                                                          color: Color(
-                                                            0XFFE6D827,
-                                                          ),
-                                                          size: 20,
-                                                        ),
-                                                        SizedBox(width: 2),
-                                                        Text(
-                                                          // "${subscribedCourses[i]["rating"]}",
-                                                          double.parse(subscribedCourses[i]["rating"].toString()).toStringAsFixed(1),
-                                                          style: TextStyle(
-                                                            overflow:
-                                                            TextOverflow
-                                                                .clip,
-                                                            fontSize: 16,
-                                                            color:
-                                                            themeController
-                                                                .initialTheme ==
-                                                                Themes
-                                                                    .customLightTheme
-                                                                ? Color.fromARGB(
-                                                              255,
-                                                              210,
-                                                              209,
-                                                              224,
-                                                            )
-                                                                : Color.fromARGB(
-                                                              255,
-                                                              40,
-                                                              41,
-                                                              61,
+                                                  subscribedCourses[i]["rating"] !=
+                                                          null
+                                                      ? Container(
+                                                        height: 23,
+                                                        padding:
+                                                            EdgeInsets.symmetric(
+                                                              horizontal: 6,
                                                             ),
+                                                        decoration: BoxDecoration(
+                                                          color: Color(
+                                                            0xFFCCF2E0,
                                                           ),
+                                                          border: Border.all(
+                                                            color:
+                                                                themeController
+                                                                            .initialTheme ==
+                                                                        Themes
+                                                                            .customLightTheme
+                                                                    ? Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    )
+                                                                    : Color.fromARGB(
+                                                                      255,
+                                                                      210,
+                                                                      209,
+                                                                      224,
+                                                                    ),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
                                                         ),
-                                                      ],
-                                                    ),
-                                                  ):                                                    SizedBox.shrink(),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.star,
+                                                              color: Color(
+                                                                0XFFE6D827,
+                                                              ),
+                                                              size: 20,
+                                                            ),
+                                                            SizedBox(width: 2),
+                                                            Text(
+                                                              // "${subscribedCourses[i]["rating"]}",
+                                                              double.parse(
+                                                                subscribedCourses[i]["rating"]
+                                                                    .toString(),
+                                                              ).toStringAsFixed(
+                                                                1,
+                                                              ),
+                                                              style: TextStyle(
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .clip,
+                                                                fontSize: 16,
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                                                            Themes.customLightTheme
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                      : SizedBox.shrink(),
                                                   SizedBox.shrink(),
 
                                                   GetBuilder<
-                                                      FavoriteController
+                                                    FavoriteController
                                                   >(
                                                     builder: (controller) {
                                                       final isFav =
                                                           controller
                                                               .isFavoriteC[subscribedCourses[i]["id"]
                                                               .toString()] ??
-                                                              false;
+                                                          false;
 
                                                       return LikeButton(
                                                         size: 30,
                                                         isLiked: isFav,
                                                         likeBuilder: (
-                                                            bool isLiked,
-                                                            ) {
+                                                          bool isLiked,
+                                                        ) {
                                                           return Icon(
                                                             isLiked
                                                                 ? Icons.favorite
                                                                 : Icons
-                                                                .favorite_border_outlined,
+                                                                    .favorite_border_outlined,
                                                             color: Colors.red,
                                                             size: 30,
                                                           );
                                                         },
                                                         onTap: (
-                                                            bool isLiked,
-                                                            ) async {
+                                                          bool isLiked,
+                                                        ) async {
                                                           controller
                                                               .toggleFavoriteC(
-                                                            subscribedCourses[i]["id"]
-                                                                .toString(),
-                                                          );
+                                                                subscribedCourses[i]["id"]
+                                                                    .toString(),
+                                                              );
                                                           return !isLiked;
                                                         },
                                                       );
@@ -2905,15 +3080,15 @@ class _HomePageState extends State<HomePage> {
                                                                         .customLightTheme
                                                                 ? Color.fromARGB(
                                                                   255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
                                                                   40,
                                                                   41,
                                                                   61,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
                                                                 ),
                                                       ),
                                                     ),
@@ -2936,178 +3111,9 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-      ),
+              ),
+      // ),
     );
   }
 }
 
-class SearchCustom extends SearchDelegate {
-  final List elements;
-  final Map<int, Uint8List> elementsImages;
-
-  SearchCustom(this.elements, this.elementsImages);
-
-  List? sortedItems;
-
-  @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-        onPressed: () {
-          query = "";
-        },
-        icon: const Icon(Icons.cleaning_services),
-      ),
-    ];
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    return IconButton(
-      onPressed: () {
-        close(context, null);
-      },
-      icon: const Icon(Icons.arrow_back),
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    sortedItems =
-        elements
-            .where(
-              (element) =>
-                  element["name"].toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
-
-    return ListView.builder(
-      itemCount: sortedItems!.length,
-      itemBuilder: (context, index) {
-        int elementsId = sortedItems![index]["id"];
-        Uint8List? imageBytes = elementsImages[elementsId];
-
-        return InkWell(
-          onTap: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) =>
-                        SubjectTeachers(SubjectData: sortedItems![index]),
-              ),
-            );
-          },
-          child: SizedBox(
-            height: 100,
-            child: Card(
-              child: ListTile(
-                leading:
-                    imageBytes != null
-                        ? Image.memory(
-                          imageBytes,
-                          height: 60,
-                          width: 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              ImageAssets.subject,
-                              height: 50,
-                              width: 50,
-                              fit: BoxFit.cover,
-                            );
-                          },
-                        )
-                        : Image.asset(
-                          ImageAssets.subject,
-                          height: 50,
-                          width: 50,
-                          fit: BoxFit.cover,
-                        ),
-                title: Text(
-                  sortedItems![index]["name"],
-                  style: TextStyle(
-                    fontSize: 16,
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    sortedItems =
-        elements
-            .where(
-              (element) =>
-                  element["name"].toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
-
-    return ListView.builder(
-      itemCount: sortedItems!.length,
-      itemBuilder: (context, index) {
-        int elementsId = sortedItems![index]["id"];
-        Uint8List? imageBytes = elementsImages[elementsId];
-
-        return SizedBox(
-          height: 100,
-          child: Card(
-            child: ListTile(
-              leading:
-                  imageBytes != null
-                      ? Image.memory(
-                        imageBytes,
-                        fit: BoxFit.fill,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            ImageAssets.subject,
-                            height: 50,
-                            width: 50,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      )
-                      : Image.asset(
-                        ImageAssets.subject,
-                        height: 50,
-                        width: 50,
-                        fit: BoxFit.cover,
-                      ),
-              title: Center(
-                child: Text(
-                  sortedItems![index]["name"],
-                  style: TextStyle(
-                    fontSize: 20,
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                ),
-              ),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            SubjectTeachers(SubjectData: sortedItems![index]),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-}

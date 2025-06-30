@@ -11,7 +11,7 @@ import '../view/NavBar.dart';
 class FavoriteController extends GetxController {
   late SharedPrefs sharedPrefs;
 
-  late String token;
+  // late String token;
 
   Map isFavorite = {};
   Map isFavoriteC = {};
@@ -21,7 +21,7 @@ class FavoriteController extends GetxController {
 
     final response = await http.post(
       url,
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      // headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -37,7 +37,7 @@ class FavoriteController extends GetxController {
     final response = await http.get(
       Uri.parse("$mainIP/api/getfavoriteteachers"),
       headers: {
-        'Authorization': "Bearer $token",
+        // 'Authorization': "Bearer $token",
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
       },
@@ -70,7 +70,7 @@ class FavoriteController extends GetxController {
 
     final response = await http.post(
       url,
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      // headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -86,7 +86,7 @@ class FavoriteController extends GetxController {
     final response = await http.get(
       Uri.parse("$mainIP/api/getfavoritecourses"),
       headers: {
-        'Authorization': "Bearer $token",
+        // 'Authorization': "Bearer $token",
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
       },
@@ -117,9 +117,9 @@ class FavoriteController extends GetxController {
   void onInit() {
     super.onInit();
     sharedPrefs = SharedPrefs.instance;
-    token = sharedPrefs.prefs.getString("token")!;
-    print(token);
-    getTFavorite();
-    getTFavoriteC();
+    // token = sharedPrefs.prefs.getString("token")!;
+    // print(token);
+    // getTFavorite();
+    // getTFavoriteC();
   }
 }

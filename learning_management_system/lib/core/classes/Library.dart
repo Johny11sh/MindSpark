@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:learning_management_system/core/classes/Books.dart';
 import '../../controller/NetworkController.dart';
 import '../../locale/LocaleController.dart';
 import '../../services/SharedPrefs.dart';
@@ -17,8 +18,6 @@ import '../../view/LogIn.dart';
 import '../../view/NavBar.dart';
 import '../constants/ImageAssets.dart';
 import 'BookDetails.dart';
-import 'RecommendedBooks.dart';
-import 'TopRatedBooks.dart';
 import 'SubjectsBooks.dart';
 // import '../constants/ImageAssets.dart';
 
@@ -1018,1252 +1017,1037 @@ class _LibraryState extends State<Library> {
                       getRecentBooksData(),
                     ]);
                   },
-                  child: Column(
-                    // scrollDirection: Axis.vertical,
-                    // physics: AlwaysScrollableScrollPhysics(),
-                    children: [
-                      Container(
-                        padding: EdgeInsets.only(top: 30),
-                        height: 100,
-                        color:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 210, 209, 224)
-                                : Color.fromARGB(255, 40, 41, 61),
-                        // color: Colors.red,
-                        child: Row(
-                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: IconButton(
-                                onPressed: () {
-                                  Get.to(Favorites());
-                                },
-                                icon: Icon(Icons.favorite, color: Colors.red),
+                  child: Container(
+                    color:
+                              themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                    child: Column(
+                      // scrollDirection: Axis.vertical,
+                      // physics: AlwaysScrollableScrollPhysics(),
+                      children: [
+                        Container(
+                          padding: EdgeInsets.only(top: 30),
+                          height: 100,
+                          // color: Colors.red,
+                          child: Row(
+                            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: IconButton(
+                                  onPressed: () {
+                                    Get.to(Favorites());
+                                  },
+                                  icon: Icon(Icons.favorite, color: Colors.red),
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: Center(
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                    right: Get.width / 8,
-                                  ),
-
-                                  child: Text(
-                                    "Library".tr,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall!.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 23,
+                              Expanded(
+                                child: Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: Get.width / 8,
+                                    ),
+                    
+                                    child: Text(
+                                      "Library".tr,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall!.copyWith(
+                                        color: themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 23,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 30),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.only(left: 20),
-                          decoration: BoxDecoration(
-                            color:
-                                themeController.initialTheme ==
-                                        Themes.customLightTheme
-                                    ? Color.fromARGB(255, 40, 41, 61)
-                                    : Color.fromARGB(255, 210, 209, 224),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30),
-                            ),
+                            ],
                           ),
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: [
-                              Center(
-                                child: Text(
-                                  "Scientific Subjects".tr,
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.normal,
-                                    color:
-                                        themeController.initialTheme ==
+                        ),
+                        // SizedBox(height: 30),
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.only(left: 20),
+                            decoration: BoxDecoration(
+                              color:
+                                  themeController.initialTheme ==
                                                 Themes.customLightTheme
                                             ? Color.fromARGB(255, 210, 209, 224)
                                             : Color.fromARGB(255, 40, 41, 61),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(60),
+                                topRight: Radius.circular(60),
+                              ),
+                            ),
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: [
+                                Center(
+                                  child: Text(
+                                    "Scientific Subjects".tr,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.normal,
+                                      color:
+                                          themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 15),
-                              Container(
-                                // margin: EdgeInsets.only(left: 10),
-                                height: 150,
-                                child:
-                                    scientificSubjects.isEmpty
-                                        ? Center(
-                                          child: Text(
-                                            "No scientific subjects found",
-                                            style: TextStyle(
-                                              color:
-                                                  themeController
-                                                              .initialTheme ==
-                                                          Themes
-                                                              .customLightTheme
-                                                      ? Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
-                                                        210,
-                                                        209,
-                                                        224,
-                                                      ),
-                                            ),
-                                          ),
-                                        )
-                                        : ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          physics:
-                                              AlwaysScrollableScrollPhysics(),
-                                          itemCount: scientificSubjects.length,
-                                          itemBuilder: (context, index) {
-                                            int subjectId =
-                                                scientificSubjects[index]["id"];
-                                            Uint8List? imageBytes =
-                                                subjectsImages[subjectId];
-
-                                            return Container(
-                                              margin: EdgeInsets.only(
-                                                right: 10,
+                                SizedBox(height: 15),
+                                Container(
+                                  // margin: EdgeInsets.only(left: 10),
+                                  height: 150,
+                                  child:
+                                      scientificSubjects.isEmpty
+                                          ? Center(
+                                            child: Text(
+                                              "No scientific subjects found",
+                                              style: TextStyle(
+                                                color:
+                                                    themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
                                               ),
-                                              child: InkWell(
-                                                onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder:
-                                                          (
-                                                            context,
-                                                          ) => SubjectsBooks(
-                                                            subjectId:
-                                                                subjectId,
-                                                            subjectName:
-                                                                scientificSubjects[index]["name"],
-                                                          ),
-                                                    ),
-                                                  );
-                                                },
-                                                child: Column(
-                                                  children: [
-                                                    Container(
-                                                      margin: EdgeInsets.only(
-                                                        left: 1,
-                                                      ),
-                                                      padding: EdgeInsets.all(
-                                                        10,
-                                                      ),
-                                                      height: 120,
-                                                      width: 120,
-                                                      decoration: BoxDecoration(
-                                                        // color: Colors.red,
-                                                        border: Border.all(
-                                                          color: Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          ),
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              15,
-                                                            ),
-                                                      ),
-                                                      child: Column(
-                                                        children: [
-                                                          imageBytes != null
-                                                              ?
-                                                              //  CachedNetworkImage(
-                                                              //   imageUrl:
-                                                              //       "$mainIP/${scientificSubjects[index]["image"]}",
-                                                              //   height: 60,
-                                                              //   width: 60,
-                                                              // )
-                                                              Image.asset(
-                                                                // ImageAssets.UserDarkMode,
-                                                                ImageAssets
-                                                                    .book,
-                                                                height: 70,
-                                                                width: 70,
-                                                              )
-                                                              : Image.asset(
-                                                                // ImageAssets.UserDarkMode,
-                                                                ImageAssets
-                                                                    .book,
-                                                                height: 70,
-                                                                width: 70,
-                                                              ),
-                                                          // const SizedBox(
-                                                          //   height: 10,
-                                                          // ),
-                                                          Text(
-                                                            "${scientificSubjects[index]["name"]}"
-                                                                .tr,
-                                                            style: TextStyle(
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  themeController
-                                                                              .initialTheme ==
-                                                                          Themes
-                                                                              .customLightTheme
-                                                                      ? Color.fromARGB(
-                                                                        255,
-                                                                        210,
-                                                                        209,
-                                                                        224,
-                                                                      )
-                                                                      : Color.fromARGB(
-                                                                        255,
-                                                                        40,
-                                                                        41,
-                                                                        61,
-                                                                      ),
-                                                            ),
-                                                            textAlign:
-                                                                TextAlign
-                                                                    .center,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
+                                            ),
+                                          )
+                                          : ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            physics:
+                                                AlwaysScrollableScrollPhysics(),
+                                            itemCount: scientificSubjects.length,
+                                            itemBuilder: (context, index) {
+                                              int subjectId =
+                                                  scientificSubjects[index]["id"];
+                                              Uint8List? imageBytes =
+                                                  subjectsImages[subjectId];
+                    
+                                              return Container(
+                                                margin: EdgeInsets.only(
+                                                  right: 10,
                                                 ),
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder:
+                                                            (
+                                                              context,
+                                                            ) => SubjectsBooks(
+                                                              subjectId:
+                                                                  subjectId,
+                                                              subjectName:
+                                                                  scientificSubjects[index]["name"],
+                                                            ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Column(
+                                                    children: [
+                                                      Container(
+                                                        margin: EdgeInsets.only(
+                                                          left: 1,
+                                                        ),
+                                                        padding: EdgeInsets.all(
+                                                          10,
+                                                        ),
+                                                        height: 120,
+                                                        width: 120,
+                                                        decoration: BoxDecoration(
+                                                          // color: Colors.red,
+                                                          border: Border.all(
+                                                            color: themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                15,
+                                                              ),
+                                                        ),
+                                                        child: Column(
+                                                          children: [
+                                                            imageBytes != null
+                                                                ?
+                                                                //  CachedNetworkImage(
+                                                                //   imageUrl:
+                                                                //       "$mainIP/${scientificSubjects[index]["image"]}",
+                                                                //   height: 60,
+                                                                //   width: 60,
+                                                                // )
+                                                                Image.asset(
+                                                                  // ImageAssets.UserDarkMode,
+                                                                  ImageAssets
+                                                                      .book,
+                                                                  height: 70,
+                                                                  width: 70,
+                                                                )
+                                                                : Image.asset(
+                                                                  // ImageAssets.UserDarkMode,
+                                                                  ImageAssets
+                                                                      .book,
+                                                                  height: 70,
+                                                                  width: 70,
+                                                                ),
+                                                            // const SizedBox(
+                                                            //   height: 10,
+                                                            // ),
+                                                            Text(
+                                                              "${scientificSubjects[index]["name"]}"
+                                                                  .tr,
+                                                              style: TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                              ),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                ),
+                                // SizedBox(height: 30),
+                                // Literary Subjects Section
+                                Center(
+                                  child: Text(
+                                    "Literary Subjects".tr,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.normal,
+                                      color:
+                                          themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Container(
+                                  height: 120,
+                                  child:
+                                      literarySubjects.isEmpty
+                                          ? Center(
+                                            child: Text(
+                                              "No literary subjects found",
+                                              style: TextStyle(
+                                                color:
+                                                    themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                              ),
+                                            ),
+                                          )
+                                          : ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            physics:
+                                                AlwaysScrollableScrollPhysics(),
+                                            itemCount: literarySubjects.length,
+                                            itemBuilder: (context, index) {
+                                              int subjectId =
+                                                  literarySubjects[index]["id"];
+                                              Uint8List? imageBytes =
+                                                  subjectsImages[subjectId];
+                    
+                                              return Container(
+                                                margin: EdgeInsets.only(
+                                                  right: 10,
+                                                ),
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder:
+                                                            (
+                                                              context,
+                                                            ) => SubjectsBooks(
+                                                              subjectId:
+                                                                  subjectId,
+                                                              subjectName:
+                                                                  literarySubjects[index]["name"],
+                                                            ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Container(
+                                                    margin: EdgeInsets.only(
+                                                      left: 1,
+                                                    ),
+                                                    padding: EdgeInsets.all(10),
+                                                    height: 120,
+                                                    width: 120,
+                                                    decoration: BoxDecoration(
+                                                      // color: Colors.red,
+                                                      border: Border.all(
+                                                        color: themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            15,
+                                                          ),
+                                                    ),
+                                                    child: Column(
+                                                      children: [
+                                                        imageBytes != null
+                                                            ?
+                                                            //  CachedNetworkImage(
+                                                            //   imageUrl:
+                                                            //       "$mainIP/${literarySubjects[index]["image"]}",
+                                                            //   height: 60,
+                                                            //   width: 60,
+                                                            // )
+                                                            Image.asset(
+                                                              ImageAssets.book,
+                                                              height: 70,
+                                                              width: 70,
+                                                            )
+                                                            : Icon(
+                                                              Icons.science,
+                                                              size: 30,
+                                                              color:
+                                                                  themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                            ),
+                                                        // const SizedBox(
+                                                        //   height: 10,
+                                                        // ),
+                                                        Text(
+                                                          "${literarySubjects[index]["name"]}"
+                                                              .tr,
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color:
+                                                                themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                          ),
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                ),
+                                SizedBox(height: 25),
+                                Center(
+                                  child: Text(
+                                    "Recommended Books".tr,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.normal,
+                                      color:
+                                          themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Container(
+                                  height: 180,
+                                  child: GridView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: AlwaysScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 1,
+                                        ),
+                                    controller: scrollController,
+                                    itemCount: recommendedBooks.length + 1,
+                                    itemBuilder: (context, i) {
+                                      if (i == recommendedBooks.length) {
+                                        return InkWell(
+                                          onTap: () {
+                                              Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => Books(books: recommendedBooks, BooksImages: recommendedBooksImages,
+                                                    title:"Recommended Books"
+                                                    ),
                                               ),
                                             );
                                           },
-                                        ),
-                              ),
-                              // SizedBox(height: 30),
-                              // Literary Subjects Section
-                              Center(
-                                child: Text(
-                                  "Literary Subjects".tr,
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.normal,
-                                    color:
-                                        themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Container(
-                                height: 120,
-                                child:
-                                    literarySubjects.isEmpty
-                                        ? Center(
-                                          child: Text(
-                                            "No literary subjects found",
-                                            style: TextStyle(
-                                              color:
-                                                  themeController
-                                                              .initialTheme ==
-                                                          Themes
-                                                              .customLightTheme
-                                                      ? Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
-                                                        210,
-                                                        209,
-                                                        224,
-                                                      ),
+                                          child: Card(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                SizedBox(
+                                                  child: Icon(
+                                                    Icons
+                                                        .arrow_circle_right_outlined,
+                                                    size: 40,
+                                                    color:
+                                                        themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "More".tr,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w400,
+                                                    fontStyle: FontStyle.normal,
+                                                    color:
+                                                        themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        )
-                                        : ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          physics:
-                                              AlwaysScrollableScrollPhysics(),
-                                          itemCount: literarySubjects.length,
-                                          itemBuilder: (context, index) {
-                                            int subjectId =
-                                                literarySubjects[index]["id"];
-                                            Uint8List? imageBytes =
-                                                subjectsImages[subjectId];
-
-                                            return Container(
-                                              margin: EdgeInsets.only(
-                                                right: 10,
-                                              ),
-                                              child: InkWell(
-                                                onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder:
-                                                          (
-                                                            context,
-                                                          ) => SubjectsBooks(
-                                                            subjectId:
-                                                                subjectId,
-                                                            subjectName:
-                                                                literarySubjects[index]["name"],
-                                                          ),
+                                        );
+                                      }
+                    
+                                      int uniId = recommendedBooks[i]["id"];
+                                      Uint8List? imageBytes =
+                                          recommendedBooksImages[uniId];
+                    
+                                      return InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookDetails(
+                                  BookData: recommendedBooks[i],
+                                  bookImage: recommendedBooksImages[uniId],
+                                ),
+                              ),
+                            );
+                                        },
+                                        child: Container(
+                                          margin: EdgeInsets.only(
+                                            left: 1,
+                                            right: 10,
+                                          ),
+                                          // padding: EdgeInsets.only(left: 10,right: 10),
+                                          padding: EdgeInsets.all(10),
+                                          height: 130,
+                                          width: 120,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                          ),
+                                          child: Stack(
+                                            children: [
+                                              if (recommendedBooks[i]["rating"] !=
+                                                  null)
+                                                Positioned(
+                                                  top: 0,
+                                                  right: 0,
+                                                  child: Container(
+                                                    height: 23,
+                                                    padding: EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      // vertical: ,
                                                     ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  margin: EdgeInsets.only(
-                                                    left: 1,
-                                                  ),
-                                                  padding: EdgeInsets.all(10),
-                                                  height: 120,
-                                                  width: 120,
-                                                  decoration: BoxDecoration(
-                                                    // color: Colors.red,
-                                                    border: Border.all(
-                                                      color: Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
+                                                    decoration: BoxDecoration(
+                                                      // color: Color(0XFF89EBB8),
+                                                      // color: Color(0XFF76C49A),
+                                                      // color: Color(0xFF94DDB3),
+                                                      color: Color(0xFFCCF2E0),
+                                                      border: Border.all(
+                                                        color: themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61)
                                                       ),
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          15,
-                                                        ),
-                                                  ),
-                                                  child: Column(
-                                                    children: [
-                                                      imageBytes != null
-                                                          ?
-                                                          //  CachedNetworkImage(
-                                                          //   imageUrl:
-                                                          //       "$mainIP/${literarySubjects[index]["image"]}",
-                                                          //   height: 60,
-                                                          //   width: 60,
-                                                          // )
-                                                          Image.asset(
-                                                            ImageAssets.book,
-                                                            height: 70,
-                                                            width: 70,
-                                                          )
-                                                          : Icon(
-                                                            Icons.science,
-                                                            size: 30,
-                                                            color:
-                                                                themeController
-                                                                            .initialTheme ==
-                                                                        Themes
-                                                                            .customLightTheme
-                                                                    ? Color.fromARGB(
-                                                                      255,
-                                                                      210,
-                                                                      209,
-                                                                      224,
-                                                                    )
-                                                                    : Color.fromARGB(
-                                                                      255,
-                                                                      40,
-                                                                      41,
-                                                                      61,
-                                                                    ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
                                                           ),
-                                                      // const SizedBox(
-                                                      //   height: 10,
-                                                      // ),
-                                                      Text(
-                                                        "${literarySubjects[index]["name"]}"
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.star,
+                                                          color: Color(
+                                                            0XFFE6D827,
+                                                          ),
+                                                          // color:Color(0XFFEA4468),
+                                                          size: 20,
+                                                        ),
+                                                        SizedBox(width: 2),
+                                                        Text(
+                                                          // "${recommendedBooks[i]["rating"]}",
+                                                          double.parse(
+                                                            recommendedBooks[i]["rating"]
+                                                                .toString(),
+                                                          ).toStringAsFixed(1),
+                                                          style: TextStyle(
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            fontSize: 16,
+                                                            color:
+                                                                themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61)
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              Center(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    const SizedBox(height: 24),
+                                                    imageBytes != null
+                                                        ? Image.asset(
+                                                          ImageAssets.book,
+                                                          height: 90,
+                                                          width: 90,
+                                                        )
+                                                        : Image.asset(
+                                                          ImageAssets.subject,
+                                                        ),
+                    
+                                                    Expanded(
+                                                      flex: 1,
+                                                      child: Text(
+                                                        "${recommendedBooks[i]["name"]}"
                                                             .tr,
+                                                        textAlign:
+                                                            TextAlign.center,
                                                         style: TextStyle(
                                                           fontSize: 16,
                                                           fontWeight:
                                                               FontWeight.w500,
                                                           color:
-                                                              themeController
-                                                                          .initialTheme ==
-                                                                      Themes
-                                                                          .customLightTheme
-                                                                  ? Color.fromARGB(
-                                                                    255,
-                                                                    210,
-                                                                    209,
-                                                                    224,
-                                                                  )
-                                                                  : Color.fromARGB(
-                                                                    255,
-                                                                    40,
-                                                                    41,
-                                                                    61,
-                                                                  ),
+                                                              themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
                                                         ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                              ),
-                              SizedBox(height: 25),
-                              Center(
-                                child: Text(
-                                  "Recommended Books".tr,
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.normal,
-                                    color:
-                                        themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Container(
-                                height: 180,
-                                child: GridView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 1,
-                                      ),
-                                  controller: scrollController,
-                                  itemCount: recommendedBooks.length + 1,
-                                  itemBuilder: (context, i) {
-                                    if (i == recommendedBooks.length) {
-                                      return InkWell(
-                                        onTap: () {
-                                          //   Navigator.push(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //     builder:
-                                          //         (context) => RecommendedCourses(
-                                          //         ),
-                                          //   ),
-                                          // );
-                                        },
-                                        child: Card(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                child: Icon(
-                                                  Icons
-                                                      .arrow_circle_right_outlined,
-                                                  size: 40,
-                                                  color:
-                                                      themeController
-                                                                  .initialTheme ==
-                                                              Themes
-                                                                  .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          ),
-                                                ),
-                                              ),
-                                              Text(
-                                                "More".tr,
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w400,
-                                                  fontStyle: FontStyle.normal,
-                                                  color:
-                                                      themeController
-                                                                  .initialTheme ==
-                                                              Themes
-                                                                  .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }
-
-                                    int uniId = recommendedBooks[i]["id"];
-                                    Uint8List? imageBytes =
-                                        recommendedBooksImages[uniId];
-
-                                    return InkWell(
-                                      onTap: () {
-                                        // Navigator.push(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //     builder:
-                                        //         (context) => CoursesLessons(
-                                        //           CoursesData: recommendedCourses[i],
-                                        //           index: i,
-                                        //         ),
-                                        //   ),
-                                        // );
-                                      },
-                                      child: Container(
-                                        margin: EdgeInsets.only(
-                                          left: 1,
-                                          right: 10,
-                                        ),
-                                        // padding: EdgeInsets.only(left: 10,right: 10),
-                                        padding: EdgeInsets.all(10),
-                                        height: 130,
-                                        width: 120,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            ),
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                        ),
-                                        child: Stack(
-                                          children: [
-                                            if (recommendedBooks[i]["rating"] !=
-                                                null)
-                                              Positioned(
-                                                top: 0,
-                                                right: 0,
-                                                child: Container(
-                                                  height: 23,
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 6,
-                                                    // vertical: ,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    // color: Color(0XFF89EBB8),
-                                                    // color: Color(0XFF76C49A),
-                                                    // color: Color(0xFF94DDB3),
-                                                    color: Color(0xFFCCF2E0),
-                                                    border: Border.all(
-                                                      color: Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      ),
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          10,
-                                                        ),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Icon(
-                                                        Icons.star,
-                                                        color: Color(
-                                                          0XFFE6D827,
-                                                        ),
-                                                        // color:Color(0XFFEA4468),
-                                                        size: 20,
-                                                      ),
-                                                      SizedBox(width: 2),
-                                                      Text(
-                                                        // "${recommendedBooks[i]["rating"]}",
-                                                        double.parse(
-                                                          recommendedBooks[i]["rating"]
-                                                              .toString(),
-                                                        ).toStringAsFixed(1),
-                                                        style: TextStyle(
-                                                          overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          fontSize: 16,
-                                                          color:
-                                                              themeController
-                                                                          .initialTheme ==
-                                                                      Themes
-                                                                          .customLightTheme
-                                                                  ? Color.fromARGB(
-                                                                    255,
-                                                                    210,
-                                                                    209,
-                                                                    224,
-                                                                  )
-                                                                  : Color.fromARGB(
-                                                                    255,
-                                                                    40,
-                                                                    41,
-                                                                    61,
-                                                                  ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const SizedBox(height: 24),
-                                                  imageBytes != null
-                                                      ? Image.asset(
-                                                        ImageAssets.book,
-                                                        height: 90,
-                                                        width: 90,
-                                                      )
-                                                      : Image.asset(
-                                                        ImageAssets.subject,
-                                                      ),
-
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: Text(
-                                                      "${recommendedBooks[i]["name"]}"
-                                                          .tr,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color:
-                                                            themeController
-                                                                        .initialTheme ==
-                                                                    Themes
-                                                                        .customLightTheme
-                                                                ? Color.fromARGB(
-                                                                  255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
-                                                                  40,
-                                                                  41,
-                                                                  61,
-                                                                ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-
-                              SizedBox(height: 30),
-                              Center(
-                                child: Text(
-                                  "Top Rated Books".tr,
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.normal,
-                                    color:
-                                        themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Container(
-                                height: 180,
-                                child: GridView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 1,
-                                      ),
-                                  controller: scrollController,
-                                  itemCount: topRatedBooks.length + 1,
-                                  itemBuilder: (context, i) {
-                                    if (i == topRatedBooks.length) {
-                                      return InkWell(
-                                        onTap: () {
-                                          //   Navigator.push(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //     builder:
-                                          //         (context) => RecommendedCourses(
-                                          //         ),
-                                          //   ),
-                                          // );
-                                        },
-                                        child: Card(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                child: Icon(
-                                                  Icons
-                                                      .arrow_circle_right_outlined,
-                                                  size: 40,
-                                                  color:
-                                                      themeController
-                                                                  .initialTheme ==
-                                                              Themes
-                                                                  .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          ),
-                                                ),
-                                              ),
-                                              Text(
-                                                "More".tr,
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w400,
-                                                  fontStyle: FontStyle.normal,
-                                                  color:
-                                                      themeController
-                                                                  .initialTheme ==
-                                                              Themes
-                                                                  .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }
-
-                                    int uniId = topRatedBooks[i]["id"];
-                                    Uint8List? imageBytes =
-                                        topRatedBooksImages[uniId];
-
-                                    return InkWell(
-                                      onTap: () {
-                                        // Navigator.push(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //     builder:
-                                        //         (context) => CoursesLessons(
-                                        //           CoursesData: recommendedCourses[i],
-                                        //           index: i,
-                                        //         ),
-                                        //   ),
-                                        // );
-                                      },
-                                      child: Container(
-                                        margin: EdgeInsets.only(
-                                          left: 1,
-                                          right: 10,
-                                        ),
-                                        // padding: EdgeInsets.only(left: 10,right: 10),
-                                        padding: EdgeInsets.all(10),
-                                        height: 130,
-                                        width: 120,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            ),
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                        ),
-                                        child: Stack(
-                                          children: [
-                                            if (topRatedBooks[i]["rating"] != null)
-                                              Positioned(
-                                                top: 0,
-                                                right: 0,
-                                                child: Container(
-                                                  height: 23,
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 6,
-                                                    // vertical: ,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    // color: Color(0XFF89EBB8),
-                                                    // color: Color(0XFF76C49A),
-                                                    // color: Color(0xFF94DDB3),
-                                                    color: Color(0xFFCCF2E0),
-                                                    border: Border.all(
-                                                      color: Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      ),
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          10,
-                                                        ),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Icon(
-                                                        Icons.star,
-                                                        color: Color(
-                                                          0XFFE6D827,
-                                                        ),
-                                                        // color:Color(0XFFEA4468),
-                                                        size: 20,
-                                                      ),
-                                                      SizedBox(width: 2),
-                                                      Text(
-                                                        double.parse(
-                                                          topRatedBooks[i]["rating"]
-                                                              .toString(),
-                                                        ).toStringAsFixed(1),
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color:
-                                                              themeController
-                                                                          .initialTheme ==
-                                                                      Themes
-                                                                          .customLightTheme
-                                                                  ? Color.fromARGB(
-                                                                    255,
-                                                                    210,
-                                                                    209,
-                                                                    224,
-                                                                  )
-                                                                  : Color.fromARGB(
-                                                                    255,
-                                                                    40,
-                                                                    41,
-                                                                    61,
-                                                                  ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const SizedBox(height: 24),
-                                                  imageBytes != null
-                                                      ? Image.asset(
-                                                        ImageAssets.book,
-                                                        height: 90,
-                                                        width: 90,
-                                                      )
-                                                      : Image.asset(
-                                                        ImageAssets.subject,
-                                                      ),
-
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: Text(
-                                                      "${topRatedBooks[i]["name"]}"
-                                                          .tr,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color:
-                                                            themeController
-                                                                        .initialTheme ==
-                                                                    Themes
-                                                                        .customLightTheme
-                                                                ? Color.fromARGB(
-                                                                  255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
-                                                                  40,
-                                                                  41,
-                                                                  61,
-                                                                ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-
-                              SizedBox(height: 30),
-                              Center(
-                                child: Text(
-                                  "Most Recent Books".tr,
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.normal,
-                                    color:
-                                        themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Container(
-                                height: 180,
-                                child: GridView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 1,
-                                      ),
-                                  controller: scrollController,
-                                  itemCount: recentBooks.length + 1,
-                                  itemBuilder: (context, i) {
-                                    if (i == recentBooks.length) {
-                                      return InkWell(
-                                        onTap: () {
-                                          //   Navigator.push(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //     builder:
-                                          //         (context) => RecommendedCourses(
-                                          //         ),
-                                          //   ),
-                                          // );
-                                        },
-                                        child: Card(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                child: Icon(
-                                                  Icons
-                                                      .arrow_circle_right_outlined,
-                                                  size: 40,
-                                                  color:
-                                                      themeController
-                                                                  .initialTheme ==
-                                                              Themes
-                                                                  .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          ),
-                                                ),
-                                              ),
-                                              Text(
-                                                "More".tr,
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w400,
-                                                  fontStyle: FontStyle.normal,
-                                                  color:
-                                                      themeController
-                                                                  .initialTheme ==
-                                                              Themes
-                                                                  .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }
-
-                                    int uniId = recentBooks[i]["id"];
-                                    Uint8List? imageBytes =
-                                        recentBooksImages[uniId];
-
-                                    return InkWell(
-                                      onTap: () {
-                                        // Navigator.push(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //     builder:
-                                        //         (context) => CoursesLessons(
-                                        //           CoursesData: recommendedCourses[i],
-                                        //           index: i,
-                                        //         ),
-                                        //   ),
-                                        // );
-                                      },
-                                      child: Container(
-                                        margin: EdgeInsets.only(
-                                          left: 1,
-                                          right: 10,
-                                        ),
-                                        // padding: EdgeInsets.only(left: 10,right: 10),
-                                        padding: EdgeInsets.all(10),
-                                        height: 130,
-                                        width: 120,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            ),
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                        ),
-                                        child: Stack(
-                                          children: [
-                                            if(recentBooks[i]["rating"] != null)
-                                            Positioned(
-                                              top: 0,
-                                              right: 0,
-                                              child: Container(
-                                                height: 23,
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: 6,
-                                                  // vertical: ,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  // color: Color(0XFF89EBB8),
-                                                  // color: Color(0XFF76C49A),
-                                                  // color: Color(0xFF94DDB3),
-                                                  color: Color(0xFFCCF2E0),
-                                                  border: Border.all(
-                                                    color: Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      Icons.star,
-                                                      color: Color(0XFFE6D827),
-                                                      // color:Color(0XFFEA4468),
-                                                      size: 20,
-                                                    ),
-                                                    SizedBox(width: 2),
-                                                    Text(
-                                                      // "4.3",
-                                                      double.parse(
-                                                        recentBooks[i]["rating"]
-                                                            .toString(),
-                                                      ).toStringAsFixed(1),
-
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        color:
-                                                            themeController
-                                                                        .initialTheme ==
-                                                                    Themes
-                                                                        .customLightTheme
-                                                                ? Color.fromARGB(
-                                                                  255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
-                                                                  40,
-                                                                  41,
-                                                                  61,
-                                                                ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                            ),
-                                            Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const SizedBox(height: 24),
-                                                  imageBytes != null
-                                                      ? Image.asset(
-                                                        ImageAssets.book,
-                                                        height: 90,
-                                                        width: 90,
-                                                      )
-                                                      : Image.asset(
-                                                        ImageAssets.subject,
-                                                      ),
-
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: Text(
-                                                      "${recentBooks[i]["name"]}"
-                                                          .tr,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color:
-                                                            themeController
-                                                                        .initialTheme ==
-                                                                    Themes
-                                                                        .customLightTheme
-                                                                ? Color.fromARGB(
-                                                                  255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
-                                                                  40,
-                                                                  41,
-                                                                  61,
-                                                                ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
+                                ),
+                    
+                                SizedBox(height: 30),
+                                Center(
+                                  child: Text(
+                                    "Top Rated Books".tr,
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.normal,
+                                      color:
+                                          themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Container(
+                                  height: 180,
+                                  child: GridView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: AlwaysScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 1,
+                                        ),
+                                    controller: scrollController,
+                                    itemCount: topRatedBooks.length + 1,
+                                    itemBuilder: (context, i) {
+                                      if (i == topRatedBooks.length) {
+                                        return InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => Books(books: topRatedBooks, BooksImages: topRatedBooksImages,
+                                                    title:"Top Rated Books"
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          child: Card(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                SizedBox(
+                                                  child: Icon(
+                                                    Icons
+                                                        .arrow_circle_right_outlined,
+                                                    size: 40,
+                                                    color:
+                                                        themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "More".tr,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w400,
+                                                    fontStyle: FontStyle.normal,
+                                                    color:
+                                                        themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+                    
+                                      int uniId = topRatedBooks[i]["id"];
+                                      Uint8List? imageBytes =
+                                          topRatedBooksImages[uniId];
+                    
+                                      return InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookDetails(
+                                  BookData: topRatedBooks[i],
+                                  bookImage: topRatedBooksImages[uniId],
                                 ),
                               ),
-                              SizedBox(height: 30),
-                            ],
+                            );
+                                        },
+                                        child: Container(
+                                          margin: EdgeInsets.only(
+                                            left: 1,
+                                            right: 10,
+                                          ),
+                                          // padding: EdgeInsets.only(left: 10,right: 10),
+                                          padding: EdgeInsets.all(10),
+                                          height: 130,
+                                          width: 120,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                          ),
+                                          child: Stack(
+                                            children: [
+                                              if (topRatedBooks[i]["rating"] != null)
+                                                Positioned(
+                                                  top: 0,
+                                                  right: 0,
+                                                  child: Container(
+                                                    height: 23,
+                                                    padding: EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      // vertical: ,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      // color: Color(0XFF89EBB8),
+                                                      // color: Color(0XFF76C49A),
+                                                      // color: Color(0xFF94DDB3),
+                                                      color: Color(0xFFCCF2E0),
+                                                      border: Border.all(
+                                                        color: themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61)
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
+                                                          ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.star,
+                                                          color: Color(
+                                                            0XFFE6D827,
+                                                          ),
+                                                          // color:Color(0XFFEA4468),
+                                                          size: 20,
+                                                        ),
+                                                        SizedBox(width: 2),
+                                                        Text(
+                                                          double.parse(
+                                                            topRatedBooks[i]["rating"]
+                                                                .toString(),
+                                                          ).toStringAsFixed(1),
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            color:
+                                                                themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61)
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              Center(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    const SizedBox(height: 24),
+                                                    imageBytes != null
+                                                        ? Image.asset(
+                                                          ImageAssets.book,
+                                                          height: 90,
+                                                          width: 90,
+                                                        )
+                                                        : Image.asset(
+                                                          ImageAssets.subject,
+                                                        ),
+                    
+                                                    Expanded(
+                                                      flex: 1,
+                                                      child: Text(
+                                                        "${topRatedBooks[i]["name"]}"
+                                                            .tr,
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color:
+                                                              themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                    
+                                SizedBox(height: 30),
+                                Center(
+                                  child: Text(
+                                    "Most Recent Books".tr,
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.normal,
+                                      color:
+                                          themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Container(
+                                  height: 180,
+                                  child: GridView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: AlwaysScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 1,
+                                        ),
+                                    controller: scrollController,
+                                    itemCount: recentBooks.length + 1,
+                                    itemBuilder: (context, i) {
+                                      if (i == recentBooks.length) {
+                                        return InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => Books(books: recentBooks, BooksImages: recentBooksImages,
+                                                    title:"Recent Books"
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          child: Card(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                SizedBox(
+                                                  child: Icon(
+                                                    Icons
+                                                        .arrow_circle_right_outlined,
+                                                    size: 40,
+                                                    color:
+                                                        themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "More".tr,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w400,
+                                                    fontStyle: FontStyle.normal,
+                                                    color:
+                                                        themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+                    
+                                      int uniId = recentBooks[i]["id"];
+                                      Uint8List? imageBytes =
+                                          recentBooksImages[uniId];
+                    
+                                      return InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookDetails(
+                                  BookData: recentBooks[i],
+                                  bookImage: recentBooksImages[uniId],
+                                ),
+                              ),
+                            );
+                                        },
+                                        child: Container(
+                                          margin: EdgeInsets.only(
+                                            left: 1,
+                                            right: 10,
+                                          ),
+                                          // padding: EdgeInsets.only(left: 10,right: 10),
+                                          padding: EdgeInsets.all(10),
+                                          height: 130,
+                                          width: 120,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                          ),
+                                          child: Stack(
+                                            children: [
+                                              if(recentBooks[i]["rating"] != null)
+                                              Positioned(
+                                                top: 0,
+                                                right: 0,
+                                                child: Container(
+                                                  height: 23,
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    // vertical: ,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    // color: Color(0XFF89EBB8),
+                                                    // color: Color(0XFF76C49A),
+                                                    // color: Color(0xFF94DDB3),
+                                                    color: Color(0xFFCCF2E0),
+                                                    border: Border.all(
+                                                      color: themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61)
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(10),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.star,
+                                                        color: Color(0XFFE6D827),
+                                                        // color:Color(0XFFEA4468),
+                                                        size: 20,
+                                                      ),
+                                                      SizedBox(width: 2),
+                                                      Text(
+                                                        // "4.3",
+                                                        double.parse(
+                                                          recentBooks[i]["rating"]
+                                                              .toString(),
+                                                        ).toStringAsFixed(1),
+                    
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          color:
+                                                              themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61)
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Center(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    const SizedBox(height: 24),
+                                                    imageBytes != null
+                                                        ? Image.asset(
+                                                          ImageAssets.book,
+                                                          height: 90,
+                                                          width: 90,
+                                                        )
+                                                        : Image.asset(
+                                                          ImageAssets.subject,
+                                                        ),
+                    
+                                                    Expanded(
+                                                      flex: 1,
+                                                      child: Text(
+                                                        "${recentBooks[i]["name"]}"
+                                                            .tr,
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color:
+                                                              themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 40, 41, 61)
+                                      : Color.fromARGB(255, 210, 209, 224)
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                SizedBox(height: 30),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
       ),
