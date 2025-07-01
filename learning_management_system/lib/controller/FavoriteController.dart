@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:learning_management_system/main.dart';
+import '../main.dart';
 
 import '../services/SharedPrefs.dart';
 import '../view/NavBar.dart';
@@ -11,7 +12,7 @@ import '../view/NavBar.dart';
 class FavoriteController extends GetxController {
   late SharedPrefs sharedPrefs;
 
-  // late String token;
+  late String token;
 
   Map isFavorite = {};
   Map isFavoriteC = {};
@@ -21,7 +22,7 @@ class FavoriteController extends GetxController {
 
     final response = await http.post(
       url,
-      // headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -34,33 +35,39 @@ class FavoriteController extends GetxController {
   }
 
   Future<void> getTFavorite() async {
-    final response = await http.get(
-      Uri.parse("$mainIP/api/getfavoriteteachers"),
-      headers: {
-        // 'Authorization': "Bearer $token",
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Accept': 'application/json',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse("$mainIP/api/getfavoriteteachers"),
+        headers: {
+          'Authorization': "Bearer $token",
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
 
-    if (response.statusCode == 200) {
-      print("response statusCode = ${response.statusCode}");
-      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        print("response statusCode = ${response.statusCode}");
+        final responseBody = jsonDecode(response.body);
 
-      final List favorites = responseBody["favorites"];
+        final List favorites = responseBody["favorites"];
 
-      for (var teacher in favorites) {
-        final String id = teacher["id"].toString();
-        isFavorite[id] = true;
+        for (var teacher in favorites) {
+          final String id = teacher["id"].toString();
+          isFavorite[id] = true;
+        }
+        update();
+      } else {
+        Get.defaultDialog(
+          title: "Error",
+          backgroundColor: Colors.red,
+          middleText: "Check Connections",
+        );
+        Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
       }
-      update();
-    } else {
-      Get.defaultDialog(
-        title: "Error",
-        backgroundColor: Colors.red,
-        middleText: "Check Connections",
-      );
-      Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
+    } on TimeoutException {
+      Get.snackbar("Timeout", "Server took too long to respond.", backgroundColor: Colors.red);
+    } catch (e) {
+      Get.snackbar("Error", "Failed to fetch favorite teachers: $e", backgroundColor: Colors.red);
     }
   }
 
@@ -70,7 +77,7 @@ class FavoriteController extends GetxController {
 
     final response = await http.post(
       url,
-      // headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -83,33 +90,39 @@ class FavoriteController extends GetxController {
   }
 
   Future<void> getTFavoriteC() async {
-    final response = await http.get(
-      Uri.parse("$mainIP/api/getfavoritecourses"),
-      headers: {
-        // 'Authorization': "Bearer $token",
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Accept': 'application/json',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse("$mainIP/api/getfavoritecourses"),
+        headers: {
+          'Authorization': "Bearer $token",
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
 
-    if (response.statusCode == 200) {
-      print("response statusCode = ${response.statusCode}");
-      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        print("response statusCode = ${response.statusCode}");
+        final responseBody = jsonDecode(response.body);
 
-      final List favorites = responseBody["favorites"];
+        final List favorites = responseBody["favorites"];
 
-      for (var course in favorites) {
-        final String id = course["id"].toString();
-        isFavoriteC[id] = true;
+        for (var course in favorites) {
+          final String id = course["id"].toString();
+          isFavoriteC[id] = true;
+        }
+        update();
+      } else {
+        Get.defaultDialog(
+          title: "Error",
+          backgroundColor: Colors.red,
+          middleText: "Check Connections",
+        );
+        Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
       }
-      update();
-    } else {
-      Get.defaultDialog(
-        title: "Error",
-        backgroundColor: Colors.red,
-        middleText: "Check Connections",
-      );
-      Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
+    } on TimeoutException {
+      Get.snackbar("Timeout", "Server took too long to respond.", backgroundColor: Colors.red);
+    } catch (e) {
+      Get.snackbar("Error", "Failed to fetch favorite courses: $e", backgroundColor: Colors.red);
     }
   }
 
@@ -117,9 +130,9 @@ class FavoriteController extends GetxController {
   void onInit() {
     super.onInit();
     sharedPrefs = SharedPrefs.instance;
-    // token = sharedPrefs.prefs.getString("token")!;
-    // print(token);
-    // getTFavorite();
-    // getTFavoriteC();
+    token = sharedPrefs.prefs.getString("token")!;
+    print(token);
+    getTFavorite();
+    getTFavoriteC();
   }
 }

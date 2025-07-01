@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:like_button/like_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../controller/FavoriteController.dart';
 import '../core/classes/PDFOpener.dart';
 import '../view/LogIn.dart';
@@ -46,7 +47,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
   late SharedPrefs sharedPrefs;
 
   ScrollController scrollController = ScrollController();
-    var ChosenScreen = "About";
+  var ChosenScreen = "About";
   bool downloading = false;
   bool fileExists = false;
   double progress = 0;
@@ -92,13 +93,19 @@ class _CoursesLessonsState extends State<CoursesLessons> {
   Future<void> _cacheRecentLessons() async {
     try {
       final cacheKey = 'cached_recent_lessons_${widget.CoursesData['id']}';
-      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(recentLessonsData));
+      await sharedPrefs.prefs.setString(
+        cacheKey,
+        jsonEncode(recentLessonsData),
+      );
     } catch (e) {
       debugPrint("Error caching recent lessons: $e");
     }
   }
 
-  Future<void> _cacheRecentLessonImage(int lessonId, Uint8List imageBytes) async {
+  Future<void> _cacheRecentLessonImage(
+    int lessonId,
+    Uint8List imageBytes,
+  ) async {
     try {
       await sharedPrefs.prefs.setString(
         'recent_lesson_image_$lessonId',
@@ -124,7 +131,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
         'API_BASE_URL',
         defaultValue: mainIP,
       );
-      final APIurl = '$baseUrl/api/getcourselectures/${widget.CoursesData['id']}/recent';
+      final APIurl =
+          '$baseUrl/api/getcourselectures/${widget.CoursesData['id']}/recent';
       final response = await http
           .get(
             Uri.parse(APIurl),
@@ -167,7 +175,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
         });
       } else {
         if (recentLessonsData.isEmpty) {
-          throw Exception("Failed to load recent lessons: ${response.statusCode}");
+          throw Exception(
+            "Failed to load recent lessons: ${response.statusCode}",
+          );
         }
       }
     } on TimeoutException {
@@ -188,7 +198,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
 
   Future<Uint8List?> getRecentLessonImage(dynamic lesson) async {
     final lessonId = lesson is Map ? lesson['id'] as int : lesson as int;
-    final cachedImage = sharedPrefs.prefs.getString('recent_lesson_image_$lessonId');
+    final cachedImage = sharedPrefs.prefs.getString(
+      'recent_lesson_image_$lessonId',
+    );
     if (cachedImage != null) {
       return base64Decode(cachedImage);
     }
@@ -261,13 +273,19 @@ class _CoursesLessonsState extends State<CoursesLessons> {
   Future<void> _cacheTopRatedLessons() async {
     try {
       final cacheKey = 'cached_top_rated_lessons_${widget.CoursesData['id']}';
-      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(topRatedLessonsData));
+      await sharedPrefs.prefs.setString(
+        cacheKey,
+        jsonEncode(topRatedLessonsData),
+      );
     } catch (e) {
       debugPrint("Error caching top rated lessons: $e");
     }
   }
 
-  Future<void> _cacheTopRatedLessonImage(int lessonId, Uint8List imageBytes) async {
+  Future<void> _cacheTopRatedLessonImage(
+    int lessonId,
+    Uint8List imageBytes,
+  ) async {
     try {
       await sharedPrefs.prefs.setString(
         'top_rated_lesson_image_$lessonId',
@@ -293,7 +311,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
         'API_BASE_URL',
         defaultValue: mainIP,
       );
-      final APIurl = '$baseUrl/api/getcourselectures/${widget.CoursesData['id']}/rated';
+      final APIurl =
+          '$baseUrl/api/getcourselectures/${widget.CoursesData['id']}/rated';
       final response = await http
           .get(
             Uri.parse(APIurl),
@@ -336,7 +355,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
         });
       } else {
         if (topRatedLessonsData.isEmpty) {
-          throw Exception("Failed to load top rated lessons: ${response.statusCode}");
+          throw Exception(
+            "Failed to load top rated lessons: ${response.statusCode}",
+          );
         }
       }
     } on TimeoutException {
@@ -357,7 +378,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
 
   Future<Uint8List?> getTopRatedLessonImage(dynamic lesson) async {
     final lessonId = lesson is Map ? lesson['id'] as int : lesson as int;
-    final cachedImage = sharedPrefs.prefs.getString('top_rated_lesson_image_$lessonId');
+    final cachedImage = sharedPrefs.prefs.getString(
+      'top_rated_lesson_image_$lessonId',
+    );
     if (cachedImage != null) {
       return base64Decode(cachedImage);
     }
@@ -422,7 +445,6 @@ class _CoursesLessonsState extends State<CoursesLessons> {
       await getLecturesData();
       // await getTopRatedLessonsData();
       // await getRecentLessonsData();
-
     }
   }
 
@@ -709,53 +731,59 @@ class _CoursesLessonsState extends State<CoursesLessons> {
     ).push(MaterialPageRoute(builder: (context) => PDFOpener(PDFfile: file)));
   }
 
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-
-    return 
+    return
     // MaterialApp(
     //   theme: themeController.initialTheme,
     //   locale: localeController.initialLang,
     //   debugShowCheckedModeBanner: false,
-    //   home: 
-      Scaffold(
-        // appBar: AppBar(
-        //   leading: IconButton(
-        //     onPressed: () {
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(builder: (context) => Favorites()),
-        //       );
-        //     },
-        //     icon: Icon(Icons.favorite),
-        //   ),
-        //   title: Text("Home Page".tr),
-        //   centerTitle: true,
-        // ),
-        body:
-            coursesData.isEmpty
-                ? Center(
-                  child: CircularProgressIndicator(
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                )
-                : RefreshIndicator(
+    //   home:
+    Scaffold(
+      // appBar: AppBar(
+      //   leading: IconButton(
+      //     onPressed: () {
+      //       Navigator.push(
+      //         context,
+      //         MaterialPageRoute(builder: (context) => Favorites()),
+      //       );
+      //     },
+      //     icon: Icon(Icons.favorite),
+      //   ),
+      //   title: Text("Home Page".tr),
+      //   centerTitle: true,
+      // ),
+      body:
+          coursesData.isEmpty
+              ? Center(
+                child: CircularProgressIndicator(
                   color:
                       themeController.initialTheme == Themes.customLightTheme
                           ? Color.fromARGB(255, 40, 41, 61)
                           : Color.fromARGB(255, 210, 209, 224),
-                  backgroundColor:
-                      themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 210, 209, 224)
-                          : Color.fromARGB(255, 46, 48, 97),
-                  onRefresh: () async {
-                    await networkController.checkConnectivityManually();
-                    await getLecturesData();
-                  },
-                  child: ListView(
+                ),
+              )
+              : RefreshIndicator(
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
+                backgroundColor:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 210, 209, 224)
+                        : Color.fromARGB(255, 46, 48, 97),
+                onRefresh: () async {
+                  await networkController.checkConnectivityManually();
+                  await getLecturesData();
+                },
+                child: ListView(
                   scrollDirection: Axis.vertical,
                   physics: AlwaysScrollableScrollPhysics(),
                   children: [
@@ -763,13 +791,16 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                       children: [
                         Container(
                           height: Get.height / 2.4,
-                          color: themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 210, 209, 224)
-                            : Color.fromARGB(255, 40, 41, 61),
+                          color:
+                              themeController.initialTheme ==
+                                      Themes.customLightTheme
+                                  ? Color.fromARGB(255, 210, 209, 224)
+                                  : Color.fromARGB(255, 40, 41, 61),
                           child: Column(
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   IconButton(
                                     onPressed: () {
@@ -778,620 +809,1065 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                     icon: Icon(
                                       Icons.arrow_back_outlined,
                                       size: 35,
-                                      color: themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
                                     ),
                                   ),
                                   Text(
                                     "Course".tr,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
                                       fontWeight: FontWeight.w500,
                                       fontSize: 20,
                                     ),
                                   ),
-                                   GetBuilder<FavoriteController>(
-                                        builder: (controller) {
-                                          final isFav =
-                                              controller.isFavoriteC[widget.CoursesData["id"]
-                                                  .toString()] ??
-                                                  false;
+                                  GetBuilder<FavoriteController>(
+                                    builder: (controller) {
+                                      final isFav =
+                                          controller.isFavoriteC[widget
+                                              .CoursesData["id"]
+                                              .toString()] ??
+                                          false;
 
-                                          return LikeButton(
-                                            size: 30,
-                                            isLiked: isFav,
-                                            likeBuilder: (bool isLiked) {
-                                              return Icon(
-                                                isLiked
-                                                    ? Icons.favorite
-                                                    : Icons
+                                      return LikeButton(
+                                        size: 30,
+                                        isLiked: isFav,
+                                        likeBuilder: (bool isLiked) {
+                                          return Icon(
+                                            isLiked
+                                                ? Icons.favorite
+                                                : Icons
                                                     .favorite_border_outlined,
-                                                color: Colors.red,
-                                                size: 30,
-                                              );
-                                            },
-                                            onTap: (bool isLiked) async {
-                                              controller.toggleFavoriteC(
-                                                widget.CoursesData["id"].toString(),
-                                              );
-                                              return !isLiked;
-                                            },
+                                            color: Colors.red,
+                                            size: 30,
                                           );
                                         },
-                                      ),
+                                        onTap: (bool isLiked) async {
+                                          controller.toggleFavoriteC(
+                                            widget.CoursesData["id"].toString(),
+                                          );
+                                          return !isLiked;
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
-                              SizedBox(height: 10,),
+                              SizedBox(height: 10),
                               Container(
-                                 width: Get.width,
-                                 height: Get.height/2.86,
-                            decoration: BoxDecoration(
-                              color:  themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(60),
-                                topRight: Radius.circular(60)
-                              ),
-                            ),
+                                width: Get.width,
+                                height: Get.height / 2.86,
+                                decoration: BoxDecoration(
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(60),
+                                    topRight: Radius.circular(60),
+                                  ),
+                                ),
                                 child: Column(
                                   children: [
-                              Container(
-                                alignment: Alignment.topCenter,
-                                child: 
-                                      widget.CoursesImage! != null
-                                          ? Image.memory(
-                                            widget.CoursesImage!,
-                                            width: Get.width,
-                                            height: Get.height * (1/4),
-                                            fit: BoxFit.fill,
-                                            errorBuilder: (
-                                              context,
-                                              error,
-                                              stackTrace,
-                                            ) {
-                                              return Image.asset(
-                                                ImageAssets.teacher,
-                                                // height: 125,
+                                    Container(
+                                      alignment: Alignment.topCenter,
+                                      child:
+                                          widget.CoursesImage! != null
+                                              ? Image.memory(
+                                                widget.CoursesImage!,
+                                                width: Get.width,
+                                                height: Get.height * (1 / 4),
                                                 fit: BoxFit.fill,
-                                              );
-                                            },
-                                          )
-                                          : Image.asset(
-                                            ImageAssets.teacher,
-                                            width: Get.width,
-                                            height: Get.height * (1/4),
-                                            fit: BoxFit.fill,
-                                          ),
-                                ),
-                      
-                              SizedBox(height: 10),
-                              Text(
-                                "${widget.CoursesData["name"]}".tr,
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: FontStyle.normal,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                              SizedBox(height: 5),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Column(
-                                    children: [
-                                      Text(
-                                "Video lessons".tr,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                                      Text(
-                                "${widget.CoursesData["video_lectures_count"]}".toString().tr,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: [
-                                      Text(
-                                "PDF lessons".tr,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                                     Text(
-                                "${widget.CoursesData["pdf_lessons_count"]}".toString().tr,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: [
-                                      Text(
-                                "Price".tr,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                                     Text(
-                                "\$${widget.CoursesData["price"]}".toString().tr,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color:
-                                      themeController.initialTheme ==
-                                              Themes.customLightTheme
-                                          ? Color.fromARGB(255, 210, 209, 224)
-                                          : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                                    ],
-                                  ),
-                              
-                              
-                              
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              ] )
-                ),
-                                  ],
-                                ),),
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: Container(
-                                height:55,
-                                decoration:BoxDecoration(border:Border(left: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        right: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        bottom: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        top:BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),))),
-                                child:MaterialButton(
-                                onPressed: () {
-                                  setState(() {
-                                    ChosenScreen = "About";
-                                  });
-                                },
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 210, 209, 224)
-                                        : Color.fromARGB(255, 40, 41, 61),
-                                child: Text("About", style: TextStyle(color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),)),
-                              ),)
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: Container(
-                                height:55,
-                                decoration:BoxDecoration(border:Border(left: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        right: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        bottom: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        top:BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),))),
-                                child:MaterialButton(
-                                onPressed: () {
-                                  setState(() {
-                                    ChosenScreen = "Lessons";
-                                  });
-                                },
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 210, 209, 224)
-                                        : Color.fromARGB(255, 40, 41, 61),
-                                child: Text("Lessons", style: TextStyle(color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),)),
-                              ),)
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: Container(
-                                height:55,
-                                decoration:BoxDecoration(border:Border(left: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        right: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        bottom: BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),),
-                                        top:BorderSide(style: BorderStyle.solid,color:themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),))),
-                                child:MaterialButton(
-                                onPressed: () {
-                                  setState(() {
-                                    ChosenScreen = "Reviews";
-                                  });
-                                },
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 210, 209, 224)
-                                        : Color.fromARGB(255, 40, 41, 61),
-                                child: Text("Reviews", style: TextStyle(color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),)),
-                              ),
-                              )
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20,),
-
-                        ChosenScreen == "Reviews" ?
-                        Column(
-                          children: [
-                            Center(
-                              child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            spacing: 10,
-                                children: [
-                                  SizedBox(width: 20,),
-                                  Column(
-                                                        children: [
-                                                          IconButton(
-                                                            onPressed: () {
-                                                              
-                                                            },
-                                                        icon : Icon(isRated == true ? Icons.star_outlined 
-                                                        : Icons.star_border_outlined),
-                                                        color: Colors.blue,
-                                                        iconSize: 30,
-                                                      ),
-                                                      Text(
-                                                        isRated == true ? "Edit Rating".tr
-                                                        :"Rate This".tr,
-                                                        style: TextStyle(
-                                                          color: Colors.blue,
-                                                          fontSize: 16,
-                                                          fontWeight: FontWeight.w400,
-                                                        ),
-                                                      ),
-                                                        ],
-                                                      ),
-                                                      SizedBox(width: 10,),
-                                  Icon(Icons.star_outlined, color: Colors.amber, size: 25),
-                                  Text(
-                                    "${widget.CoursesData["rating"].toString()} based on (${widget.CoursesData["rating"].toString()}) reviews",
-                                style: TextStyle(
-                                      color: themeController.initialTheme == Themes.customLightTheme
-                                          ? Color.fromARGB(255, 40, 41, 61)
-                                          : Color.fromARGB(255, 210, 209, 224),
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w700,
+                                                errorBuilder: (
+                                                  context,
+                                                  error,
+                                                  stackTrace,
+                                                ) {
+                                                  return Image.asset(
+                                                    ImageAssets.teacher,
+                                                    // height: 125,
+                                                    fit: BoxFit.fill,
+                                                  );
+                                                },
+                                              )
+                                              : Image.asset(
+                                                ImageAssets.teacher,
+                                                width: Get.width,
+                                                height: Get.height * (1 / 4),
+                                                fit: BoxFit.fill,
+                                              ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 20),
-                            Column(
-                              children: [
-                                buildRatingBar(5),
-                                SizedBox(height: 6),
-                                buildRatingBar(4),
-                                SizedBox(height: 6),
-                                buildRatingBar(3),
-                                SizedBox(height: 6),
-                                buildRatingBar(2),
-                                SizedBox(height: 6),
-                                buildRatingBar(1),
-                              ],
-                            ),
-                            SizedBox(height: 10),
-                            Container(
-                                      height: 1,
-                                      width: Get.width/1.1,
-                                      decoration: BoxDecoration(
-                                        color: Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
-                                        shape: BoxShape.rectangle,
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(60),
-                                        ),
-                                      ),
-                                    ),
-                            SizedBox(height: 10),
-                            SizedBox(
-                              height: Get.height * 0.4,
-                              child: ListView.builder(
-                                physics: AlwaysScrollableScrollPhysics(),
-                                itemCount: widget.CoursesData["FeaturedRatings"]?.length ?? 0,
-                                itemBuilder: (context, index) {
-                                  final review = widget.CoursesData["FeaturedRatings"]?[index] as Map<String, dynamic>? ?? {};
-                                  return SizedBox(
-                                    width: Get.width / 1.1,
-                                    child: StatefulBuilder(
-                                      builder: (context, setState) {
-                                        bool isExpanded = false;
-                                        final reviewText = review["review"]?.toString().tr ?? 'No review'.tr;
-                                        final textSpan = TextSpan(
-                                          text: reviewText,
-                                          style: TextStyle(
-                                            color: themeController.initialTheme == Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                : Color.fromARGB(255, 210, 209, 224),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w200,
-                                          ),
-                                        );
-                                        final textPainter = TextPainter(
-                                          text: textSpan,
-                                          maxLines: 3,
-                                          textDirection: TextDirection.ltr,
-                                        );
-                                        textPainter.layout(maxWidth: Get.width / 1.1);
-                                        final isLong = textPainter.didExceedMaxLines;
-                                        return Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  flex: 3,
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(review["user_name"]?.toString().tr ?? ''.tr, style: TextStyle(
-                                                        color: themeController.initialTheme == Themes.customLightTheme
-                                                            ? Color.fromARGB(255, 40, 41, 61)
-                                                            : Color.fromARGB(255, 210, 209, 224),
-                                  fontSize: 20,
-                                                        fontWeight: FontWeight.w500,
-                                                      )),
-                                                      Row(
-                                                        children: [
-                                                          Icon(
-                                                            Icons.star_outlined,
-                                                            color: Colors.amber,
-                                                            size: 25,
-                                                          ),
-                                                          Text(review["rating"]?.toString().tr ?? 'no rating'.tr, style: TextStyle(
-                                                            color: themeController.initialTheme == Themes.customLightTheme
-                                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                                : Color.fromARGB(255, 210, 209, 224),
-                                                            fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                                          )),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  flex: 1,
-                                                  child: Text(review["updated_at"]?.toString().tr ?? ''.tr, style: TextStyle(
-                                                    color: themeController.initialTheme == Themes.customLightTheme
-                                          ? Color.fromARGB(255, 40, 41, 61)
-                                          : Color.fromARGB(255, 210, 209, 224),
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w200,
-                                                  )),
-                                                ),
-                                              ],
-                                            ),
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  reviewText,
-                                                  maxLines: isExpanded ? null : 3,
-                                                  overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: themeController.initialTheme == Themes.customLightTheme
-                                                        ? Color.fromARGB(255, 40, 41, 61)
-                                                        : Color.fromARGB(255, 210, 209, 224),
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w200,
-                                                  ),
-                                                ),
-                                                if (isLong && !isExpanded)
-                                                  TextButton(
-                                                    onPressed: () => setState(() => isExpanded = true),
-                                                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                                                    child: Text('Read more...'.tr),
-                                                  ),
-                                                if (isExpanded && isLong)
-                                                  TextButton(
-                                                    onPressed: () => setState(() => isExpanded = false),
-                                                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                                                    child: Text('Show less'.tr),
-                                                  ),
-                                                Container(
-                                                  height: 1,
-                                                  width: Get.width/1.1,
-                                                  decoration: BoxDecoration(
-                                                    color: Color.fromARGB(255, 210, 209, 224),
-                                                    shape: BoxShape.rectangle,
-                                                    borderRadius: BorderRadius.all(Radius.circular(60)),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        )
-
-
-
-
-
-
-
-
-
-
-
-                        : ChosenScreen == "Lessons" ?
-                        Container(
-                          alignment: Alignment.topLeft,
-                          child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(children: [
-                              Container(
-                                    padding: EdgeInsets.only(left: 5),
-                                    child: 
                                     Text(
-                                      "Total Videos Duration".tr,
+                                      "${widget.CoursesData["name"]}".tr,
                                       style: TextStyle(
-                                        color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                            ],),
-                                  Container(
-                                    padding: EdgeInsets.only(left: 5, top: 10),
-                                    child: Text(
-                                      "${widget.CoursesData['duration_formatted_long']}".tr,
-                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w600,
+                                        fontStyle: FontStyle.normal,
                                         color:
                                             themeController.initialTheme ==
                                                     Themes.customLightTheme
                                                 ? Color.fromARGB(
                                                   255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
                                                   210,
                                                   209,
                                                   224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
                                                 ),
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400,
                                       ),
                                     ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Column(
+                                          children: [
+                                            Text(
+                                              "Video lessons".tr,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                              ),
+                                            ),
+                                            Text(
+                                              "${widget.CoursesData["video_lectures_count"]}"
+                                                  .toString()
+                                                  .tr,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                        Column(
+                                          children: [
+                                            Text(
+                                              "Price".tr,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                              ),
+                                            ),
+                                            Text(
+                                              "\$${widget.CoursesData["price"]}"
+                                                  .toString()
+                                                  .tr,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              "PDF lessons".tr,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                              ),
+                                            ),
+                                            Text(
+                                              "${widget.CoursesData["pdf_lessons_count"]}"
+                                                  .toString()
+                                                  .tr,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.normal,
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                height: 55,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    right: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    bottom: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    top: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
                                   ),
-                                  SizedBox(height: Get.height / 25),
-                                  SizedBox(
-                                    height: Get.height * 0.6,
-                                    child: ListView.builder(
-                                      scrollDirection: Axis.vertical,
-                                      physics: AlwaysScrollableScrollPhysics(),
+                                ),
+                                child: MaterialButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      ChosenScreen = "About";
+                                    });
+                                  },
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                  child: Text(
+                                    "About",
+                                    style: TextStyle(
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                height: 55,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    right: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    bottom: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    top: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                  ),
+                                ),
+                                child: MaterialButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      ChosenScreen = "Lessons";
+                                    });
+                                  },
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                  child: Text(
+                                    "Lessons",
+                                    style: TextStyle(
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                height: 55,
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    right: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    bottom: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                    top: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                  ),
+                                ),
+                                child: MaterialButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      ChosenScreen = "Reviews";
+                                    });
+                                  },
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                  child: Text(
+                                    "Reviews",
+                                    style: TextStyle(
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+
+                        ChosenScreen == "Reviews"
+                            ? Column(
+                              children: [
+                                Center(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    spacing: 10,
+                                    children: [
+                                      SizedBox(width: 20),
+                                      Column(
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {},
+                                            icon: Icon(
+                                              isRated == true
+                                                  ? Icons.star_outlined
+                                                  : Icons.star_border_outlined,
+                                            ),
+                                            color: Colors.blue,
+                                            iconSize: 30,
+                                          ),
+                                          Text(
+                                            isRated == true
+                                                ? "Edit Rating".tr
+                                                : "Rate This".tr,
+                                            style: TextStyle(
+                                              color: Colors.blue,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(width: 10),
+                                      Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.star_outlined,
+                                                color: Colors.amber,
+                                                size: 25,
+                                              ),
+                                              Text(
+                                                "${widget.CoursesData["rating"].toString()}",
+                                                style: TextStyle(
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          Text(
+                                            "based on (${widget.CoursesData["ratings_count"].toString()}) reviews",
+                                            style: TextStyle(
+                                              color:
+                                                  themeController
+                                                              .initialTheme ==
+                                                          Themes
+                                                              .customLightTheme
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      ),
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: Get.height / 25),
+
+                                Column(
+                                  children: [
+                                    buildRatingBar(5),
+                                    SizedBox(height: 6),
+                                    buildRatingBar(4),
+                                    SizedBox(height: 6),
+                                    buildRatingBar(3),
+                                    SizedBox(height: 6),
+                                    buildRatingBar(2),
+                                    SizedBox(height: 6),
+                                    buildRatingBar(1),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Container(
+                                  height: 1,
+                                  width: Get.width / 1.1,
+                                  decoration: BoxDecoration(
+                                    color: Color.fromARGB(255, 210, 209, 224),
+                                    shape: BoxShape.rectangle,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(60),
+                                    ),
+                                  ),
+                                ),
+
+                                Container(
+                                  height:
+                                      Get.height *
+                                      0.6, // 40% of screen height, adjust as needed
+                                  child: ListView.builder(
+                                    physics: AlwaysScrollableScrollPhysics(),
+                                    itemCount:
+                                        widget
+                                            .CoursesData["FeaturedRatings"]
+                                            ?.length ??
+                                        0,
+                                    itemBuilder: (context, index) {
+                                      final review =
+                                          widget.CoursesData["FeaturedRatings"]?[index]
+                                              as Map<String, dynamic>? ??
+                                          {};
+                                      return Container(
+                                        width: Get.width / 1.1,
+                                        child: StatefulBuilder(
+                                          builder: (context, setState) {
+                                            bool isExpanded = false;
+                                            final reviewText =
+                                                review["review"]
+                                                    ?.toString()
+                                                    .tr ??
+                                                'No review'.tr;
+                                            final textSpan = TextSpan(
+                                              text: reviewText,
+                                              style: TextStyle(
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
+                                                        ),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w200,
+                                              ),
+                                            );
+                                            final textPainter = TextPainter(
+                                              text: textSpan,
+                                              maxLines: 3,
+                                              textDirection: TextDirection.ltr,
+                                            );
+                                            textPainter.layout(
+                                              maxWidth: Get.width / 1.1,
+                                            );
+                                            final isLong =
+                                                textPainter.didExceedMaxLines;
+                                            return Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      flex: 3,
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            review["user_name"]
+                                                                    ?.toString()
+                                                                    .tr ??
+                                                                ''.tr,
+                                                            style: TextStyle(
+                                                              color:
+                                                                  themeController
+                                                                              .initialTheme ==
+                                                                          Themes
+                                                                              .customLightTheme
+                                                                      ? Color.fromARGB(
+                                                                        255,
+                                                                        40,
+                                                                        41,
+                                                                        61,
+                                                                      )
+                                                                      : Color.fromARGB(
+                                                                        255,
+                                                                        210,
+                                                                        209,
+                                                                        224,
+                                                                      ),
+                                                              fontSize: 20,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              Icon(
+                                                                Icons
+                                                                    .star_outlined,
+                                                                color:
+                                                                    Colors
+                                                                        .amber,
+                                                                size: 25,
+                                                              ),
+                                                              Text(
+                                                                review["rating"]
+                                                                        ?.toString()
+                                                                        .tr ??
+                                                                    'no rating'
+                                                                        .tr,
+                                                                style: TextStyle(
+                                                                  color:
+                                                                      themeController.initialTheme ==
+                                                                              Themes.customLightTheme
+                                                                          ? Color.fromARGB(
+                                                                            255,
+                                                                            40,
+                                                                            41,
+                                                                            61,
+                                                                          )
+                                                                          : Color.fromARGB(
+                                                                            255,
+                                                                            210,
+                                                                            209,
+                                                                            224,
+                                                                          ),
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      flex: 1,
+                                                      child: Text(
+                                                        review["updated_at"]
+                                                                ?.toString()
+                                                                .tr ??
+                                                            ''.tr,
+                                                        style: TextStyle(
+                                                          color:
+                                                              themeController
+                                                                          .initialTheme ==
+                                                                      Themes
+                                                                          .customLightTheme
+                                                                  ? Color.fromARGB(
+                                                                    255,
+                                                                    40,
+                                                                    41,
+                                                                    61,
+                                                                  )
+                                                                  : Color.fromARGB(
+                                                                    255,
+                                                                    210,
+                                                                    209,
+                                                                    224,
+                                                                  ),
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.w200,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      reviewText,
+                                                      maxLines:
+                                                          isExpanded ? null : 3,
+                                                      overflow:
+                                                          isExpanded
+                                                              ? TextOverflow
+                                                                  .visible
+                                                              : TextOverflow
+                                                                  .ellipsis,
+                                                      style: TextStyle(
+                                                        color:
+                                                            themeController
+                                                                        .initialTheme ==
+                                                                    Themes
+                                                                        .customLightTheme
+                                                                ? Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
+                                                                ),
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w200,
+                                                      ),
+                                                    ),
+                                                    if (isLong && !isExpanded)
+                                                      TextButton(
+                                                        onPressed:
+                                                            () => setState(
+                                                              () =>
+                                                                  isExpanded =
+                                                                      true,
+                                                            ),
+                                                        child: Text(
+                                                          'Read more...',
+                                                        ),
+                                                        style:
+                                                            TextButton.styleFrom(
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .zero,
+                                                            ),
+                                                      ),
+                                                    if (isExpanded && isLong)
+                                                      TextButton(
+                                                        onPressed:
+                                                            () => setState(
+                                                              () =>
+                                                                  isExpanded =
+                                                                      false,
+                                                            ),
+                                                        child: Text(
+                                                          'Show less',
+                                                        ),
+                                                        style:
+                                                            TextButton.styleFrom(
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .zero,
+                                                            ),
+                                                      ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 10),
+                                                Container(
+                                                  height: 1,
+                                                  width: Get.width / 1.1,
+                                                  decoration: BoxDecoration(
+                                                    color: Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    ),
+                                                    shape: BoxShape.rectangle,
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                          Radius.circular(60),
+                                                        ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            )
+                            : ChosenScreen == "Lessons"
+                            ? SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.only(left: 5),
+                                          child: Text(
+                                            "Total Videos Duration".tr,
+                                            style: TextStyle(
+                                              color:
+                                                  themeController.initialTheme ==
+                                                          Themes.customLightTheme
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      ),
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(left: 5, top: 10),
+                                      child: Text(
+                                        "${widget.CoursesData['duration_formatted_long']}".tr,
+                                        style: TextStyle(
+                                          color:
+                                              themeController.initialTheme ==
+                                                      Themes.customLightTheme
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  ),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: Get.height / 25),
+                                    ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
                                       controller: scrollController,
                                       itemCount: coursesData.length,
                                       itemBuilder: (context, i) {
                                         int lectureId = coursesData[i]["id"];
-                                        Uint8List? imageBytes = lecturesImages[lectureId];
+                                        Uint8List? imageBytes =
+                                            lecturesImages[lectureId];
 
                                         return InkWell(
                                           onTap: () async {
@@ -1400,9 +1876,11 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                             if (isLectureSubscribed == true) {
                                               if (coursesData[i]['type'] == 0) {
                                                 try {
-                                                  final PDFurl = coursesData[i]['urlpdf'];
+                                                  final PDFurl =
+                                                      coursesData[i]['urlpdf'];
                                                   // "http://www.pdf995.com/samples/pdf.pdf";
-                                                  final file = await loadNetwork(PDFurl);
+                                                  final file =
+                                                      await loadNetwork(PDFurl);
                                                   if (mounted) {
                                                     openPDF(context, file);
                                                   }
@@ -1421,7 +1899,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                       context,
                                                       MaterialPageRoute(
                                                         builder:
-                                                            (context) => VideoPlayer(
+                                                            (
+                                                              context,
+                                                            ) => VideoPlayer(
                                                               videoUrl:
                                                                   coursesData[i]['url360'],
                                                               // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
@@ -1449,9 +1929,23 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                 titleText: Text(
                                                   "Not subscribed!".tr,
                                                   style: TextStyle(
-                                                    color: themeController.initialTheme == Themes.customLightTheme
-                                                        ? Color.fromARGB(255, 210, 209, 224)
-                                                        : Color.fromARGB(255, 40, 41, 61),
+                                                    color:
+                                                        themeController
+                                                                    .initialTheme ==
+                                                                Themes
+                                                                    .customLightTheme
+                                                            ? Color.fromARGB(
+                                                              255,
+                                                              210,
+                                                              209,
+                                                              224,
+                                                            )
+                                                            : Color.fromARGB(
+                                                              255,
+                                                              40,
+                                                              41,
+                                                              61,
+                                                            ),
                                                     fontWeight: FontWeight.w500,
                                                     fontSize: 18,
                                                   ),
@@ -1460,38 +1954,98 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                   'Contact the support team for instructions on how to subscribe to the course/subject first.'
                                                       .tr,
                                                   style: TextStyle(
-                                                    color: themeController.initialTheme == Themes.customLightTheme
-                                                        ? Color.fromARGB(255, 210, 209, 224)
-                                                        : Color.fromARGB(255, 40, 41, 61),
+                                                    color:
+                                                        themeController
+                                                                    .initialTheme ==
+                                                                Themes
+                                                                    .customLightTheme
+                                                            ? Color.fromARGB(
+                                                              255,
+                                                              210,
+                                                              209,
+                                                              224,
+                                                            )
+                                                            : Color.fromARGB(
+                                                              255,
+                                                              40,
+                                                              41,
+                                                              61,
+                                                            ),
                                                   ),
                                                 ),
                                                 isDismissible: true,
-                                                snackPosition: SnackPosition.BOTTOM,
-                                                duration: const Duration(seconds: 3),
-                                                backgroundColor: Color.fromARGB(255, 210, 209, 224),
+                                                snackPosition:
+                                                    SnackPosition.BOTTOM,
+                                                duration: const Duration(
+                                                  seconds: 3,
+                                                ),
+                                                backgroundColor: Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                ),
                                                 icon: FaIcon(
                                                   FontAwesomeIcons.ban,
                                                   size: 30,
-                                                  color: themeController.initialTheme == Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                                      : Color.fromARGB(255, 210, 209, 224),
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          ),
                                                 ),
                                                 margin: const EdgeInsets.all(5),
                                                 borderRadius: 5,
-                                                borderColor: Color.fromARGB(255, 40, 41, 61),
+                                                borderColor: Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                               );
                                             }
                                           },
                                           child: Container(
-                                            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                            margin: EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 5,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: themeController.initialTheme == Themes.customLightTheme
-                                                  ? Color.fromARGB(255, 210, 209, 224)
-                                                  : Color.fromARGB(255, 40, 41, 61),
-                                              borderRadius: BorderRadius.circular(12),
+                                              color:
+                                                  themeController
+                                                              .initialTheme ==
+                                                          Themes
+                                                              .customLightTheme
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.black.withOpacity(0.1),
+                                                  color: Colors.black
+                                                      .withOpacity(0.1),
                                                   spreadRadius: 1,
                                                   blurRadius: 3,
                                                   offset: Offset(0, 2),
@@ -1507,81 +2061,178 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                     width: 80,
                                                     height: 80,
                                                     decoration: BoxDecoration(
-                                                      borderRadius: BorderRadius.circular(8),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
                                                       color: Colors.grey[300],
                                                     ),
                                                     child: ClipRRect(
-                                                      borderRadius: BorderRadius.circular(8),
-                                                      child: imageBytes != null
-                                                          ? Image.memory(
-                                                              imageBytes,
-                                                              fit: BoxFit.cover,
-                                                              errorBuilder: (context, error, stackTrace) {
-                                                                return Image.asset(
-                                                                  ImageAssets.lecture,
-                                                                  fit: BoxFit.cover,
-                                                                );
-                                                              },
-                                                            )
-                                                          : Image.asset(ImageAssets.lecture, fit: BoxFit.cover),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                      child:
+                                                          imageBytes != null
+                                                              ? Image.memory(
+                                                                imageBytes,
+                                                                fit:
+                                                                    BoxFit
+                                                                        .cover,
+                                                                errorBuilder: (
+                                                                  context,
+                                                                  error,
+                                                                  stackTrace,
+                                                                ) {
+                                                                  return Image.asset(
+                                                                    ImageAssets
+                                                                        .lecture,
+                                                                    fit:
+                                                                        BoxFit
+                                                                            .cover,
+                                                                  );
+                                                                },
+                                                              )
+                                                              : Image.asset(
+                                                                ImageAssets
+                                                                    .lecture,
+                                                                fit:
+                                                                    BoxFit
+                                                                        .cover,
+                                                              ),
                                                     ),
                                                   ),
                                                   SizedBox(width: 12),
                                                   // Lesson Details
                                                   Expanded(
                                                     child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
                                                         // Lesson Name
                                                         Text(
-                                                          "${coursesData[i]["name"]}".tr,
+                                                          "${coursesData[i]["name"]}"
+                                                              .tr,
                                                           style: TextStyle(
                                                             fontSize: 16,
-                                                            fontWeight: FontWeight.w600,
-                                                            color: themeController.initialTheme == Themes.customLightTheme
-                                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                                : Color.fromARGB(255, 210, 209, 224),
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color:
+                                                                themeController
+                                                                            .initialTheme ==
+                                                                        Themes
+                                                                            .customLightTheme
+                                                                    ? Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    )
+                                                                    : Color.fromARGB(
+                                                                      255,
+                                                                      210,
+                                                                      209,
+                                                                      224,
+                                                                    ),
                                                           ),
                                                           maxLines: 2,
-                                                          overflow: TextOverflow.ellipsis,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
                                                         ),
                                                         SizedBox(height: 4),
                                                         // Type and Duration/Slides
                                                         Row(
                                                           children: [
                                                             Container(
-                                                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                              padding:
+                                                                  EdgeInsets.symmetric(
+                                                                    horizontal:
+                                                                        8,
+                                                                    vertical: 2,
+                                                                  ),
                                                               decoration: BoxDecoration(
-                                                                color: coursesData[i]['type'] == 0 ? Colors.blue : Colors.red,
-                                                                borderRadius: BorderRadius.circular(12),
+                                                                color:
+                                                                    coursesData[i]['type'] ==
+                                                                            0
+                                                                        ? Colors
+                                                                            .blue
+                                                                        : Colors
+                                                                            .red,
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      12,
+                                                                    ),
                                                               ),
                                                               child: Text(
-                                                                coursesData[i]['type'] == 0 ? "PDF".tr : "Video".tr,
+                                                                coursesData[i]['type'] ==
+                                                                        0
+                                                                    ? "PDF".tr
+                                                                    : "Video"
+                                                                        .tr,
                                                                 style: TextStyle(
-                                                                  color: Colors.white,
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
                                                                   fontSize: 10,
-                                                                  fontWeight: FontWeight.w500,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
                                                                 ),
                                                               ),
                                                             ),
                                                             SizedBox(width: 8),
                                                             Icon(
-                                                              coursesData[i]['type'] == 0 ? Icons.description : Icons.play_circle_outline,
+                                                              coursesData[i]['type'] ==
+                                                                      0
+                                                                  ? Icons
+                                                                      .description
+                                                                  : Icons
+                                                                      .play_circle_outline,
                                                               size: 14,
-                                                              color: themeController.initialTheme == Themes.customLightTheme
-                                                                  ? Color.fromARGB(255, 40, 41, 61)
-                                                                  : Color.fromARGB(255, 210, 209, 224),
+                                                              color:
+                                                                  themeController
+                                                                              .initialTheme ==
+                                                                          Themes
+                                                                              .customLightTheme
+                                                                      ? Color.fromARGB(
+                                                                        255,
+                                                                        40,
+                                                                        41,
+                                                                        61,
+                                                                      )
+                                                                      : Color.fromARGB(
+                                                                        255,
+                                                                        210,
+                                                                        209,
+                                                                        224,
+                                                                      ),
                                                             ),
                                                             SizedBox(width: 4),
                                                             Text(
-                                                              coursesData[i]['type'] == 0 
-                                                                  ? "15 slides".tr  // Static value for PDF
-                                                                  : "25:30 min".tr, // Static value for Video
+                                                              coursesData[i]['type'] ==
+                                                                      0
+                                                                  ? "${coursesData[i]['pages']} slides"
+                                                                  // Static value for PDF
+                                                                  : "${coursesData[i]['formatted_duration']} min", // Static value for Video
                                                               style: TextStyle(
                                                                 fontSize: 12,
-                                                                color: themeController.initialTheme == Themes.customLightTheme
-                                                                    ? Color.fromARGB(255, 40, 41, 61)
-                                                                    : Color.fromARGB(255, 210, 209, 224),
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                                                            Themes.customLightTheme
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        ),
                                                               ),
                                                             ),
                                                           ],
@@ -1590,15 +2241,33 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                         // Rating
                                                         Row(
                                                           children: [
-                                                            Icon(Icons.star, color: Colors.amber, size: 14),
+                                                            Icon(
+                                                              Icons.star,
+                                                              color:
+                                                                  Colors.amber,
+                                                              size: 14,
+                                                            ),
                                                             SizedBox(width: 4),
                                                             Text(
-                                                              "4.5 (120)".tr, // Static rating
+                                                              "${coursesData[i]['rating']}"
+                                                                  .tr, // Static rating
                                                               style: TextStyle(
                                                                 fontSize: 12,
-                                                                color: themeController.initialTheme == Themes.customLightTheme
-                                                                    ? Color.fromARGB(255, 40, 41, 61)
-                                                                    : Color.fromARGB(255, 210, 209, 224),
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                                                            Themes.customLightTheme
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        ),
                                                               ),
                                                             ),
                                                           ],
@@ -1614,23 +2283,30 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                         height: 40,
                                                         decoration: BoxDecoration(
                                                           color: Colors.green,
-                                                          borderRadius: BorderRadius.circular(20),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                20,
+                                                              ),
                                                         ),
                                                         child: IconButton(
                                                           onPressed: () {
                                                             // Quiz functionality - static for now
-                                                            Get.snackbar(
-                                                              "Quiz".tr,
-                                                              "Quiz feature coming soon!".tr,
-                                                              snackPosition: SnackPosition.BOTTOM,
-                                                            );
+                                                            // Get.snackbar(
+                                                            //   "Quiz".tr,
+                                                            //   "Quiz feature coming soon!"
+                                                            //       .tr,
+                                                            //   snackPosition:
+                                                            //       SnackPosition
+                                                            //           .BOTTOM,
+                                                            // );
                                                           },
                                                           icon: Icon(
                                                             Icons.quiz,
                                                             color: Colors.white,
                                                             size: 20,
                                                           ),
-                                                          padding: EdgeInsets.zero,
+                                                          padding:
+                                                              EdgeInsets.zero,
                                                         ),
                                                       ),
                                                       SizedBox(height: 4),
@@ -1638,9 +2314,23 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                         "Quiz".tr,
                                                         style: TextStyle(
                                                           fontSize: 10,
-                                                          color: themeController.initialTheme == Themes.customLightTheme
-                                                              ? Color.fromARGB(255, 40, 41, 61)
-                                                              : Color.fromARGB(255, 210, 209, 224),
+                                                          color:
+                                                              themeController
+                                                                          .initialTheme ==
+                                                                      Themes
+                                                                          .customLightTheme
+                                                                  ? Color.fromARGB(
+                                                                    255,
+                                                                    40,
+                                                                    41,
+                                                                    61,
+                                                                  )
+                                                                  : Color.fromARGB(
+                                                                    255,
+                                                                    210,
+                                                                    209,
+                                                                    224,
+                                                                  ),
                                                         ),
                                                       ),
                                                     ],
@@ -1652,22 +2342,65 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                         );
                                       },
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(height: Get.height / 25),
+                                    Container(
+                                      padding: EdgeInsets.only(left: 5),
+                                      child: Text(
+                                        "Sources".tr,
+                                        style: TextStyle(
+                                          color:
+                                              themeController.initialTheme ==
+                                                      Themes.customLightTheme
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  ),
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: List.generate(
+                                        widget.CoursesData["sources"].length,
+                                        (index) => TextButton(
+                                          onPressed: () async {
+                                            _launchURL(
+                                              widget.CoursesData["sources"][index]["link"],
+                                            );
+                                          },
+                                          child: Text(
+                                            "${widget.CoursesData["sources"][index]["name"]}".tr,
+                                            style: TextStyle(
+                                              color: themeController.initialTheme == Themes.customLightTheme
+                                                  ? Color.fromARGB(255, 40, 41, 61)
+                                                  : Color.fromARGB(255, 210, 209, 224),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w400,
+                                              decoration: TextDecoration.underline,
+                                              decorationColor: themeController.initialTheme == Themes.customLightTheme
+                                                  ? Color.fromARGB(255, 40, 41, 61)
+                                                  : Color.fromARGB(255, 210, 209, 224),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 30,),
+                                  ],
+                                ),
                               )
-                        )
-
-
-
-
-
-
-
-
-
-
-
-                        : Container(
+                            : Container(
                               alignment: Alignment.topLeft,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1678,8 +2411,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                       "What Will You Learn".tr,
                                       style: TextStyle(
                                         color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
+                                            themeController.initialTheme ==
+                                                    Themes.customLightTheme
                                                 ? Color.fromARGB(
                                                   255,
                                                   40,
@@ -1751,7 +2484,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                   Container(
                                     padding: EdgeInsets.only(left: 5, top: 10),
                                     child: Text(
-                                      "${widget.CoursesData['requirements']}".tr,
+                                      "${widget.CoursesData['requirements']}"
+                                          .tr,
                                       style: TextStyle(
                                         color:
                                             themeController.initialTheme ==
@@ -1763,11 +2497,11 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                   61,
                                                 )
                                                 : Color.fromARGB(
-                                      255,
-                                      210,
-                                      209,
-                                      224,
-                                    ),
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                ),
                                         fontSize: 16,
                                         fontWeight: FontWeight.w400,
                                       ),
@@ -1823,7 +2557,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                   ),
                                           fontSize: 16,
                                           fontWeight: FontWeight.w400,
-                                        ))
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   SizedBox(height: Get.height / 25),
@@ -1852,6 +2587,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                       ),
                                     ),
                                   ),
+
                                   // Container(
                                   //   padding: EdgeInsets.only(left: 5, top: 10),
                                   //   child: Text(
@@ -1875,43 +2611,33 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                   //       fontSize: 16,
                                   //       fontWeight: FontWeight.w400,
                                   //     ),
-                      //   ),
-                      // ),
-                                  
-
+                                  //   ),
+                                  // ),
                                   SizedBox(height: Get.height / 25),
                                 ],
                               ),
                             ),
-
-
-
-
-
-
-
-
-
-
-                      
-                    
-                  
-                  
-                 
-                  ]),])))
-                  // )
-                  ;
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+    )
+    // )
+    ;
   }
 
   Widget buildRatingBar(int rating) {
     final ratingBreakdown = widget.CoursesData["rating_breakdown"] ?? {};
-    final totalReviews = (int.tryParse(ratingBreakdown["5"].toString()) ?? 0)
-      + (int.tryParse(ratingBreakdown["4"].toString()) ?? 0)
-      + (int.tryParse(ratingBreakdown["3"].toString()) ?? 0)
-      + (int.tryParse(ratingBreakdown["2"].toString()) ?? 0)
-      + (int.tryParse(ratingBreakdown["1"].toString()) ?? 0);
+    final totalReviews =
+        (int.tryParse(ratingBreakdown["5"].toString()) ?? 0) +
+        (int.tryParse(ratingBreakdown["4"].toString()) ?? 0) +
+        (int.tryParse(ratingBreakdown["3"].toString()) ?? 0) +
+        (int.tryParse(ratingBreakdown["2"].toString()) ?? 0) +
+        (int.tryParse(ratingBreakdown["1"].toString()) ?? 0);
 
-    final count = int.tryParse(ratingBreakdown[rating.toString()].toString()) ?? 0;
+    final count =
+        int.tryParse(ratingBreakdown[rating.toString()].toString()) ?? 0;
     final percent = totalReviews > 0 ? count / totalReviews : 0.0;
     return Row(
       children: [
@@ -1920,15 +2646,20 @@ class _CoursesLessonsState extends State<CoursesLessons> {
           child: Align(
             alignment: Alignment.center,
             child: Text(
-              rating == 5 ? "Excellent".tr :
-              rating == 4 ? "Good".tr :
-              rating == 3 ? "Average".tr :
-              rating == 2 ? "Below Average".tr :
-              "Poor".tr,
+              rating == 5
+                  ? "Excellent".tr
+                  : rating == 4
+                  ? "Good".tr
+                  : rating == 3
+                  ? "Average".tr
+                  : rating == 2
+                  ? "Below Average".tr
+                  : "Poor".tr,
               style: TextStyle(
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 40, 41, 61)
-                    : Color.fromARGB(255, 210, 209, 224),
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
                 fontSize: 15,
                 fontWeight: FontWeight.w300,
               ),
@@ -1969,9 +2700,10 @@ class _CoursesLessonsState extends State<CoursesLessons> {
             child: Text(
               count.toString(),
               style: TextStyle(
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 40, 41, 61)
-                    : Color.fromARGB(255, 210, 209, 224),
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
                 fontSize: 15,
                 fontWeight: FontWeight.w300,
               ),
