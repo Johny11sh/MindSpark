@@ -56,6 +56,9 @@ dependencies:
   rating_dialog: ^2.0.4
   lottie: ^3.3.1
   like_button: ^2.1.0
+  dash_chat_2: ^0.0.21
+  intl: ^0.19.0
+  google_nav_bar: ^5.0.7
 
 
 

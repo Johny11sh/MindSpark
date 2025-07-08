@@ -11,7 +11,7 @@ class ImageAssets {
   static const String OnBoarding2 = "$ImageRoute/onboarding2.png";
   static const String OnBoarding3 = "$ImageRoute/onboarding3.png";
   static const String teacherAvatar = "$ImageRoute/teacherAvatar.png";
-  static const String UserAvatar = "$ImageRoute/UserAvatar.png";
+  static const String UserAvatar = "$ImageRoute/userAvatar.png";
   static const String book = "$ImageRoute/book.png";
   static const String ArabicFlag = "$ImageRoute/ArabicFlag.png";
   static const String EnglishFlag = "$ImageRoute/EnglishFlag.png";

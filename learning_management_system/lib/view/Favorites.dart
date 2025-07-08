@@ -36,9 +36,9 @@ class _FavoriteState extends State<Favorites> {
             },
             child: Container(
               color:
-                              themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
               child: Column(
                 children: [
                   Container(
@@ -64,7 +64,7 @@ class _FavoriteState extends State<Favorites> {
                           child: Center(
                             child: Padding(
                               padding: EdgeInsets.only(right: Get.width / 8),
-              
+
                               child: Text(
                                 "My Favorite".tr,
                                 style: Theme.of(
@@ -72,6 +72,11 @@ class _FavoriteState extends State<Favorites> {
                                 ).textTheme.bodySmall!.copyWith(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 23,
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
                                 ),
                               ),
                             ),
@@ -83,13 +88,13 @@ class _FavoriteState extends State<Favorites> {
                   SizedBox(height: 30),
                   Expanded(
                     child: Container(
-                      padding: EdgeInsets.only(left: 20,right: 20),
+                      padding: EdgeInsets.only(left: 20, right: 20),
                       decoration: BoxDecoration(
                         color:
                             themeController.initialTheme ==
                                     Themes.customLightTheme
-                                ? Color.fromARGB(255, 40, 41, 61)
-                                : Color.fromARGB(255, 210, 209, 224),
+                                ? Color.fromARGB(255, 210, 209, 224)
+                                : Color.fromARGB(255, 40, 41, 61),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(30),
                           topRight: Radius.circular(30),
@@ -119,23 +124,24 @@ class _FavoriteState extends State<Favorites> {
                                       decoration: BoxDecoration(
                                         color:
                                             controller.favCh == "teacher"
-                                                ?
-                                            Color.fromARGB(255, 40, 41, 61)
-              
-                                                :
-                                            Color.fromARGB(
-                                              255,
-                                              210,
-                                              209,
-                                              224,
-                                            )
-                                        ,
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                ),
                                         borderRadius: BorderRadius.only(
                                           topLeft: Radius.circular(25),
                                           bottomLeft: Radius.circular(25),
                                         ),
                                       ),
-              
+
                                       alignment: Alignment.center,
                                       child: Text(
                                         "Teacher",
@@ -143,22 +149,18 @@ class _FavoriteState extends State<Favorites> {
                                           fontSize: 18,
                                           color:
                                               controller.favCh == "teacher"
-                                                  ?
-                                              Color.fromARGB(
-                                                255,
-                                                210,
-                                                209,
-                                                224,
-                                              )
-              
-                                                  :
-                                              Color.fromARGB(
-                                                255,
-                                                40,
-                                                41,
-                                                61,
-                                              )
-                                          ,
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  ),
                                         ),
                                       ),
                                     ),
@@ -175,25 +177,23 @@ class _FavoriteState extends State<Favorites> {
                                         color:
                                             controller.favCh == "teacher"
                                                 ? Color.fromARGB(
-                                              255,
-                                              210,
-                                              209,
-                                              224,
-                                            )
-                                                :
-                                            Color.fromARGB(
-                                              255,
-                                              40,
-                                              41,
-                                              61,
-                                            )
-                                        ,
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                         borderRadius: BorderRadius.only(
                                           topRight: Radius.circular(25),
                                           bottomRight: Radius.circular(25),
                                         ),
                                       ),
-              
+
                                       alignment: Alignment.center,
                                       child: Text(
                                         "Course",
@@ -201,22 +201,18 @@ class _FavoriteState extends State<Favorites> {
                                           fontSize: 18,
                                           color:
                                               controller.favCh == "teacher"
-                                                  ?
-                                              Color.fromARGB(
-                                                255,
-                                                40,
-                                                41,
-                                                61,
-                                              )
-              
-                                                  :
-                                              Color.fromARGB(
-                                                255,
-                                                210,
-                                                209,
-                                                224,
-                                              )
-                                          ,
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  ),
                                         ),
                                       ),
                                     ),
@@ -243,15 +239,14 @@ class _FavoriteState extends State<Favorites> {
                                               SliverGridDelegateWithFixedCrossAxisCount(
                                                 crossAxisCount: 2,
                                                 mainAxisSpacing: 10,
-                                                crossAxisSpacing: 10
+                                                crossAxisSpacing: 10,
                                               ),
                                           itemCount: controller.tFav.length,
                                           itemBuilder:
                                               (context, index) =>
                                                   ViewTFavoriteCard(
                                                     tFavoriteModel:
-                                                        controller
-                                                            .tFav[index],
+                                                        controller.tFav[index],
                                                   ),
                                         )
                                     : controller.loading2
@@ -260,19 +255,17 @@ class _FavoriteState extends State<Favorites> {
                                     ? noDataLottie()
                                     : GridView.builder(
                                       shrinkWrap: true,
-                                      physics:
-                                          NeverScrollableScrollPhysics(),
+                                      physics: NeverScrollableScrollPhysics(),
                                       gridDelegate:
                                           SliverGridDelegateWithFixedCrossAxisCount(
                                             crossAxisCount: 2,
                                           ),
                                       itemCount: controller.cFav.length,
                                       itemBuilder:
-                                          (context, index) =>
-                                              ViewCFavoriteCard(
-                                                cFavoriteModel:
-                                                    controller.cFav[index],
-                                              ),
+                                          (context, index) => ViewCFavoriteCard(
+                                            cFavoriteModel:
+                                                controller.cFav[index],
+                                          ),
                                     ),
                               ],
                             ),

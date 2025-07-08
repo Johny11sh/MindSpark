@@ -153,6 +153,7 @@ class ProfileController extends GetxController {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
         debugPrint("Logout successful");
+        await sharedPrefs.prefs.clear();
         Get.offAll(() => OnBoarding());
         return responseBody;
       } else {

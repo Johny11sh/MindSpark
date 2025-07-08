@@ -158,7 +158,7 @@ class _CoursesState extends State<Courses> {
                     // Header section
                     Container(
                       padding: EdgeInsets.only(top: 30),
-                      height: 100,
+                      height: 120,
                       child: Row(
                         children: [
                           Padding(
@@ -384,4 +384,4 @@ class _CoursesState extends State<Courses> {
             ),
     );
   }
-} 
+}

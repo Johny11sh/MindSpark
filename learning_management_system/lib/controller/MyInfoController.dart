@@ -12,7 +12,7 @@ import '../view/NavBar.dart';
 
 class MyInfoController extends GetxController {
   late SharedPrefs sharedPrefs;
-  Map<String, dynamic> profileData = {};
+  Map profileData = {};
 
   late String userName;
   late String phone;

@@ -36,7 +36,7 @@ class Profile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ProfileController profileController = Get.find<ProfileController>();
+    final ProfileController profileController = Get.put(ProfileController());
     final ThemeController themeController = Get.find<ThemeController>();
     final LocaleController localeController = Get.find<LocaleController>();
     final NetworkController networkController = Get.find<NetworkController>();
@@ -73,7 +73,7 @@ class Profile extends StatelessWidget {
         children: [
           Container(
             padding: EdgeInsets.only(top: 25),
-            height: 120,
+            height: 100,
             child: Center(
               child: Text(
                 "Profile".tr,

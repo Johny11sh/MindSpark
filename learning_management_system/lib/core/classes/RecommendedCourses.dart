@@ -339,7 +339,7 @@ class _RecommendedCoursesState extends State<RecommendedCourses> {
                             MaterialPageRoute(
                               builder: (context) => CoursesLessons(
                                 CoursesData: recommendedCourses[index],
-                                index: index,
+                                index: index, CoursesImage: null,
                               ),
                             ),
                           );

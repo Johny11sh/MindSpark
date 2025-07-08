@@ -307,7 +307,7 @@ class _TeachersState extends State<Teachers> {
                       children: [
                         Container(
                           padding: EdgeInsets.only(top: 30),
-                          height: 100,
+                          height: 80,
                           // color: Colors.red,
                           child: Row(
                             // mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 import 'dart:math';
 import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
@@ -16,7 +17,8 @@ import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
 final ThemeController themeController = Get.find<ThemeController>();
 final LocaleController localeController = Get.find<LocaleController>();
-String mainIP = "http://192.168.1.9:8000";
+// String mainIP = "http://192.168.1.9:8000";
+String mainIP = "http://127.0.0.1:8000";
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -107,7 +109,7 @@ class NavBarState extends State<NavBar> {
 
   void _handleMainButtonPress() async {
     _toggleExpand();
-    
+
     if (!isPlaying) {
       if (currentSong == null) {
         // First time press - play random song
@@ -145,15 +147,17 @@ class NavBarState extends State<NavBar> {
               onPressed: playPreviousSong,
               elevation: 0,
               mini: true,
-              backgroundColor: themeController.initialTheme == Themes.customLightTheme
+              backgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
                       ? Color.fromARGB(255, 40, 41, 61)
                       : Color.fromARGB(255, 210, 209, 224),
-              foregroundColor: themeController.initialTheme == Themes.customLightTheme
+              foregroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
                       ? Color.fromARGB(255, 210, 209, 224)
                       : Color.fromARGB(255, 46, 48, 97),
               child: Icon(Icons.skip_previous_rounded, size: 22),
             ),
-            ),
+          ),
           // Play/Pause Button
           Positioned(
             child: FloatingActionButton(
@@ -167,128 +171,158 @@ class NavBarState extends State<NavBar> {
                   isPlaying = !isPlaying;
                 });
               },
-                elevation: 0,
+              elevation: 0,
               mini: true,
-              backgroundColor: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
-              foregroundColor: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 46, 48, 97),
+              backgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
+              foregroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
               child: Icon(
                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                 size: 22,
               ),
             ),
-              ),
+          ),
           // Next Button
           Positioned(
             right: 0,
             child: FloatingActionButton(
               onPressed: playNextSong,
-                elevation: 0,
+              elevation: 0,
               mini: true,
-              backgroundColor: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
-              foregroundColor: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 46, 48, 97),
+              backgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
+              foregroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
               child: Icon(Icons.skip_next_rounded, size: 22),
-                ),
-              ),
+            ),
+          ),
         ],
         // Main Button
-              FloatingActionButton(
+        FloatingActionButton(
           onPressed: _handleMainButtonPress,
           elevation: 2,
           mini: true,
-          backgroundColor: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
-          foregroundColor: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 46, 48, 97),
+          backgroundColor:
+              themeController.initialTheme == Themes.customLightTheme
+                  ? Color.fromARGB(255, 40, 41, 61)
+                  : Color.fromARGB(255, 210, 209, 224),
+          foregroundColor:
+              themeController.initialTheme == Themes.customLightTheme
+                  ? Color.fromARGB(255, 210, 209, 224)
+                  : Color.fromARGB(255, 46, 48, 97),
           child: Icon(
             isExpanded ? Icons.music_off_rounded : Icons.music_note_rounded,
             size: 22,
           ),
-              ),
-            ],
+        ),
+      ],
     );
+  }
+
+  List pageName = [
+    {"Name": "HomePage", "Icon": Icons.home_filled},
+
+    {"Name": "Teachers", "Icon": Icons.person},
+
+    {"Name": "Library", "Icon": Icons.local_library_rounded},
+
+    {"Name": "Profile", "Icon": Icons.account_circle_outlined},
+  ];
+
+  List<Widget> page = [HomePage(), Teachers(), Library(), Profile()];
+
+  int currentPage = 0;
+
+  changePage(int index) {
+    setState(() {
+      currentPage = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PersistentTabView(
-        tabs: [
-          PersistentTabConfig(
-            screen: HomePage(),
-            item: ItemConfig(
-              activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
-              inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
-              inactiveBackgroundColor:
+      bottomNavigationBar: Container(
+        height: 75,
+        margin: EdgeInsets.only(bottom: 10),
+        padding: EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color:
+              themeController.initialTheme == Themes.customLightTheme
+                  ? Color.fromARGB(255, 46, 48, 97)
+                  : Color.fromARGB(255, 210, 209, 224),
+          borderRadius: BorderRadius.circular(15),
+          // color: Color.fromARGB(255, 210, 209, 224),
+          boxShadow: [
+            BoxShadow(
+              color:
                   themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 210, 209, 224)
-                      : Color.fromARGB(255, 46, 48, 97),
-              icon: Icon(Icons.home),
-              title: "Home".tr,
+                      ? Color.fromARGB(255, 46, 48, 97)
+                      : Color.fromARGB(255, 210, 209, 224),
+              offset: Offset(0, -1),
+              spreadRadius: 0,
+              blurRadius: 4,
             ),
+          ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          child: GNav(
+            curve: Curves.easeOutExpo,
+            duration: Duration(milliseconds: 200),
+            gap: 4,
+            color:
+                themeController.initialTheme == Themes.customLightTheme
+                    ? Color.fromARGB(255, 210, 209, 224)
+                    : Color.fromARGB(255, 46, 48, 97),
+            // color: Color.fromARGB(255, 210, 209, 224),
+            activeColor:
+                themeController.initialTheme == Themes.customLightTheme
+                    ? Color.fromARGB(255, 46, 48, 97)
+                    : Color.fromARGB(255, 210, 209, 224),
+
+            // Color.fromARGB(255, 210, 209, 224),
+            iconSize: 26,
+            tabBackgroundColor:
+                themeController.initialTheme == Themes.customLightTheme
+                    ? Color.fromARGB(255, 210, 209, 224)
+                    : Color.fromARGB(255, 46, 48, 97),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+            onTabChange: (index) {
+              changePage(index);
+            },
+            tabs: [
+              ...List.generate(page.length, (index) {
+                return GButton(
+                  text: pageName[index]["Name"],
+
+                  icon: pageName[index]["Icon"],
+                );
+              }),
+            ],
           ),
-          PersistentTabConfig(
-            screen: Teachers(),
-            item: ItemConfig(
-              activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
-              inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
-              inactiveBackgroundColor:
-                  themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 210, 209, 224)
-                      : Color.fromARGB(255, 46, 48, 97),
-              icon: Icon(Icons.person),
-              title: "Teachers".tr,
-            ),
-          ),
-          PersistentTabConfig(
-            screen: Library(),
-            item: ItemConfig(
-              activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
-              inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
-              inactiveBackgroundColor:
-                  themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 210, 209, 224)
-                      : Color.fromARGB(255, 46, 48, 97),
-              icon: Icon(Icons.local_library_rounded),
-              title: "Library".tr,
-            ),
-          ),
-          PersistentTabConfig(
-            screen: Profile(),
-            item: ItemConfig(
-              activeForegroundColor: Color.fromARGB(255, 40, 41, 61),
-              inactiveForegroundColor: Color.fromARGB(255, 153, 151, 188),
-              inactiveBackgroundColor:
-                  themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 210, 209, 224)
-                      : Color.fromARGB(255, 46, 48, 97),
-              icon: Icon(Icons.person),
-              title: "Profile".tr,
-            ),
-          ),
-        ],
-        navBarBuilder: (navBarConfig) =>
-            CustomNavBar(navBarConfig: navBarConfig),
+        ),
       ),
-      floatingActionButton: isNavBarVisible
-          ? Container(
-              width: 150,
-              height: 40,
-              margin: EdgeInsets.only(bottom: 58),
-              child: _buildMusicControls(),
-            )
-          : null,
+      floatingActionButton:
+          isNavBarVisible
+              ? Container(
+                width: 150,
+                height: 40,
+                margin: EdgeInsets.only(bottom: 58),
+                child: _buildMusicControls(),
+              )
+              : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      body: page.elementAt(currentPage),
     );
   }
 }
-

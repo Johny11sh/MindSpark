@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
+import 'package:learning_management_system/controller/ProfileController.dart';
 import 'package:like_button/like_button.dart';
 import '../core/classes/Courses.dart';
 import 'LogIn.dart';
@@ -32,13 +33,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  
   ScrollController scrollController = ScrollController();
   late SharedPrefs sharedPrefs;
 
   final ThemeController themeController = Get.find<ThemeController>();
   final NetworkController networkController = Get.find<NetworkController>();
   final LocaleController localeController = Get.find<LocaleController>();
+ final ProfileController profileController= Get.put(ProfileController());
 
   List<Map<String, dynamic>> subjects = [];
   final Map<int, Uint8List> subjectsImages = {};
@@ -69,8 +70,6 @@ class _HomePageState extends State<HomePage> {
   final Map<int, Uint8List> subscribedCoursesImages = {};
   List<Map<String, dynamic>> cachedSubscribedCourses = [];
   late FavoriteController favoriteController;
-
-  
 
   @override
   void initState() {
@@ -1258,7 +1257,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Container(
                         padding: EdgeInsets.only(top: 30),
-                        height: 100,
+                        height: 80,
                         // color: Colors.red,
                         child: Row(
                           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1317,9 +1316,10 @@ class _HomePageState extends State<HomePage> {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => SubjectTeachers(
-                                                SubjectData: subject,
-                                              ),
+                                              builder:
+                                                  (context) => SubjectTeachers(
+                                                    SubjectData: subject,
+                                                  ),
                                             ),
                                           );
                                         } else {
@@ -1327,10 +1327,12 @@ class _HomePageState extends State<HomePage> {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => SubjectsBooks(
-                                                subjectId: subject['id'],
-                                                subjectName: subject['name'],
-                                              ),
+                                              builder:
+                                                  (context) => SubjectsBooks(
+                                                    subjectId: subject['id'],
+                                                    subjectName:
+                                                        subject['name'],
+                                                  ),
                                             ),
                                           );
                                         }
@@ -1730,14 +1732,18 @@ class _HomePageState extends State<HomePage> {
                                       return InkWell(
                                         onTap: () {
                                           Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (context) => Courses(courses: recommendedCourses, CoursesImages: recommendedCoursesImages,
-                                                    title:"Recommended Courses"
-                                                    ),
-                                              ),
-                                            );
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => Courses(
+                                                    courses: recommendedCourses,
+                                                    CoursesImages:
+                                                        recommendedCoursesImages,
+                                                    title:
+                                                        "Recommended Courses",
+                                                  ),
+                                            ),
+                                          );
                                         },
                                         child: Card(
                                           child: Column(
@@ -1925,20 +1931,12 @@ class _HomePageState extends State<HomePage> {
                                                                         .clip,
                                                                 fontSize: 16,
                                                                 color:
-                                                                    themeController.initialTheme ==
-                                                                            Themes.customLightTheme
-                                                                        ? Color.fromARGB(
-                                                                          255,
-                                                                          210,
-                                                                          209,
-                                                                          224,
-                                                                        )
-                                                                        : Color.fromARGB(
-                                                                          255,
-                                                                          40,
-                                                                          41,
-                                                                          61,
-                                                                        ),
+                                                                    Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    ),
                                                               ),
                                                             ),
                                                           ],
@@ -2083,14 +2081,17 @@ class _HomePageState extends State<HomePage> {
                                       return InkWell(
                                         onTap: () {
                                           Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (context) => Courses(courses: TopRatedCourses, CoursesImages: TopRatedCoursesImages,
-                                                    title:"Top Courses"
-                                                    ),
-                                              ),
-                                            );
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => Courses(
+                                                    courses: TopRatedCourses,
+                                                    CoursesImages:
+                                                        TopRatedCoursesImages,
+                                                    title: "Top Courses",
+                                                  ),
+                                            ),
+                                          );
                                         },
                                         child: Card(
                                           child: Column(
@@ -2278,20 +2279,12 @@ class _HomePageState extends State<HomePage> {
                                                                         .clip,
                                                                 fontSize: 16,
                                                                 color:
-                                                                    themeController.initialTheme ==
-                                                                            Themes.customLightTheme
-                                                                        ? Color.fromARGB(
-                                                                          255,
-                                                                          210,
-                                                                          209,
-                                                                          224,
-                                                                        )
-                                                                        : Color.fromARGB(
-                                                                          255,
-                                                                          40,
-                                                                          41,
-                                                                          61,
-                                                                        ),
+                                                                    Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    ),
                                                               ),
                                                             ),
                                                           ],
@@ -2436,14 +2429,17 @@ class _HomePageState extends State<HomePage> {
                                       return InkWell(
                                         onTap: () {
                                           Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (context) => Courses(courses: recentCourses, CoursesImages: recentCoursesImages,
-                                                    title:"recent Courses"
-                                                    ),
-                                              ),
-                                            );
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => Courses(
+                                                    courses: recentCourses,
+                                                    CoursesImages:
+                                                        recentCoursesImages,
+                                                    title: "recent Courses",
+                                                  ),
+                                            ),
+                                          );
                                         },
                                         child: Card(
                                           child: Column(
@@ -2630,20 +2626,12 @@ class _HomePageState extends State<HomePage> {
                                                                         .clip,
                                                                 fontSize: 16,
                                                                 color:
-                                                                    themeController.initialTheme ==
-                                                                            Themes.customLightTheme
-                                                                        ? Color.fromARGB(
-                                                                          255,
-                                                                          210,
-                                                                          209,
-                                                                          224,
-                                                                        )
-                                                                        : Color.fromARGB(
-                                                                          255,
-                                                                          40,
-                                                                          41,
-                                                                          61,
-                                                                        ),
+                                                                    Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    ),
                                                               ),
                                                             ),
                                                           ],
@@ -2788,14 +2776,18 @@ class _HomePageState extends State<HomePage> {
                                       return InkWell(
                                         onTap: () {
                                           Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (context) => Courses(courses: subscribedCourses, CoursesImages: subscribedCoursesImages,
-                                                    title:"Most Subscribed Courses"
-                                                    ),
-                                              ),
-                                            );
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => Courses(
+                                                    courses: subscribedCourses,
+                                                    CoursesImages:
+                                                        subscribedCoursesImages,
+                                                    title:
+                                                        "Most Subscribed Courses",
+                                                  ),
+                                            ),
+                                          );
                                         },
                                         child: Card(
                                           child: Column(
@@ -2983,20 +2975,12 @@ class _HomePageState extends State<HomePage> {
                                                                         .clip,
                                                                 fontSize: 16,
                                                                 color:
-                                                                    themeController.initialTheme ==
-                                                                            Themes.customLightTheme
-                                                                        ? Color.fromARGB(
-                                                                          255,
-                                                                          210,
-                                                                          209,
-                                                                          224,
-                                                                        )
-                                                                        : Color.fromARGB(
-                                                                          255,
-                                                                          40,
-                                                                          41,
-                                                                          61,
-                                                                        ),
+                                                                    Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    ),
                                                               ),
                                                             ),
                                                           ],
@@ -3116,4 +3100,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-

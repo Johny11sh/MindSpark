@@ -1544,10 +1544,12 @@ class _LibraryState extends State<Library> {
                                                                     .ellipsis,
                                                             fontSize: 16,
                                                             color:
-                                                                themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 210, 209, 224)
-                                      : Color.fromARGB(255, 40, 41, 61)
+                                                            Color.fromARGB(
+                                                              255,
+                                                              40,
+                                                              41,
+                                                              61,
+                                                            ),
                                                           ),
                                                         ),
                                                       ],
@@ -1766,10 +1768,12 @@ class _LibraryState extends State<Library> {
                                                           style: TextStyle(
                                                             fontSize: 16,
                                                             color:
-                                                                themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 210, 209, 224)
-                                      : Color.fromARGB(255, 40, 41, 61)
+                                                            Color.fromARGB(
+                                                              255,
+                                                              40,
+                                                              41,
+                                                              61,
+                                                            ),
                                                           ),
                                                         ),
                                                       ],
@@ -1986,10 +1990,12 @@ class _LibraryState extends State<Library> {
                                                         style: TextStyle(
                                                           fontSize: 16,
                                                           color:
-                                                              themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 210, 209, 224)
-                                      : Color.fromARGB(255, 40, 41, 61)
+                                                          Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          ),
                                                         ),
                                                       ),
                                                     ],

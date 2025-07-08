@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:learning_management_system/controller/MyInfoController.dart';
 import 'package:learning_management_system/controller/ProfileController.dart';
-import 'package:learning_management_system/themes/ThemeController.dart';
 
 import '../core/classes/ChangePassword.dart';
 import '../core/classes/ChangeUsername.dart';
@@ -15,15 +15,13 @@ class MyInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ProfileController controller = Get.find<ProfileController>();
-    final ThemeController themeController = Get.find<ThemeController>();
+    final ProfileController profileController = Get.find<ProfileController>();
     return Scaffold(
-      // appBar: AppBar(title: Text("MyInfo"), centerTitle: true),
       body: Container(
         color:
-                              themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
+            themeController.initialTheme == Themes.customLightTheme
+                ? Color.fromARGB(255, 40, 41, 61)
+                : Color.fromARGB(255, 210, 209, 224),
         child: Column(
           children: [
             Container(
@@ -45,16 +43,23 @@ class MyInfo extends StatelessWidget {
                       ),
                     ),
                   ),
-        
+
                   Expanded(
                     child: Center(
                       child: Padding(
                         padding: EdgeInsets.only(right: Get.width / 40),
                         child: Text(
                           " My Info ".tr,
-                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall!.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 23,
+                            color:
+                                themeController.initialTheme ==
+                                        Themes.customLightTheme
+                                    ? Color.fromARGB(255, 210, 209, 224)
+                                    : Color.fromARGB(255, 40, 41, 61),
                           ),
                         ),
                       ),
@@ -79,279 +84,297 @@ class MyInfo extends StatelessWidget {
                 decoration: BoxDecoration(
                   color:
                       themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
+                          ? Color.fromARGB(255, 210, 209, 224)
+                          : Color.fromARGB(255, 40, 41, 61),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
                     topRight: Radius.circular(30),
                   ),
                 ),
-                child: Obx(
-                  () => SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Stack(
-                          fit: StackFit.passthrough,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Stack(
+                        fit: StackFit.passthrough,
+                        children: [
+                          Image.asset(
+                            ImageAssets.UserAvatar,
+                            height: 180,
+                            width: 180,
+                          ),
+                          // Positioned(
+                          //   bottom: 0,
+                          //   right: 0,
+                          //   child: CircleAvatar(
+                          //     radius: 25,
+                          //     backgroundColor: Colors.greenAccent,
+                          //     child: IconButton(
+                          //       onPressed: () {
+                          //         Get.bottomSheet(
+                          //           backgroundColor: Colors.white,
+                          //           SizedBox(
+                          //             width: double.infinity,
+                          //             height: 200,
+                          //             child: SingleChildScrollView(
+                          //               child: Column(
+                          //                 crossAxisAlignment: CrossAxisAlignment.start,
+                          //                 children: [
+                          //                   Container(
+                          //                     padding: const EdgeInsets.only(
+                          //                       top: 20,
+                          //                       left: 10,
+                          //                     ),
+                          //                     child: Text(
+                          //                       "Choose Image from:".tr,
+                          //                       style: const TextStyle(
+                          //                         fontSize: 20,
+                          //                         fontWeight: FontWeight.bold,
+                          //                       ),
+                          //                     ),
+                          //                   ),
+                          //                   InkWell(
+                          //                     onTap: () async {
+                          //                       // File? image = await uploadImage(
+                          //                       //     ImageSource.gallery);
+                          //                       // if (image != null) {
+                          //                       //   await uploadToBackend(
+                          //                       //       image); // Upload the image after selecting
+                          //                       // }
+                          //                       // // Get.back();
+                          //                       // Get.offAll(()=>Stores());
+                          //                     },
+                          //                     child: Container(
+                          //                       margin: const EdgeInsets.all(20),
+                          //                       width: double.infinity,
+                          //                       child: Row(
+                          //                         children: [
+                          //                           const Icon(
+                          //                             Icons.photo_library_outlined,
+                          //                             size: 25,
+                          //                           ),
+                          //                           const SizedBox(width: 20),
+                          //                           Text(
+                          //                             "Gallery".tr,
+                          //                             style: TextStyle(fontSize: 20),
+                          //                           ),
+                          //                         ],
+                          //                       ),
+                          //                     ),
+                          //                   ),
+                          //                   InkWell(
+                          //                     onTap: () async {
+                          //                       // File? image = await uploadImage(
+                          //                       //     ImageSource.camera);
+                          //                       // if (image != null) {
+                          //                       //   await uploadToBackend(
+                          //                       //       image); // Upload the image after selecting
+                          //                       // }
+                          //                       // // Get.back();
+                          //                       // Get.offAll(()=>Stores());
+                          //                     },
+                          //                     child: Container(
+                          //                       margin: const EdgeInsets.all(20),
+                          //                       width: double.infinity,
+                          //                       child: Row(
+                          //                         children: [
+                          //                           const Icon(Icons.camera, size: 25),
+                          //                           const SizedBox(width: 20),
+                          //                           Text(
+                          //                             "Camera".tr,
+                          //                             style: TextStyle(fontSize: 20),
+                          //                           ),
+                          //                         ],
+                          //                       ),
+                          //                     ),
+                          //                   ),
+                          //                 ],
+                          //               ),
+                          //             ),
+                          //           ),
+                          //         );
+                          //       },
+                          //       icon: const Icon(Icons.photo_camera, size: 25),
+                          //     ),
+                          //   ),
+                          // ),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                      ListTile(
+                        leading: const Icon(Icons.person),
+                        title: Text(
+                          "User Name".tr,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        trailing: InkWell(
+                          onTap: () {
+                            Get.to(() => ChangeUsername());
+                          },
+                          child: Container(
+                            height: 25,
+                            width: 120,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.red),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Change User Name",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        subtitle: Row(
                           children: [
-                            Image.asset(ImageAssets.UserAvatar, height: 180, width: 180),
-                            // Positioned(
-                            //   bottom: 0,
-                            //   right: 0,
-                            //   child: CircleAvatar(
-                            //     radius: 25,
-                            //     backgroundColor: Colors.greenAccent,
-                            //     child: IconButton(
-                            //       onPressed: () {
-                            //         Get.bottomSheet(
-                            //           backgroundColor: Colors.white,
-                            //           SizedBox(
-                            //             width: double.infinity,
-                            //             height: 200,
-                            //             child: SingleChildScrollView(
-                            //               child: Column(
-                            //                 crossAxisAlignment: CrossAxisAlignment.start,
-                            //                 children: [
-                            //                   Container(
-                            //                     padding: const EdgeInsets.only(
-                            //                       top: 20,
-                            //                       left: 10,
-                            //                     ),
-                            //                     child: Text(
-                            //                       "Choose Image from:".tr,
-                            //                       style: const TextStyle(
-                            //                         fontSize: 20,
-                            //                         fontWeight: FontWeight.bold,
-                            //                       ),
-                            //                     ),
-                            //                   ),
-                            //                   InkWell(
-                            //                     onTap: () async {
-                            //                       // File? image = await uploadImage(
-                            //                       //     ImageSource.gallery);
-                            //                       // if (image != null) {
-                            //                       //   await uploadToBackend(
-                            //                       //       image); // Upload the image after selecting
-                            //                       // }
-                            //                       // // Get.back();
-                            //                       // Get.offAll(()=>Stores());
-                            //                     },
-                            //                     child: Container(
-                            //                       margin: const EdgeInsets.all(20),
-                            //                       width: double.infinity,
-                            //                       child: Row(
-                            //                         children: [
-                            //                           const Icon(
-                            //                             Icons.photo_library_outlined,
-                            //                             size: 25,
-                            //                           ),
-                            //                           const SizedBox(width: 20),
-                            //                           Text(
-                            //                             "Gallery".tr,
-                            //                             style: TextStyle(fontSize: 20),
-                            //                           ),
-                            //                         ],
-                            //                       ),
-                            //                     ),
-                            //                   ),
-                            //                   InkWell(
-                            //                     onTap: () async {
-                            //                       // File? image = await uploadImage(
-                            //                       //     ImageSource.camera);
-                            //                       // if (image != null) {
-                            //                       //   await uploadToBackend(
-                            //                       //       image); // Upload the image after selecting
-                            //                       // }
-                            //                       // // Get.back();
-                            //                       // Get.offAll(()=>Stores());
-                            //                     },
-                            //                     child: Container(
-                            //                       margin: const EdgeInsets.all(20),
-                            //                       width: double.infinity,
-                            //                       child: Row(
-                            //                         children: [
-                            //                           const Icon(Icons.camera, size: 25),
-                            //                           const SizedBox(width: 20),
-                            //                           Text(
-                            //                             "Camera".tr,
-                            //                             style: TextStyle(fontSize: 20),
-                            //                           ),
-                            //                         ],
-                            //                       ),
-                            //                     ),
-                            //                   ),
-                            //                 ],
-                            //               ),
-                            //             ),
-                            //           ),
-                            //         );
-                            //       },
-                            //       icon: const Icon(Icons.photo_camera, size: 25),
-                            //     ),
-                            //   ),
-                            // ),
+                            Text(
+                              "${profileController.profileData["userName"]}" ??
+                                  "",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
+                              ),
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 30),
-                        ListTile(
-                          leading: const Icon(Icons.person),
-                          title: Text("User Name".tr, style: TextStyle(color: Colors.grey)),
-                          trailing: InkWell(
-                            onTap: () {
-                              Get.to(() => ChangeUsername());
-                            },
-                            child: Container(
-                              height: 25,
-                              width: 120,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.red),
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(height: 10, color: Colors.black26),
+                      ListTile(
+                        leading: const Icon(Icons.phone),
+                        title: Text(
+                          "Phone Number".tr,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        subtitle: Text(
+                          // "${controller.profileData["number"] ?? ""}",
+                          profileController.profileData["number"],
+                          // "09999999999999",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color:
+                                themeController.initialTheme ==
+                                        Themes.customLightTheme
+                                    ? Color.fromARGB(255, 40, 41, 61)
+                                    : Color.fromARGB(255, 210, 209, 224),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(height: 10, color: Colors.black26),
+                      ListTile(
+                        leading: const Icon(Icons.password),
+                        title: Text(
+                          "Password".tr,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        trailing: InkWell(
+                          onTap: () {
+                            Get.to(() => ChangePassword());
+                          },
+                          child: Container(
+                            height: 25,
+                            width: 120,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.red),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Change Password",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
+                                ),
                               ),
-                              child: Center(
-                                child: Text(
-                                  "Change User Name",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: themeController.initialTheme ==
+                            ),
+                          ),
+                        ),
+                        subtitle: Row(
+                          children: [
+                            Text(
+                              "XXXXXXXXX",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color:
+                                    themeController.initialTheme ==
                                             Themes.customLightTheme
-                                        ? Color.fromARGB(255, 210, 209, 224)
-                                        : Color.fromARGB(255, 40, 41, 61),
-                                  ),
-                                ),
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
                               ),
                             ),
-                          ),
-                          subtitle: Row(
-                            children: [
-                              Text(
-                                controller.profileData["userName"] ?? "",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 210, 209, 224)
-                                      : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        Divider(height: 10, color: Colors.black26),
-                        ListTile(
-                          leading: const Icon(Icons.phone),
-                          title: Text(
-                            "Phone Number".tr,
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          subtitle: Text(
-                            "${controller.profileData["number"] ?? ""}",
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: themeController.initialTheme ==
-                                      Themes.customLightTheme
-                                  ? Color.fromARGB(255, 210, 209, 224)
-                                  : Color.fromARGB(255, 40, 41, 61),
-                            ),
-                          ),
+                      ),
+                      const SizedBox(height: 11),
+                      Divider(height: 10, color: Colors.black26),
+                      ListTile(
+                        leading: const Icon(Icons.category_outlined),
+                        title: Text(
+                          "Subscriptions".tr,
+                          style: TextStyle(color: Colors.grey),
                         ),
-                        const SizedBox(height: 10),
-                        Divider(height: 10, color: Colors.black26),
-                        ListTile(
-                          leading: const Icon(Icons.password),
-                          title: Text("Password".tr, style: TextStyle(color: Colors.grey)),
-                          trailing: InkWell(
-                            onTap: () {
-                              Get.to(() => ChangePassword());
-                            },
-                            child: Container(
-                              height: 25,
-                              width: 120,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.red),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  "Change Password",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: themeController.initialTheme ==
+                        subtitle: Row(
+                          children: [
+                            Text(
+                              profileController.profileData["subs"] ??
+                                  "No Subscriptions",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color:
+                                    themeController.initialTheme ==
                                             Themes.customLightTheme
-                                        ? Color.fromARGB(255, 210, 209, 224)
-                                        : Color.fromARGB(255, 40, 41, 61),
-                                  ),
-                                ),
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
                               ),
                             ),
-                          ),
-                          subtitle: Row(
-                            children: [
-                              Text(
-                                "XXXXXXXXX",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 210, 209, 224)
-                                      : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
-                        const SizedBox(height: 11),
-                        Divider(height: 10, color: Colors.black26),
-                        ListTile(
-                          leading: const Icon(Icons.category_outlined),
-                          title: Text(
-                            "Subscriptions".tr,
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          subtitle: Row(
-                            children: [
-                              Text(
-                                "[ ${controller.profileData["subs"] != null ? (controller.profileData["subs"] as List).join(', ') : ""} ]",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 210, 209, 224)
-                                      : Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(height: 10, color: Colors.black26),
+                      ListTile(
+                        leading: const Icon(Icons.subject),
+                        title: Text(
+                          "Lectures Number".tr,
+                          style: TextStyle(color: Colors.grey),
                         ),
-                        const SizedBox(height: 10),
-                        Divider(height: 10, color: Colors.black26),
-                        ListTile(
-                          leading: const Icon(Icons.subject),
-                          title: Text(
-                            "Lectures Number".tr,
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          subtitle: Row(
-                            children: [
-                              Text(
-                                "${controller.profileData["lecturesNum"] ?? ""}",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 210, 209, 224)
-                                      : Color.fromARGB(255, 40, 41, 61),
-                                ),
+                        subtitle: Row(
+                          children: [
+                            Text(
+                              "${profileController.profileData["lecturesNum"]}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-        
           ],
         ),
       ),
