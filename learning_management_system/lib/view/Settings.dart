@@ -95,6 +95,9 @@ class Settings extends StatelessWidget {
                                 Get.to(() => Language());
                               },
                               child: Card(
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -104,14 +107,9 @@ class Settings extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -130,19 +128,9 @@ class Settings extends StatelessWidget {
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -154,14 +142,9 @@ class Settings extends StatelessWidget {
         
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],
@@ -173,6 +156,9 @@ class Settings extends StatelessWidget {
                                 Get.to(() => ChangeTheme());
                               },
                               child: Card(
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -182,14 +168,9 @@ class Settings extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -208,19 +189,9 @@ class Settings extends StatelessWidget {
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -231,14 +202,9 @@ class Settings extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],
@@ -250,6 +216,9 @@ class Settings extends StatelessWidget {
                                 // Get.to(() => ContactUs());
                               },
                               child: Card(
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -259,14 +228,9 @@ class Settings extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -285,19 +249,9 @@ class Settings extends StatelessWidget {
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -309,14 +263,9 @@ class Settings extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],

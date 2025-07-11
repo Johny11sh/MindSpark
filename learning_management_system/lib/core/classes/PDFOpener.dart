@@ -2,6 +2,8 @@
 
 import 'dart:io';
 import 'dart:async';
+import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
@@ -12,13 +14,17 @@ import '../../themes/ThemeController.dart';
 
 class PDFOpener extends StatefulWidget {
   final File PDFfile;
-  const PDFOpener({super.key, required this.PDFfile});
+   PDFOpener({super.key, required this.PDFfile});
+
+ 
 
   @override
   State<PDFOpener> createState() => _PDFOpenerState();
 }
 
 class _PDFOpenerState extends State<PDFOpener> {
+
+
   late PDFViewController pdfViewController;
   int pages = 0;
   int pageIndex = 0;
@@ -28,6 +34,202 @@ class _PDFOpenerState extends State<PDFOpener> {
   final ScrollController _scrollController = ScrollController();
   bool _isDisposed = false;
 
+
+  static AudioPlayer? audioPlayer;
+
+  final audioCache = AudioCache(prefix: 'assets/music/');
+  bool isPlaying = false;
+  bool isExpanded = false;
+  List<String> previousSongs = [];
+  String? currentSong;
+  final List<String> allSongs = [
+    'Song1.mp3',
+    'Song2.mp3',
+    'Song3.mp3',
+    'Song4.mp3',
+    'Song5.mp3',
+    'Song6.mp3',
+    'Song7.mp3',
+    'Song8.mp3',
+    'Song9.mp3',
+    'Song10.mp3',
+    'Song11.mp3',
+    'Song12.mp3',
+    'Song13.mp3',
+    'Song14.mp3',
+  ];
+
+
+  String getRandomSong() {
+    final random = Random();
+    String song;
+    do {
+      song = allSongs[random.nextInt(allSongs.length)];
+    } while (song == currentSong && allSongs.length > 1);
+    return song;
+  }
+
+  Future<void> playSong(String songName) async {
+    if (currentSong != null) {
+      previousSongs.add(currentSong!);
+    }
+    currentSong = songName;
+    await audioPlayer?.setSource(AssetSource('music/$songName'));
+    await audioPlayer?.resume();
+    setState(() {
+      isPlaying = true;
+    });
+  }
+
+  Future<void> playPreviousSong() async {
+    if (previousSongs.isNotEmpty) {
+      final previousSong = previousSongs.removeLast();
+      await playSong(previousSong);
+    }
+  }
+
+  Future<void> playNextSong() async {
+    if (previousSongs.isNotEmpty) {
+      previousSongs.clear();
+    }
+    final nextSong = getRandomSong();
+    await playSong(nextSong);
+  }
+
+  void _toggleExpand() {
+    setState(() {
+      isExpanded = !isExpanded;
+    });
+  }
+
+  void _handleMainButtonPress() async {
+    _toggleExpand();
+
+    if (!isPlaying) {
+      if (currentSong == null) {
+        // First time press - play random song
+        await playNextSong();
+      } else {
+        // Resume current song
+        await audioPlayer?.resume();
+        setState(() {
+          isPlaying = true;
+        });
+      }
+    } else {
+      await audioPlayer?.pause();
+      setState(() {
+        isPlaying = false;
+      });
+    }
+  }
+
+  Widget _buildMusicControls() {
+    
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        if (isExpanded) ...[
+          // Previous Button
+          Positioned(
+            left: 0,
+            child: FloatingActionButton(
+              onPressed: playPreviousSong,
+              elevation: 0,
+              mini: true,
+              backgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
+              foregroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
+              child: Icon(Icons.skip_previous_rounded, size: 22),
+            ),
+          ),
+          // Play/Pause Button
+          Positioned(
+            child: FloatingActionButton(
+              onPressed: () async {
+                if (isPlaying) {
+                  await audioPlayer?.pause();
+                } else {
+                  await audioPlayer?.resume();
+                }
+                setState(() {
+                  isPlaying = !isPlaying;
+                });
+              },
+              elevation: 0,
+              mini: true,
+              backgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
+              foregroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
+              child: Icon(
+                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                size: 22,
+              ),
+            ),
+          ),
+          // Next Button
+          Positioned(
+            right: 0,
+            child: FloatingActionButton(
+              onPressed: playNextSong,
+              elevation: 0,
+              mini: true,
+              backgroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
+              foregroundColor:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
+              child: Icon(Icons.skip_next_rounded, size: 22),
+            ),
+          ),
+        ],
+        // Main Button
+        FloatingActionButton(
+          onPressed: _handleMainButtonPress,
+          elevation: 2,
+          mini: true,
+          backgroundColor:
+              themeController.initialTheme == Themes.customLightTheme
+                  ? Color.fromARGB(255, 40, 41, 61)
+                  : Color.fromARGB(255, 210, 209, 224),
+          foregroundColor:
+              themeController.initialTheme == Themes.customLightTheme
+                  ? Color.fromARGB(255, 210, 209, 224)
+                  : Color.fromARGB(255, 46, 48, 97),
+          child: Icon(
+            isExpanded ? Icons.music_off_rounded : Icons.music_note_rounded,
+            size: 22,
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    _preloadPDF();
+    audioPlayer = AudioPlayer();
+
+  }
+
+
   String _formatFileName(String name) {
     if (name.toLowerCase().endsWith('.pdf')) {
       return name.substring(0, name.length - 4);
@@ -35,13 +237,6 @@ class _PDFOpenerState extends State<PDFOpener> {
     return name;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    // Hide system UI when entering PDF viewer
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    _preloadPDF();
-  }
 
   Future<void> _preloadPDF() async {
     if (_isDisposed) return;
@@ -63,8 +258,10 @@ class _PDFOpenerState extends State<PDFOpener> {
   @override
   void dispose() {
     _isDisposed = true;
-    // Show system UI when leaving PDF viewer
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    audioPlayer?.dispose();
+    audioPlayer = null;
+    previousSongs.clear();
     _scrollController.dispose();
     super.dispose();
   }
@@ -73,6 +270,13 @@ class _PDFOpenerState extends State<PDFOpener> {
   Widget build(BuildContext context) {
     final name = _formatFileName(basename(widget.PDFfile.path));
     return Scaffold(
+      floatingActionButton:Container(
+                width: 150,
+                height: 40,
+                margin: EdgeInsets.only(bottom: 10),
+                child: _buildMusicControls(),
+              ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       backgroundColor: themeController.initialTheme == Themes.customLightTheme
           ? const Color.fromARGB(255, 40, 41, 61)
           : const Color.fromARGB(255, 210, 209, 224),
@@ -260,6 +464,7 @@ class _PDFOpenerState extends State<PDFOpener> {
             ),
         ],
       ),
+
     );
   }
 }

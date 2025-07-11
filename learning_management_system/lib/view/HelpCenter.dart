@@ -98,6 +98,9 @@ class HelpCenter extends StatelessWidget {
                                 Get.to(() => ContactUs());
                               },
                               child: Card(
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -107,19 +110,9 @@ class HelpCenter extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -138,19 +131,9 @@ class HelpCenter extends StatelessWidget {
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -162,19 +145,9 @@ class HelpCenter extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],
@@ -186,6 +159,9 @@ class HelpCenter extends StatelessWidget {
                                 Get.to(() => AboutUs());
                               },
                               child: Card(
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -195,19 +171,9 @@ class HelpCenter extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -226,19 +192,9 @@ class HelpCenter extends StatelessWidget {
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -250,19 +206,9 @@ class HelpCenter extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],
@@ -274,6 +220,9 @@ class HelpCenter extends StatelessWidget {
                                 Get.to(() => PrivacyPolicy());
                               },
                               child: Card(
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -283,19 +232,9 @@ class HelpCenter extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -314,19 +253,9 @@ class HelpCenter extends StatelessWidget {
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -338,19 +267,9 @@ class HelpCenter extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],
@@ -359,9 +278,12 @@ class HelpCenter extends StatelessWidget {
                             ),
                             InkWell(
                               onTap: () {
-                                Get.to(() => AboutUs());
+                                // Get.to(() => AboutUs());
                               },
                               child: Card(
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -370,20 +292,10 @@ class HelpCenter extends StatelessWidget {
                                         Icons.question_mark,
                                         size: 25,
                                         color:
-                                            themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                           themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -402,19 +314,9 @@ class HelpCenter extends StatelessWidget {
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -426,19 +328,9 @@ class HelpCenter extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                ),
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],

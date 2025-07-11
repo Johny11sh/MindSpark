@@ -21,14 +21,15 @@ import 'view/LogIn.dart';
 import 'view/OnBoarding.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:learning_management_system/controller/ProfileController.dart';
+import 'package:learning_management_system/controller/ProfileController.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPrefs.instance.Init();
   final SharedPrefs sharedPrefs = SharedPrefs.instance;
   final isLoggedIn = sharedPrefs.prefs.getBool('isLoggedIn') ?? false;
-  // Get.put(ProfileController(), permanent: true);
+  Get.put(NetworkController(), permanent: true);
+  Get.put(ProfileController(), permanent: true); 
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 

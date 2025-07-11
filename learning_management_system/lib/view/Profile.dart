@@ -36,23 +36,52 @@ class Profile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ProfileController profileController = Get.put(ProfileController());
+    // Use Get.find to avoid re-instantiating the controller
+    final ProfileController profileController = Get.find<ProfileController>();
     final ThemeController themeController = Get.find<ThemeController>();
     final LocaleController localeController = Get.find<LocaleController>();
     final NetworkController networkController = Get.find<NetworkController>();
 
     return Scaffold(
-        body: 
-        profileController.profileData.isEmpty
-              ? Center(
-                child: CircularProgressIndicator(
-                  color:
-                      themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
-                ),
-              )
-              : RefreshIndicator(
+        body: Obx(() {
+          if (profileController.isLoading.value) {
+            // Show spinner for a max of 10 seconds, then show fallback
+            return FutureBuilder(
+              future: Future.delayed(Duration(seconds: 10)),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done && profileController.isLoading.value) {
+                  return Center(child: Text('Loading took too long. Please check your connection and try again.'.tr));
+                }
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
+                  ),
+                );
+              },
+            );
+          }
+          if (profileController.profileData.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('No profile data available.'.tr),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await networkController.checkConnectivityManually();
+                      await profileController.getProfileData();
+                    },
+                    child: Text('Retry'.tr),
+                  ),
+                ],
+              ),
+            );
+          }
+          final profileData = profileController.profileData;
+          return RefreshIndicator(
                 color:
                     themeController.initialTheme == Themes.customLightTheme
                         ? Color.fromARGB(255, 40, 41, 61)
@@ -379,6 +408,6 @@ class Profile extends StatelessWidget {
           ),
         ],
       ),)
-    ));
+  );}));
   }
 }

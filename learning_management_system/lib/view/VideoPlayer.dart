@@ -44,11 +44,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   @override
   void initState() {
     super.initState();
-    // Pause audio and hide navbar when entering video player
-    if (NavBarState.audioPlayer != null) {
-      NavBarState.audioPlayer!.pause();
-    }
-    NavBarState.isNavBarVisible = false;
+    
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _initializePlayer();
   }
@@ -281,11 +277,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _videoPlayerController.dispose();
     _chewieController?.dispose();
-    // Show navbar and reinitialize audio when leaving video player
-    NavBarState.isNavBarVisible = true;
-    if (NavBarState.audioPlayer != null) {
-      NavBarState.audioPlayer!.resume();
-    }
+    
     super.dispose();
   }
 
