@@ -516,7 +516,7 @@ class _SubjectsBooksState extends State<SubjectsBooks> {
                                         child: Column(
                                 children: [
                                   // Book Image
-                                  Container(
+                                  SizedBox(
                                               height: 60,
                                               width: 60,
                                     child: imageBytes != null

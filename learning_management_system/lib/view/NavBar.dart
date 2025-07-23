@@ -1,8 +1,6 @@
 // ignore_for_file: file_names
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'dart:math';
 import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
@@ -11,13 +9,11 @@ import '../view/HomePage.dart';
 import '../core/classes/Library.dart';
 import 'Profile.dart';
 import '../view/Teachers.dart';
-import '../core/classes/CustomNavBar.dart';
 import 'package:flutter/material.dart';
-import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
 final ThemeController themeController = Get.find<ThemeController>();
 final LocaleController localeController = Get.find<LocaleController>();
-String mainIP = "http://192.168.1.9:8000";
+String mainIP = "http://192.168.1.113:8000";
 // String mainIP = "http://127.0.0.1:8000";
 
 class NavBar extends StatefulWidget {

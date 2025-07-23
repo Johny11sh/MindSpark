@@ -358,7 +358,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           )
           .timeout(const Duration(seconds: 15));
       debugPrint(
-        "Recent Courses API response: " + response.statusCode.toString(),
+        "Recent Courses API response: ${response.statusCode}",
       );
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
@@ -392,7 +392,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       } else {
         if (recentCoursesData.isEmpty) {
           throw Exception(
-            "Failed to load recent courses: " + response.statusCode.toString(),
+            "Failed to load recent courses: ${response.statusCode}",
           );
         }
       }
@@ -406,7 +406,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       if (recentCoursesData.isEmpty) {
         showErrorSnackbar("Failed to load recent courses");
       } else {
-        showErrorSnackbar("Using cached data - " + e.toString());
+        showErrorSnackbar("Using cached data - $e");
       }
       debugPrint("Error fetching recent courses: $e");
     }
@@ -447,7 +447,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         return null;
       } else {
         throw Exception(
-          "Image fetch failed: " + response.statusCode.toString(),
+          "Image fetch failed: ${response.statusCode}",
         );
       }
     } on TimeoutException {
@@ -542,7 +542,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           )
           .timeout(const Duration(seconds: 15));
       debugPrint(
-        "Top Rated Courses API response: " + response.statusCode.toString(),
+        "Top Rated Courses API response: ${response.statusCode}",
       );
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
@@ -576,8 +576,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       } else {
         if (topRatedCoursesData.isEmpty) {
           throw Exception(
-            "Failed to load top rated courses: " +
-                response.statusCode.toString(),
+            "Failed to load top rated courses: ${response.statusCode}",
           );
         }
       }
@@ -591,7 +590,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       if (topRatedCoursesData.isEmpty) {
         showErrorSnackbar("Failed to load top rated courses");
       } else {
-        showErrorSnackbar("Using cached data - " + e.toString());
+        showErrorSnackbar("Using cached data - $e");
       }
       debugPrint("Error fetching top rated courses: $e");
     }
@@ -632,7 +631,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         return null;
       } else {
         throw Exception(
-          "Image fetch failed: " + response.statusCode.toString(),
+          "Image fetch failed: ${response.statusCode}",
         );
       }
     } on TimeoutException {

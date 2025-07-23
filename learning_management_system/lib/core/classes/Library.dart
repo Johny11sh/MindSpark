@@ -893,7 +893,7 @@ class _LibraryState extends State<Library> {
         return null;
       } else {
         throw Exception(
-          "Image fetch failed: " + response.statusCode.toString(),
+          "Image fetch failed: ${response.statusCode}",
         );
       }
     } on TimeoutException {
@@ -1102,7 +1102,7 @@ class _LibraryState extends State<Library> {
                                   ),
                                 ),
                                 SizedBox(height: 15),
-                                Container(
+                                SizedBox(
                                   // margin: EdgeInsets.only(left: 10),
                                   height: 150,
                                   child:
@@ -1251,7 +1251,7 @@ class _LibraryState extends State<Library> {
                                   ),
                                 ),
                                 SizedBox(height: 10),
-                                Container(
+                                SizedBox(
                                   height: 120,
                                   child:
                                       literarySubjects.isEmpty
@@ -1390,7 +1390,7 @@ class _LibraryState extends State<Library> {
                                   ),
                                 ),
                                 SizedBox(height: 10),
-                                Container(
+                                SizedBox(
                                   height: 180,
                                   child: GridView.builder(
                                     scrollDirection: Axis.horizontal,
@@ -1619,7 +1619,7 @@ class _LibraryState extends State<Library> {
                                   ),
                                 ),
                                 SizedBox(height: 10),
-                                Container(
+                                SizedBox(
                                   height: 180,
                                   child: GridView.builder(
                                     scrollDirection: Axis.horizontal,
@@ -1843,7 +1843,7 @@ class _LibraryState extends State<Library> {
                                   ),
                                 ),
                                 SizedBox(height: 10),
-                                Container(
+                                SizedBox(
                                   height: 180,
                                   child: GridView.builder(
                                     scrollDirection: Axis.horizontal,

@@ -337,7 +337,7 @@ class _CoursesState extends State<Courses> {
                                                             ),
                                                             SizedBox(width: 4),
                                                             Text(
-                                                              "${course['rating'].toString()}",
+                                                              course['rating'].toString(),
                                                               style: TextStyle(
                                                                 fontSize: 12,
                                                                 color: Colors.amber,

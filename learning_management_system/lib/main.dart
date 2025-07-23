@@ -19,7 +19,7 @@ import 'view/Profile.dart';
 import 'core/classes/PrivacyPolicy.dart';
 import 'view/LogIn.dart';
 import 'view/OnBoarding.dart';
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
 import 'package:get/get.dart';
 import 'package:learning_management_system/controller/ProfileController.dart';
 

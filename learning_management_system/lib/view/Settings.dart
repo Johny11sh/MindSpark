@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../core/classes/AboutUs.dart';
 import '../core/classes/ChangeTheme.dart';
-import '../core/classes/ContactUs.dart';
 import '../core/classes/Language.dart';
-import '../core/classes/PrivacyPolicy.dart';
 import '../themes/Themes.dart';
 import 'NavBar.dart';
 

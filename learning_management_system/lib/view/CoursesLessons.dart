@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'package:learning_management_system/view/QuizScreen.dart';
 import 'package:like_button/like_button.dart';
 import 'package:rating_dialog/rating_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -61,10 +62,9 @@ class _CoursesLessonsState extends State<CoursesLessons> {
 
   bool isRated = false;
 
- late int userRating ;
+  late int userRating;
 
   Map<int, bool> ratedLessons = {};
-
 
   List<Map<String, dynamic>> coursesData = [];
   final Map<int, Uint8List> lecturesImages = {};
@@ -506,8 +506,12 @@ class _CoursesLessonsState extends State<CoursesLessons> {
     _initSharedPreferences().then((_) => _loadInitialData());
     favoriteController = Get.put(FavoriteController());
     token = sharedPrefs.prefs.getString("token")!;
-    widget.CoursesData["user_rating"] !=null  ? isRated = true: isRated= false;
-    widget.CoursesData["user_rating"] !=null  ? userRating = widget.CoursesData["user_rating"] : userRating= 1;
+    widget.CoursesData["user_rating"] != null
+        ? isRated = true
+        : isRated = false;
+    widget.CoursesData["user_rating"] != null
+        ? userRating = widget.CoursesData["user_rating"]
+        : userRating = 1;
   }
 
   Future<void> _initSharedPreferences() async {
@@ -588,7 +592,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
         'API_BASE_URL',
         defaultValue: mainIP,
       );
-      final APIurl = '$baseUrl/api/lectureissubscribed/${id}';
+      final APIurl = '$baseUrl/api/lectureissubscribed/$id';
 
       final response = await http
           .get(
@@ -1494,11 +1498,13 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                     isRated = true;
                                                   });
                                                 },
-                                                  userRating+0.0,
+                                                userRating + 0.0,
                                               );
                                             },
                                             icon: Icon(
-                                              isRated ? Icons.star_outlined : Icons.star_border_outlined,
+                                              isRated
+                                                  ? Icons.star_outlined
+                                                  : Icons.star_border_outlined,
                                             ),
                                             color: Colors.blue,
                                             iconSize: 30,
@@ -1526,7 +1532,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                 size: 25,
                                               ),
                                               Text(
-                                                "${widget.CoursesData["rating"].toString()}",
+                                                widget.CoursesData["rating"]
+                                                    .toString(),
                                                 style: TextStyle(
                                                   color:
                                                       themeController
@@ -1609,7 +1616,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                   ),
                                 ),
 
-                                Container(
+                                SizedBox(
                                   height:
                                       Get.height *
                                       0.6, // 40% of screen height, adjust as needed
@@ -1625,7 +1632,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                           widget.CoursesData["FeaturedRatings"]?[index]
                                               as Map<String, dynamic>? ??
                                           {};
-                                      return Container(
+                                      return SizedBox(
                                         width: Get.width / 1.1,
                                         child: StatefulBuilder(
                                           builder: (context, setState) {
@@ -1830,15 +1837,15 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                                   isExpanded =
                                                                       true,
                                                             ),
-                                                        child: Text(
-                                                          'Read more...',
-                                                        ),
                                                         style:
                                                             TextButton.styleFrom(
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
                                                             ),
+                                                        child: Text(
+                                                          'Read more...',
+                                                        ),
                                                       ),
                                                     if (isExpanded && isLong)
                                                       TextButton(
@@ -1848,15 +1855,15 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                                   isExpanded =
                                                                       false,
                                                             ),
-                                                        child: Text(
-                                                          'Show less',
-                                                        ),
                                                         style:
                                                             TextButton.styleFrom(
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
                                                             ),
+                                                        child: Text(
+                                                          'Show less',
+                                                        ),
                                                       ),
                                                   ],
                                                 ),
@@ -2375,34 +2382,44 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                           coursesData[i]["id"],
                                                           token,
                                                           "$mainIP/api/ratelecture/${coursesData[i]["id"]}",
-                                                              () {
+                                                          () {
                                                             setState(() {
-                                                              ratedLessons[coursesData[i]["id"]] = true;
+                                                              ratedLessons[coursesData[i]["id"]] =
+                                                                  true;
                                                             });
                                                           },
-                                                          1.0
+                                                          1.0,
                                                         );
-                                                        print("${coursesData[i]["id"]}");
+                                                        print(
+                                                          "${coursesData[i]["id"]}",
+                                                        );
                                                       },
                                                       icon: Icon(
-                                                        ratedLessons[coursesData[i]["id"]] == true ? Icons.star_outlined : Icons.star_border_outlined,
+                                                        ratedLessons[coursesData[i]["id"]] ==
+                                                                true
+                                                            ? Icons
+                                                                .star_outlined
+                                                            : Icons
+                                                                .star_border_outlined,
                                                       ),
                                                       color: Colors.blue,
                                                       iconSize: 25,
                                                     ),
                                                     Text(
-                                                      ratedLessons[coursesData[i]["id"]] == true
+                                                      ratedLessons[coursesData[i]["id"]] ==
+                                                              true
                                                           ? "Edit Rating".tr
                                                           : "Rate This".tr,
                                                       style: TextStyle(
                                                         color: Colors.blue,
                                                         fontSize: 12,
-                                                        fontWeight: FontWeight.w400,
+                                                        fontWeight:
+                                                            FontWeight.w400,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                                SizedBox(width: 10,),
+                                                SizedBox(width: 10),
                                                 // Quiz Button
                                                 Column(
                                                   children: [
@@ -2418,15 +2435,12 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                       ),
                                                       child: IconButton(
                                                         onPressed: () {
-                                                          // Quiz functionality - static for now
-                                                          // Get.snackbar(
-                                                          //   "Quiz".tr,
-                                                          //   "Quiz feature coming soon!"
-                                                          //       .tr,
-                                                          //   snackPosition:
-                                                          //       SnackPosition
-                                                          //           .BOTTOM,
-                                                          // );
+                                                          Get.to(
+                                                            QuizScreen(
+                                                              lessonId:
+                                                                  coursesData[i]["id"],
+                                                            ),
+                                                          );
                                                         },
                                                         icon: Icon(
                                                           Icons.quiz,
@@ -2692,7 +2706,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
 
                                       SizedBox(width: 10),
                                       Text(
-                                        "${widget.CoursesData['subscriptions'].toString()}"
+                                        widget.CoursesData['subscriptions']
+                                            .toString()
                                             .tr,
                                         style: TextStyle(
                                           color:

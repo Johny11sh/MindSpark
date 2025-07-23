@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:learning_management_system/main.dart';
 import 'package:learning_management_system/model/CFavoriteModel.dart';
 
 import '../model/TFavoriteModel.dart';

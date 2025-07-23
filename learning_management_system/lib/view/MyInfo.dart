@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:learning_management_system/controller/MyInfoController.dart';
 import 'package:learning_management_system/controller/ProfileController.dart';
 
 import '../core/classes/ChangePassword.dart';

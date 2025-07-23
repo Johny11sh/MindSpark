@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:learning_management_system/controller/FavoriteController.dart';
 import 'package:learning_management_system/core/constants/ImageAssets.dart';
@@ -7,7 +6,6 @@ import 'package:learning_management_system/view/NavBar.dart';
 import 'package:get/get.dart';
 import 'package:like_button/like_button.dart';
 
-import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
 
 class ViewTFavoriteCard extends StatelessWidget {

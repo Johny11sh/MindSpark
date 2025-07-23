@@ -52,7 +52,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
   Future<void> _fetchTeacherCourses() async {
     setState(() { isCoursesLoading = true; });
     try {
-      final sharedPrefs = await SharedPrefs.instance;
+      final sharedPrefs = SharedPrefs.instance;
       final token = sharedPrefs.prefs.getString('token') ?? '';
       if (token.isEmpty) {
         setState(() { isCoursesLoading = false; });
@@ -253,7 +253,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                   children: [
                     Column(
                       children: [
-                        Container(
+                        SizedBox(
                           height: Get.height / 2.5,
 
                           child: Column(
@@ -886,7 +886,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 size: 25,
                                               ),
                                               Text(
-                                                "${widget.TeacherData["rating"].toString()}",
+                                                widget.TeacherData["rating"].toString(),
                                                 style: TextStyle(
                                                   color:
                                                       themeController
@@ -969,7 +969,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                   ),
                                 ),
 
-                                Container(
+                                SizedBox(
                                   height:
                                       Get.height *
                                       0.6, // 40% of screen height, adjust as needed
@@ -981,7 +981,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           featuredRatings[index]
                                               as Map<String, dynamic>? ??
                                           {};
-                                      return Container(
+                                      return SizedBox(
                                         width: Get.width / 1.1,
                                         child: StatefulBuilder(
                                           builder: (context, setState) {
@@ -1186,15 +1186,15 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                                   isExpanded =
                                                                       true,
                                                             ),
-                                                        child: Text(
-                                                          'Read more...',
-                                                        ),
                                                         style:
                                                             TextButton.styleFrom(
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
                                                             ),
+                                                        child: Text(
+                                                          'Read more...',
+                                                        ),
                                                       ),
                                                     if (isExpanded && isLong)
                                                       TextButton(
@@ -1204,15 +1204,15 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                                   isExpanded =
                                                                       false,
                                                             ),
-                                                        child: Text(
-                                                          'Show less',
-                                                        ),
                                                         style:
                                                             TextButton.styleFrom(
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
                                                             ),
+                                                        child: Text(
+                                                          'Show less',
+                                                        ),
                                                       ),
                                                   ],
                                                 ),
@@ -1245,7 +1245,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                               ],
                             )
                             : ChosenScreen == "Courses"
-                            ? Container(
+                            ? SizedBox(
                               height: Get.height * 0.6,
                               child: SingleChildScrollView(
                                 physics: AlwaysScrollableScrollPhysics(),
@@ -1287,7 +1287,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
 
                                           SizedBox(width: 10),
                                           Text(
-                                            "${widget.TeacherData['coursesNum'].toString()}"
+                                            widget.TeacherData['coursesNum'].toString()
                                                 .tr,
                                             style: TextStyle(
                                               color:
@@ -1430,7 +1430,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                 ),
                               ),
                             )
-                            : Container(
+                            : SizedBox(
                               height: Get.height * 0.6,
                               child: SingleChildScrollView(
                                 physics: AlwaysScrollableScrollPhysics(),
@@ -1581,7 +1581,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
 
                                           SizedBox(width: 10),
                                           Text(
-                                            "${widget.TeacherData['UserSubs'].toString()}"
+                                            widget.TeacherData['UserSubs'].toString()
                                                 .tr,
                                             style: TextStyle(
                                               color:

@@ -14,7 +14,7 @@ import '../../themes/ThemeController.dart';
 
 class PDFOpener extends StatefulWidget {
   final File PDFfile;
-   PDFOpener({super.key, required this.PDFfile});
+   const PDFOpener({super.key, required this.PDFfile});
 
  
 

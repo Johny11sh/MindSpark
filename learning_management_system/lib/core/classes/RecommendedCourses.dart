@@ -346,12 +346,12 @@ class _RecommendedCoursesState extends State<RecommendedCourses> {
                         },
                         child: Card(
                           elevation: 4,
-                          child: Container(
+                          child: SizedBox(
                             height: 120,
                             child: Row(
                               children: [
                                 // Course Image
-                                Container(
+                                SizedBox(
                                   width: 120,
                                   height: 120,
                                   child: imageBytes != null

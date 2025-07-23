@@ -154,7 +154,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
         OptionItem(
           onTap: (context) => _showQualityDialog(Get.context!),
           iconData: Icons.hd,
-          title: 'Quality (${_currentQuality})'.tr,
+          title: 'Quality ($_currentQuality)'.tr,
         ),
       );
     }

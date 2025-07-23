@@ -278,7 +278,7 @@ class _BookDetailsState extends State<BookDetails> {
                           child: Column(
                             children: [
                                     // Book Image
-                              Container(
+                              SizedBox(
                                       width: Get.width / 3,
                                       height: Get.width / 2.5,
                                       child:
@@ -785,7 +785,7 @@ class _BookDetailsState extends State<BookDetails> {
                                             size: 25,
                                           ),
                                           Text(
-                                            "${widget.BookData["rating"].toString()}",
+                                            widget.BookData["rating"].toString(),
                                             style: TextStyle(
                                               color:
                                                   themeController

@@ -44,26 +44,26 @@ class CFavoriteModel {
     updatedAt = json['updated_at'];
     rating = json['rating'];
     subscriptionCount = json['subscription_count'];
-    pivot = json['pivot'] != null ? new Pivot.fromJson(json['pivot']) : null;
+    pivot = json['pivot'] != null ? Pivot.fromJson(json['pivot']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['description'] = this.description;
-    data['teacher_id'] = this.teacherId;
-    data['subject_id'] = this.subjectId;
-    data['lecturesCount'] = this.lecturesCount;
-    data['subscriptions'] = this.subscriptions;
-    data['image'] = this.image;
-    data['sources'] = this.sources;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    data['rating'] = this.rating;
-    data['subscription_count'] = this.subscriptionCount;
-    if (this.pivot != null) {
-      data['pivot'] = this.pivot!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['description'] = description;
+    data['teacher_id'] = teacherId;
+    data['subject_id'] = subjectId;
+    data['lecturesCount'] = lecturesCount;
+    data['subscriptions'] = subscriptions;
+    data['image'] = image;
+    data['sources'] = sources;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    data['rating'] = rating;
+    data['subscription_count'] = subscriptionCount;
+    if (pivot != null) {
+      data['pivot'] = pivot!.toJson();
     }
     return data;
   }
@@ -85,11 +85,11 @@ class Pivot {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['user_id'] = this.userId;
-    data['course_id'] = this.courseId;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['user_id'] = userId;
+    data['course_id'] = courseId;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
     return data;
   }
 }
