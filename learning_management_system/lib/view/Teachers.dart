@@ -3,6 +3,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:like_button/like_button.dart';
 
 import '../controller/FavoriteController.dart';

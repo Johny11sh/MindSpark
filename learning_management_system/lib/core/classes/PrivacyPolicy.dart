@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../locale/LocaleController.dart';
+// import '../../locale/LocaleController.dart';
 import '../../model/PrivacyPolicyModel.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
@@ -56,65 +56,102 @@ class PrivacyPolicy extends StatelessWidget {
     ];
 
     final ThemeController themeController = Get.find<ThemeController>();
-    final LocaleController localeController = Get.find<LocaleController>();
-    return MaterialApp(
-      theme: themeController.initialTheme,
-      locale: localeController.initialLang,
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Container(
-          padding: EdgeInsets.all(8),
-          width: Get.width,
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: privacyPolicyList.length,
-                  itemBuilder:
-                      (context, i) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 30),
-                          SizedBox(
-                            width: Get.width,
-                            child: Text(
-                              privacyPolicyList[i].title!.tr,
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Container(
-                            width: Get.width,
-                            padding: EdgeInsets.only(left: 4),
-                            child: Text(
-                              privacyPolicyList[i].subtitle!.tr,
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),
-                                fontWeight: FontWeight.w400,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ),
-                        ],
+    // final LocaleController localeController = Get.find<LocaleController>();
+
+    final bool isDark = themeController.initialTheme == Themes.customLightTheme;
+    final Color bgColor = isDark
+        ? const Color.fromARGB(255, 40, 41, 61)
+        : const Color.fromARGB(255, 210, 209, 224);
+    final Color fgColor = isDark
+        ? const Color.fromARGB(255, 210, 209, 224)
+        : const Color.fromARGB(255, 40, 41, 61);
+
+    return Scaffold(
+      body: Container(
+        color: bgColor,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 30),
+              height: 100,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: IconButton(
+                      onPressed: () {
+                        Get.back();
+                      },
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: fgColor,
                       ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: Get.width / 8),
+                        child: Text(
+                          "Privacy Policy".tr,
+                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                                color: fgColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 23,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: fgColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(60),
+                    topRight: Radius.circular(60),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ListView.builder(
+                    itemCount: privacyPolicyList.length,
+                    itemBuilder: (context, i) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 30),
+                        Text(
+                          privacyPolicyList[i].title!.tr,
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            color: bgColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Text(
+                            privacyPolicyList[i].subtitle!.tr,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: bgColor,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

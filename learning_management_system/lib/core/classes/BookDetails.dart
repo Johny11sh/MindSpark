@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:learning_management_system/core/classes/AudioBook.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../locale/LocaleController.dart';
@@ -278,7 +279,7 @@ class _BookDetailsState extends State<BookDetails> {
                           child: Column(
                             children: [
                                     // Book Image
-                              SizedBox(
+                              Container(
                                       width: Get.width / 3,
                                       height: Get.width / 2.5,
                                       child:
@@ -403,7 +404,7 @@ class _BookDetailsState extends State<BookDetails> {
                                               onPressed: () async {
                                                 try {
                                                   final PDFurl =
-                                                      widget.BookData['url'];
+                                                      widget.BookData['pdf_file_url'];
                                                   // "http://www.pdf995.com/samples/pdf.pdf";
                                                   final file =
                                                       await loadNetwork(PDFurl);
@@ -419,7 +420,7 @@ class _BookDetailsState extends State<BookDetails> {
                                                 }
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.blue,
+                                                backgroundColor: Color.fromARGB(255, 190, 0, 0),
                                                 foregroundColor: Colors.white,
                                                 padding: EdgeInsets.symmetric(
                                                   vertical: 12,
@@ -452,9 +453,21 @@ class _BookDetailsState extends State<BookDetails> {
                                           child: Container(
                                             margin: EdgeInsets.only(left: 8),
                                             child: ElevatedButton(
-                                              onPressed: () {},
+                                              onPressed: () {
+                                                Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => AudioBook(
+                                                    audioBookData: widget.BookData,
+                                                    audioBookImage: imageBytes
+                                                  ),
+                                            ),
+                                          );
+                                                
+                                              },
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.green,
+                                                backgroundColor: Colors.blue,
                                                 foregroundColor: Colors.white,
                                                 padding: EdgeInsets.symmetric(
                                                   vertical: 12,
@@ -587,7 +600,7 @@ class _BookDetailsState extends State<BookDetails> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Text(
-                                                  "${widget.BookData["pages"]}"
+                                                  "${widget.BookData["pdf_file_pages"]}"
                                                       .tr,
                                                   style: TextStyle(
                                                     fontSize: 16,
@@ -785,7 +798,7 @@ class _BookDetailsState extends State<BookDetails> {
                                             size: 25,
                                           ),
                                           Text(
-                                            widget.BookData["rating"].toString(),
+                                            "${widget.BookData["rating"].toString()}".replaceRange(4, null, ''),
                                             style: TextStyle(
                                               color:
                                                   themeController
@@ -969,8 +982,8 @@ class _BookDetailsState extends State<BookDetails> {
                                                           size: 20,
                                                         ),
                                                         Text(
-                                                          review["rating"]
-                                                                  ?.toString()
+                                                          "${review["rating"]
+                                                                  ?.toString()}"
                                                                   .tr ??
                                                               'no rating'.tr,
                                                           style: TextStyle(

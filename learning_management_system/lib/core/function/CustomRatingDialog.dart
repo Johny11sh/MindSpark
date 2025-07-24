@@ -31,7 +31,7 @@ void showRatingDailog(BuildContext context, int courseId,String token,String url
             style: const TextStyle(fontSize: 15),
           ),
           // your app's logo?
-          image: Image.asset(ImageAssets.AppLogo, height: 160),
+          image: Image.asset("${ImageAssets.AppLogo}", height: 160),
           submitButtonText: 'Submit',
           submitButtonTextStyle: TextStyle(
             color:

@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 // import '../../view/LogIn.dart';
 import 'BookDetails.dart';
@@ -15,7 +15,7 @@ import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
 import '../../controller/NetworkController.dart';
 import '../../locale/LocaleController.dart';
-import '../../view/NavBar.dart';
+// import '../../view/NavBar.dart';
 import '../../core/function/loadingLottie.dart';
 
 class Courses extends StatefulWidget {
@@ -337,7 +337,7 @@ class _CoursesState extends State<Courses> {
                                                             ),
                                                             SizedBox(width: 4),
                                                             Text(
-                                                              course['rating'].toString(),
+                                                              "${course['rating'].toString()}",
                                                               style: TextStyle(
                                                                 fontSize: 12,
                                                                 color: Colors.amber,

@@ -7,6 +7,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:learning_management_system/core/classes/Timer.dart';
 import 'package:path/path.dart';
 import '../../themes/Themes.dart';
 import 'package:get/get.dart';
@@ -14,7 +15,7 @@ import '../../themes/ThemeController.dart';
 
 class PDFOpener extends StatefulWidget {
   final File PDFfile;
-   const PDFOpener({super.key, required this.PDFfile});
+   PDFOpener({super.key, required this.PDFfile});
 
  
 
@@ -334,6 +335,22 @@ class _PDFOpenerState extends State<PDFOpener> {
               },
               icon: Icon(
                 Icons.chevron_right_outlined,
+                size: 26,
+                color: themeController.initialTheme == Themes.customLightTheme
+                    ? const Color.fromARGB(255, 210, 209, 224)
+                    : const Color.fromARGB(255, 40, 41, 61),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                Get.dialog(
+
+                                        TimerView(),
+                                        barrierColor: Colors.transparent
+                                      );
+              },
+              icon: Icon(
+                Icons.timer,
                 size: 26,
                 color: themeController.initialTheme == Themes.customLightTheme
                     ? const Color.fromARGB(255, 210, 209, 224)

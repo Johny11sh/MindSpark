@@ -1,3 +1,4 @@
+// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:learning_management_system/view/NavBar.dart';
 import 'package:like_button/like_button.dart';
@@ -19,7 +20,6 @@ class ViewCFavoriteCard extends StatelessWidget {
     FavoriteController favoriteController = Get.put(FavoriteController());
     return Container(
       margin: EdgeInsets.only(left: 1, right: 10),
-      // padding: EdgeInsets.only(left: 10,right: 10),
       padding: EdgeInsets.all(10),
       height: 130,
       width: 120,

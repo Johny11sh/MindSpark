@@ -1,6 +1,9 @@
 // ignore_for_file: file_names
 
+// import 'package:audioplayers/audioplayers.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:learning_management_system/core/classes/ChatBot.dart';
+// import 'dart:math';
 import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
@@ -9,11 +12,13 @@ import '../view/HomePage.dart';
 import '../core/classes/Library.dart';
 import 'Profile.dart';
 import '../view/Teachers.dart';
+// import '../core/classes/CustomNavBar.dart';
 import 'package:flutter/material.dart';
+// import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
 final ThemeController themeController = Get.find<ThemeController>();
 final LocaleController localeController = Get.find<LocaleController>();
-String mainIP = "http://192.168.1.113:8000";
+String mainIP = "http://192.168.1.9:8000";
 // String mainIP = "http://127.0.0.1:8000";
 
 class NavBar extends StatefulWidget {
@@ -233,10 +238,12 @@ class NavBarState extends State<NavBar> {
 
     {"Name": "Library", "Icon": Icons.local_library_rounded},
 
+    {"Name": "ChatBot", "Icon": Icons.assistant},
+
     {"Name": "Profile", "Icon": Icons.account_circle_outlined},
   ];
 
-  List<Widget> page = [HomePage(), Teachers(), Library(), Profile()];
+  List<Widget> page = [HomePage(), Teachers(), Library(), ChatBot(), Profile()];
 
   int currentPage = 0;
 
@@ -277,23 +284,23 @@ class NavBarState extends State<NavBar> {
           child: GNav(
             curve: Curves.easeOutExpo,
             duration: Duration(milliseconds: 200),
-            gap: 4,
+            gap: 2,
             color:
-                themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 210, 209, 224)
-                    : Color.fromARGB(255, 46, 48, 97),
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
             // color: Color.fromARGB(255, 210, 209, 224),
             activeColor:
-                themeController.initialTheme == Themes.customLightTheme
+                  themeController.initialTheme == Themes.customLightTheme
                     ? Color.fromARGB(255, 46, 48, 97)
                     : Color.fromARGB(255, 210, 209, 224),
 
             // Color.fromARGB(255, 210, 209, 224),
             iconSize: 26,
             tabBackgroundColor:
-                themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 210, 209, 224)
-                    : Color.fromARGB(255, 46, 48, 97),
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 210, 209, 224)
+                      : Color.fromARGB(255, 46, 48, 97),
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             onTabChange: (index) {
               changePage(index);

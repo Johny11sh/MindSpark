@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../constants/ImageAssets.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
+// import '../../locale/LocaleController.dart';
 
 class DynamicSearch extends SearchDelegate {
   final List elements;

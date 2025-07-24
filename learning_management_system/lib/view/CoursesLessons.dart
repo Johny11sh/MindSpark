@@ -2,12 +2,13 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:learning_management_system/view/QuizScreen.dart';
+import 'package:learning_management_system/core/classes/QuizScreen.dart';
 import 'package:like_button/like_button.dart';
-import 'package:rating_dialog/rating_dialog.dart';
+// import 'package:rating_dialog/rating_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controller/FavoriteController.dart';
 import '../core/classes/PDFOpener.dart';
+// import '../core/classes/Timer.dart';
 import '../core/function/CustomRatingDialog.dart';
 import '../view/LogIn.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,7 @@ import '../services/SharedPrefs.dart';
 import '../themes/Themes.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'Favorites.dart';
+// import 'Favorites.dart';
 import 'NavBar.dart';
 import 'VideoPlayer.dart';
 
@@ -62,9 +63,10 @@ class _CoursesLessonsState extends State<CoursesLessons> {
 
   bool isRated = false;
 
-  late int userRating;
+ late int userRating ;
 
   Map<int, bool> ratedLessons = {};
+
 
   List<Map<String, dynamic>> coursesData = [];
   final Map<int, Uint8List> lecturesImages = {};
@@ -506,12 +508,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
     _initSharedPreferences().then((_) => _loadInitialData());
     favoriteController = Get.put(FavoriteController());
     token = sharedPrefs.prefs.getString("token")!;
-    widget.CoursesData["user_rating"] != null
-        ? isRated = true
-        : isRated = false;
-    widget.CoursesData["user_rating"] != null
-        ? userRating = widget.CoursesData["user_rating"]
-        : userRating = 1;
+    widget.CoursesData["user_rating"] !=null  ? isRated = true: isRated= false;
+    widget.CoursesData["user_rating"] !=null  ? userRating = widget.CoursesData["user_rating"] : userRating= 1;
   }
 
   Future<void> _initSharedPreferences() async {
@@ -592,7 +590,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
         'API_BASE_URL',
         defaultValue: mainIP,
       );
-      final APIurl = '$baseUrl/api/lectureissubscribed/$id';
+      final APIurl = '$baseUrl/api/lectureissubscribed/${id}';
 
       final response = await http
           .get(
@@ -1498,13 +1496,11 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                     isRated = true;
                                                   });
                                                 },
-                                                userRating + 0.0,
+                                                  userRating+0.0,
                                               );
                                             },
                                             icon: Icon(
-                                              isRated
-                                                  ? Icons.star_outlined
-                                                  : Icons.star_border_outlined,
+                                              isRated ? Icons.star_outlined : Icons.star_border_outlined,
                                             ),
                                             color: Colors.blue,
                                             iconSize: 30,
@@ -1526,38 +1522,37 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                         children: [
                                           Row(
                                             children: [
-                                              Icon(
-                                                Icons.star_outlined,
-                                                color: Colors.amber,
-                                                size: 25,
-                                              ),
-                                              Text(
-                                                widget.CoursesData["rating"]
-                                                    .toString(),
-                                                style: TextStyle(
-                                                  color:
+                                      Icon(
+                                        Icons.star_outlined,
+                                        color: Colors.amber,
+                                        size: 25,
+                                      ),
+                                      Text(
+                                                "${widget.CoursesData["rating"].toString()}",
+                                        style: TextStyle(
+                                          color:
                                                       themeController
                                                                   .initialTheme ==
                                                               Themes
                                                                   .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          ),
-                                                  fontSize: 22,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  ),
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
 
                                           Text(
                                             "based on (${widget.CoursesData["ratings_count"].toString()}) reviews",
@@ -1616,7 +1611,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                   ),
                                 ),
 
-                                SizedBox(
+                                Container(
                                   height:
                                       Get.height *
                                       0.6, // 40% of screen height, adjust as needed
@@ -1632,7 +1627,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                           widget.CoursesData["FeaturedRatings"]?[index]
                                               as Map<String, dynamic>? ??
                                           {};
-                                      return SizedBox(
+                                      return Container(
                                         width: Get.width / 1.1,
                                         child: StatefulBuilder(
                                           builder: (context, setState) {
@@ -1837,14 +1832,14 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                                   isExpanded =
                                                                       true,
                                                             ),
+                                                        child: Text(
+                                                          'Read more...',
+                                                            ),
                                                         style:
                                                             TextButton.styleFrom(
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
-                                                            ),
-                                                        child: Text(
-                                                          'Read more...',
                                                         ),
                                                       ),
                                                     if (isExpanded && isLong)
@@ -1855,35 +1850,35 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                                   isExpanded =
                                                                       false,
                                                             ),
+                                                        child: Text(
+                                                          'Show less',
+                                                            ),
                                                         style:
                                                             TextButton.styleFrom(
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
                                                             ),
-                                                        child: Text(
-                                                          'Show less',
                                                         ),
-                                                      ),
                                                   ],
-                                                ),
+                                                      ),
                                                 SizedBox(height: 10),
-                                                Container(
-                                                  height: 1,
-                                                  width: Get.width / 1.1,
-                                                  decoration: BoxDecoration(
-                                                    color: Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    ),
-                                                    shape: BoxShape.rectangle,
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                          Radius.circular(60),
+                                                    Container(
+                                                      height: 1,
+                                                      width: Get.width / 1.1,
+                                                      decoration: BoxDecoration(
+                                                        color: Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
                                                         ),
-                                                  ),
+                                                    shape: BoxShape.rectangle,
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                          Radius.circular(60),
+                                                            ),
+                                                      ),
                                                 ),
                                               ],
                                             );
@@ -1959,331 +1954,260 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                   ListView.builder(
                                     shrinkWrap: true,
                                     physics: NeverScrollableScrollPhysics(),
-                                    controller: scrollController,
-                                    itemCount: coursesData.length,
-                                    itemBuilder: (context, i) {
-                                      int lectureId = coursesData[i]["id"];
-                                      Uint8List? imageBytes =
-                                          lecturesImages[lectureId];
+                                      controller: scrollController,
+                                      itemCount: coursesData.length,
+                                      itemBuilder: (context, i) {
+                                        int lectureId = coursesData[i]["id"];
+                                        Uint8List? imageBytes =
+                                            lecturesImages[lectureId];
 
-                                      return InkWell(
-                                        onTap: () async {
-                                          await getSubscription(lectureId);
+                                        return InkWell(
+                                          onTap: () async {
+                                            await getSubscription(lectureId);
 
-                                          if (isLectureSubscribed == true) {
-                                            if (coursesData[i]['type'] == 0) {
-                                              try {
-                                                final PDFurl =
-                                                    coursesData[i]['urlpdf'];
-                                                // "http://www.pdf995.com/samples/pdf.pdf";
+                                            if (isLectureSubscribed == true) {
+                                              if (coursesData[i]['type'] == 0) {
+                                                try {
+                                                  final PDFurl =
+                                                      coursesData[i]['urlpdf'];
+                                                  // "http://www.pdf995.com/samples/pdf.pdf";
                                                 final file = await loadNetwork(
                                                   PDFurl,
                                                 );
-                                                if (mounted) {
-                                                  openPDF(context, file);
+                                                  if (mounted) {
+                                                    openPDF(context, file);
+                                                  }
+                                                } catch (e) {
+                                                  if (mounted) {
+                                                    showErrorSnackbar(
+                                                      "Failed to load PDF: ${e.toString()}",
+                                                    );
+                                                  }
                                                 }
-                                              } catch (e) {
-                                                if (mounted) {
-                                                  showErrorSnackbar(
-                                                    "Failed to load PDF: ${e.toString()}",
-                                                  );
+                                              } else if (coursesData[i]['type'] ==
+                                                  1) {
+                                                try {
+                                                  if (mounted) {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder:
+                                                            (
+                                                              context,
+                                                            ) => VideoPlayer(
+                                                              videoUrl:
+                                                                  coursesData[i]['url360'],
+                                                              // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+                                                              url360p:
+                                                                  coursesData[i]['url360'],
+                                                              url720p:
+                                                                  coursesData[i]['url720'],
+                                                              url1080p:
+                                                                  coursesData[i]['url1080'],
+                                                            ),
+                                                        fullscreenDialog: true,
+                                                      ),
+                                                    );
+                                                  }
+                                                } catch (e) {
+                                                  if (mounted) {
+                                                    showErrorSnackbar(
+                                                      "Failed to load Video: ${e.toString()}",
+                                                    );
+                                                  }
                                                 }
                                               }
-                                            } else if (coursesData[i]['type'] ==
-                                                1) {
-                                              try {
-                                                if (mounted) {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder:
-                                                          (
-                                                            context,
-                                                          ) => VideoPlayer(
-                                                            videoUrl:
-                                                                coursesData[i]['url360'],
-                                                            // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-                                                            url360p:
-                                                                coursesData[i]['url360'],
-                                                            url720p:
-                                                                coursesData[i]['url720'],
-                                                            url1080p:
-                                                                coursesData[i]['url1080'],
+                                            } else {
+                                              Get.rawSnackbar(
+                                                titleText: Text(
+                                                  "Not subscribed!".tr,
+                                                  style: TextStyle(
+                                                    color:
+                                                        themeController
+                                                                    .initialTheme ==
+                                                                Themes
+                                                                    .customLightTheme
+                                                            ? Color.fromARGB(
+                                                              255,
+                                                              210,
+                                                              209,
+                                                              224,
+                                                            )
+                                                            : Color.fromARGB(
+                                                              255,
+                                                              40,
+                                                              41,
+                                                              61,
+                                                            ),
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                                messageText: Text(
+                                                  'Contact the support team for instructions on how to subscribe to the course/subject first.'
+                                                      .tr,
+                                                  style: TextStyle(
+                                                    color:
+                                                        themeController
+                                                                    .initialTheme ==
+                                                                Themes
+                                                                    .customLightTheme
+                                                            ? Color.fromARGB(
+                                                              255,
+                                                              210,
+                                                              209,
+                                                              224,
+                                                            )
+                                                            : Color.fromARGB(
+                                                              255,
+                                                              40,
+                                                              41,
+                                                              61,
+                                                            ),
+                                                  ),
+                                                ),
+                                                isDismissible: true,
+                                                snackPosition:
+                                                    SnackPosition.BOTTOM,
+                                                duration: const Duration(
+                                                  seconds: 3,
+                                                ),
+                                                backgroundColor: Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                ),
+                                                icon: FaIcon(
+                                                  FontAwesomeIcons.ban,
+                                                  size: 30,
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
                                                           ),
-                                                      fullscreenDialog: true,
-                                                    ),
-                                                  );
-                                                }
-                                              } catch (e) {
-                                                if (mounted) {
-                                                  showErrorSnackbar(
-                                                    "Failed to load Video: ${e.toString()}",
-                                                  );
-                                                }
-                                              }
+                                                ),
+                                                margin: const EdgeInsets.all(5),
+                                                borderRadius: 5,
+                                                borderColor: Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
+                                              );
                                             }
-                                          } else {
-                                            Get.rawSnackbar(
-                                              titleText: Text(
-                                                "Not subscribed!".tr,
-                                                style: TextStyle(
-                                                  color:
-                                                      themeController
-                                                                  .initialTheme ==
-                                                              Themes
-                                                                  .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          ),
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 18,
-                                                ),
-                                              ),
-                                              messageText: Text(
-                                                'Contact the support team for instructions on how to subscribe to the course/subject first.'
-                                                    .tr,
-                                                style: TextStyle(
-                                                  color:
-                                                      themeController
-                                                                  .initialTheme ==
-                                                              Themes
-                                                                  .customLightTheme
-                                                          ? Color.fromARGB(
-                                                            255,
-                                                            210,
-                                                            209,
-                                                            224,
-                                                          )
-                                                          : Color.fromARGB(
-                                                            255,
-                                                            40,
-                                                            41,
-                                                            61,
-                                                          ),
-                                                ),
-                                              ),
-                                              isDismissible: true,
-                                              snackPosition:
-                                                  SnackPosition.BOTTOM,
-                                              duration: const Duration(
-                                                seconds: 3,
-                                              ),
-                                              backgroundColor: Color.fromARGB(
-                                                255,
-                                                210,
-                                                209,
-                                                224,
-                                              ),
-                                              icon: FaIcon(
-                                                FontAwesomeIcons.ban,
-                                                size: 30,
-                                                color:
-                                                    themeController
-                                                                .initialTheme ==
-                                                            Themes
-                                                                .customLightTheme
-                                                        ? Color.fromARGB(
-                                                          255,
-                                                          40,
-                                                          41,
-                                                          61,
-                                                        )
-                                                        : Color.fromARGB(
-                                                          255,
-                                                          210,
-                                                          209,
-                                                          224,
-                                                        ),
-                                              ),
-                                              margin: const EdgeInsets.all(5),
-                                              borderRadius: 5,
-                                              borderColor: Color.fromARGB(
-                                                255,
-                                                40,
-                                                41,
-                                                61,
-                                              ),
-                                            );
-                                          }
-                                        },
-                                        child: Container(
-                                          margin: EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 5,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color:
+                                          },
+                                          child: Container(
+                                            margin: EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color:
                                                 themeController.initialTheme ==
                                                         Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    ),
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      ),
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
-                                            boxShadow: [
-                                              BoxShadow(
+                                              boxShadow: [
+                                                BoxShadow(
                                                 color: Colors.black.withOpacity(
                                                   0.1,
                                                 ),
-                                                spreadRadius: 1,
-                                                blurRadius: 3,
-                                                offset: Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Padding(
-                                            padding: EdgeInsets.all(12),
-                                            child: Row(
-                                              children: [
-                                                // Lesson Image
-                                                Container(
-                                                  width: 80,
-                                                  height: 80,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                    color: Colors.grey[300],
-                                                  ),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                    child:
-                                                        imageBytes != null
-                                                            ? Image.memory(
-                                                              imageBytes,
-                                                              fit: BoxFit.cover,
-                                                              errorBuilder: (
-                                                                context,
-                                                                error,
-                                                                stackTrace,
-                                                              ) {
-                                                                return Image.asset(
-                                                                  ImageAssets
-                                                                      .lecture,
-                                                                  fit:
-                                                                      BoxFit
-                                                                          .cover,
-                                                                );
-                                                              },
-                                                            )
-                                                            : Image.asset(
-                                                              ImageAssets
-                                                                  .lecture,
-                                                              fit: BoxFit.cover,
-                                                            ),
-                                                  ),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 3,
+                                                  offset: Offset(0, 2),
                                                 ),
-                                                SizedBox(width: 12),
-                                                // Lesson Details
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      // Lesson Name
-                                                      Text(
-                                                        "${coursesData[i]["name"]}"
-                                                            .tr,
-                                                        // "hell",
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color:
-                                                              themeController
-                                                                          .initialTheme ==
-                                                                      Themes
-                                                                          .customLightTheme
-                                                                  ? Color.fromARGB(
-                                                                    255,
-                                                                    40,
-                                                                    41,
-                                                                    61,
-                                                                  )
-                                                                  : Color.fromARGB(
-                                                                    255,
-                                                                    210,
-                                                                    209,
-                                                                    224,
-                                                                  ),
-                                                        ),
-                                                        maxLines: 2,
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                      ),
-                                                      SizedBox(height: 4),
-                                                      // Type and Duration/Slides
-                                                      Row(
-                                                        children: [
-                                                          Container(
-                                                            padding:
-                                                                EdgeInsets.symmetric(
-                                                                  horizontal: 8,
-                                                                  vertical: 2,
-                                                                ),
-                                                            decoration: BoxDecoration(
-                                                              color:
-                                                                  coursesData[i]['type'] ==
-                                                                          0
-                                                                      ? Colors
-                                                                          .blue
-                                                                      : Colors
-                                                                          .red,
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    12,
-                                                                  ),
-                                                            ),
-                                                            child: Text(
-                                                              coursesData[i]['type'] ==
-                                                                      0
-                                                                  ? "PDF".tr
-                                                                  : "Video".tr,
-                                                              style: TextStyle(
-                                                                color:
-                                                                    Colors
-                                                                        .white,
-                                                                fontSize: 10,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                              ),
-                                                            ),
+                                              ],
+                                            ),
+                                            child: Padding(
+                                              padding: EdgeInsets.all(12),
+                                              child: Row(
+                                                children: [
+                                                  // Lesson Image
+                                                  Container(
+                                                    width: 80,
+                                                    height: 80,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
                                                           ),
-                                                          SizedBox(width: 8),
-                                                          Icon(
-                                                            coursesData[i]['type'] ==
-                                                                    0
-                                                                ? Icons
-                                                                    .description
-                                                                : Icons
-                                                                    .play_circle_outline,
-                                                            size: 14,
+                                                      color: Colors.grey[300],
+                                                    ),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                      child:
+                                                          imageBytes != null
+                                                              ? Image.memory(
+                                                                imageBytes,
+                                                              fit: BoxFit.cover,
+                                                                errorBuilder: (
+                                                                  context,
+                                                                  error,
+                                                                  stackTrace,
+                                                                ) {
+                                                                  return Image.asset(
+                                                                    ImageAssets
+                                                                        .lecture,
+                                                                    fit:
+                                                                        BoxFit
+                                                                            .cover,
+                                                                  );
+                                                                },
+                                                              )
+                                                              : Image.asset(
+                                                                ImageAssets
+                                                                    .lecture,
+                                                              fit: BoxFit.cover,
+                                                              ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 12),
+                                                  // Lesson Details
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        // Lesson Name
+                                                        Text(
+                                                          "${coursesData[i]["name"]}"
+                                                              .tr,
+                                                        // "hell",
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                             color:
                                                                 themeController
                                                                             .initialTheme ==
@@ -2302,76 +2226,147 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                                       224,
                                                                     ),
                                                           ),
-                                                          SizedBox(width: 4),
-                                                          Text(
-                                                            coursesData[i]['type'] ==
-                                                                    0
+                                                          maxLines: 2,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                        ),
+                                                        SizedBox(height: 4),
+                                                        // Type and Duration/Slides
+                                                        Row(
+                                                          children: [
+                                                            Container(
+                                                              padding:
+                                                                  EdgeInsets.symmetric(
+                                                                  horizontal: 8,
+                                                                    vertical: 2,
+                                                                  ),
+                                                              decoration: BoxDecoration(
+                                                                color:
+                                                                    coursesData[i]['type'] ==
+                                                                            0
+                                                                        ? Colors
+                                                                            .blue
+                                                                        : Colors
+                                                                            .red,
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      12,
+                                                                    ),
+                                                              ),
+                                                              child: Text(
+                                                                coursesData[i]['type'] ==
+                                                                        0
+                                                                    ? "PDF".tr
+                                                                  : "Video".tr,
+                                                                style: TextStyle(
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
+                                                                  fontSize: 10,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            SizedBox(width: 8),
+                                                            Icon(
+                                                              coursesData[i]['type'] ==
+                                                                      0
+                                                                  ? Icons
+                                                                      .description
+                                                                  : Icons
+                                                                      .play_circle_outline,
+                                                              size: 14,
+                                                              color:
+                                                                  themeController
+                                                                              .initialTheme ==
+                                                                          Themes
+                                                                              .customLightTheme
+                                                                      ? Color.fromARGB(
+                                                                        255,
+                                                                        40,
+                                                                        41,
+                                                                        61,
+                                                                      )
+                                                                      : Color.fromARGB(
+                                                                        255,
+                                                                        210,
+                                                                        209,
+                                                                        224,
+                                                                      ),
+                                                            ),
+                                                            SizedBox(width: 4),
+                                                            Text(
+                                                              coursesData[i]['type'] ==
+                                                                      0
                                                                 ? "${coursesData[i]['pages']} slides"
                                                                 // Static value for PDF
                                                                 : "${coursesData[i]['formatted_duration']} min",
                                                             // Static value for Video
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color:
+                                                              style: TextStyle(
+                                                                fontSize: 12,
+                                                                color:
                                                                   themeController
                                                                               .initialTheme ==
                                                                           Themes
                                                                               .customLightTheme
-                                                                      ? Color.fromARGB(
-                                                                        255,
-                                                                        40,
-                                                                        41,
-                                                                        61,
-                                                                      )
-                                                                      : Color.fromARGB(
-                                                                        255,
-                                                                        210,
-                                                                        209,
-                                                                        224,
-                                                                      ),
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        ),
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      SizedBox(height: 4),
-                                                      // Rating
-                                                      Row(
-                                                        children: [
-                                                          Icon(
-                                                            Icons.star,
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 4),
+                                                        // Rating
+                                                        Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.star,
                                                             color: Colors.amber,
-                                                            size: 14,
-                                                          ),
-                                                          SizedBox(width: 4),
-                                                          Text(
+                                                              size: 14,
+                                                            ),
+                                                            SizedBox(width: 4),
+                                                            Text(
                                                             "${coursesData[i]['rating']}"
-                                                                .tr, // Static rating
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color:
+                                                                  .tr, // Static rating
+                                                              style: TextStyle(
+                                                                fontSize: 12,
+                                                                color:
                                                                   themeController
                                                                               .initialTheme ==
                                                                           Themes
                                                                               .customLightTheme
-                                                                      ? Color.fromARGB(
-                                                                        255,
-                                                                        40,
-                                                                        41,
-                                                                        61,
-                                                                      )
-                                                                      : Color.fromARGB(
-                                                                        255,
-                                                                        210,
-                                                                        209,
-                                                                        224,
-                                                                      ),
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        ),
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
                                                 // rate this lessons
                                                 Column(
                                                   children: [
@@ -2382,108 +2377,102 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                           coursesData[i]["id"],
                                                           token,
                                                           "$mainIP/api/ratelecture/${coursesData[i]["id"]}",
-                                                          () {
+                                                              () {
                                                             setState(() {
-                                                              ratedLessons[coursesData[i]["id"]] =
-                                                                  true;
+                                                              ratedLessons[coursesData[i]["id"]] = true;
                                                             });
                                                           },
-                                                          1.0,
+                                                          1.0
                                                         );
-                                                        print(
-                                                          "${coursesData[i]["id"]}",
-                                                        );
+                                                        print("${coursesData[i]["id"]}");
                                                       },
                                                       icon: Icon(
-                                                        ratedLessons[coursesData[i]["id"]] ==
-                                                                true
-                                                            ? Icons
-                                                                .star_outlined
-                                                            : Icons
-                                                                .star_border_outlined,
+                                                        ratedLessons[coursesData[i]["id"]] == true ? Icons.star_outlined : Icons.star_border_outlined,
                                                       ),
                                                       color: Colors.blue,
                                                       iconSize: 25,
                                                     ),
                                                     Text(
-                                                      ratedLessons[coursesData[i]["id"]] ==
-                                                              true
+                                                      ratedLessons[coursesData[i]["id"]] == true
                                                           ? "Edit Rating".tr
                                                           : "Rate This".tr,
                                                       style: TextStyle(
                                                         color: Colors.blue,
                                                         fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w400,
+                                                        fontWeight: FontWeight.w400,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                                SizedBox(width: 10),
-                                                // Quiz Button
-                                                Column(
-                                                  children: [
-                                                    Container(
-                                                      width: 40,
-                                                      height: 40,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.green,
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              20,
-                                                            ),
-                                                      ),
-                                                      child: IconButton(
-                                                        onPressed: () {
-                                                          Get.to(
-                                                            QuizScreen(
-                                                              lessonId:
-                                                                  coursesData[i]["id"],
-                                                            ),
-                                                          );
-                                                        },
-                                                        icon: Icon(
-                                                          Icons.quiz,
-                                                          color: Colors.white,
-                                                          size: 20,
+                                                SizedBox(width: 10,),
+                                                  // Quiz Button
+                                                  Column(
+                                                    children: [
+                                                      Container(
+                                                        width: 40,
+                                                        height: 40,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.green,
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                20,
+                                                              ),
                                                         ),
-                                                        padding:
-                                                            EdgeInsets.zero,
+                                                        child: IconButton(
+                                                          onPressed: () {
+                                                           Get.to(QuizScreen(lessonId: coursesData[i]['id'] ));
+                                                            // Quiz functionality - static for now
+                                                          // Get.snackbar(
+                                                          //   "Quiz".tr,
+                                                          //   "Quiz feature coming soon!"
+                                                          //       .tr,
+                                                          //   snackPosition:
+                                                          //       SnackPosition
+                                                          //           .BOTTOM,
+                                                          // );
+                                                          },
+                                                          icon: Icon(
+                                                            Icons.quiz,
+                                                            color: Colors.white,
+                                                            size: 20,
+                                                          ),
+                                                          padding:
+                                                              EdgeInsets.zero,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    SizedBox(height: 4),
-                                                    Text(
-                                                      "Quiz".tr,
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color:
-                                                            themeController
-                                                                        .initialTheme ==
-                                                                    Themes
-                                                                        .customLightTheme
-                                                                ? Color.fromARGB(
-                                                                  255,
-                                                                  40,
-                                                                  41,
-                                                                  61,
-                                                                )
-                                                                : Color.fromARGB(
-                                                                  255,
-                                                                  210,
-                                                                  209,
-                                                                  224,
-                                                                ),
+                                                      SizedBox(height: 4),
+                                                      Text(
+                                                        "Quiz".tr,
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          color:
+                                                              themeController
+                                                                          .initialTheme ==
+                                                                      Themes
+                                                                          .customLightTheme
+                                                                  ? Color.fromARGB(
+                                                                    255,
+                                                                    40,
+                                                                    41,
+                                                                    61,
+                                                                  )
+                                                                  : Color.fromARGB(
+                                                                    255,
+                                                                    210,
+                                                                    209,
+                                                                    224,
+                                                                  ),
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                        );
+                                      },
+                                    ),
                                   SizedBox(height: Get.height / 25),
                                   Container(
                                     padding: EdgeInsets.only(left: 5),
@@ -2706,8 +2695,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
 
                                       SizedBox(width: 10),
                                       Text(
-                                        widget.CoursesData['subscriptions']
-                                            .toString()
+                                        "${widget.CoursesData['subscriptions'].toString()}"
                                             .tr,
                                         style: TextStyle(
                                           color:
@@ -2732,6 +2720,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                     ],
                                   ),
                                   SizedBox(height: Get.height / 25),
+                                  
                                   Container(
                                     padding: EdgeInsets.only(left: 5),
                                     child: Text(

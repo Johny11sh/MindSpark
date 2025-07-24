@@ -345,12 +345,12 @@ class _RecommendedBooksState extends State<RecommendedBooks> {
                         },
                         child: Card(
                           elevation: 4,
-                          child: SizedBox(
+                          child: Container(
                             height: 120,
                             child: Row(
                               children: [
                                 // Book Image
-                                SizedBox(
+                                Container(
                                   width: 120,
                                   height: 120,
                                   child: imageBytes != null

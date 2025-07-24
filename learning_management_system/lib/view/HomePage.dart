@@ -899,7 +899,8 @@ class _HomePageState extends State<HomePage> {
           });
           if (recentCourses.isEmpty) {
             throw Exception(
-              "Failed to load recent courses: ${response.statusCode}",
+              "Failed to load recent courses: " +
+                  response.statusCode.toString(),
             );
           }
         }
@@ -923,7 +924,7 @@ class _HomePageState extends State<HomePage> {
         if (recentCourses.isEmpty) {
           showErrorSnackbar("Failed to load recent courses");
         } else {
-          showErrorSnackbar("Using cached data - $e");
+          showErrorSnackbar("Using cached data - " + e.toString());
         }
       }
       debugPrint("Error fetching recent courses: $e");
@@ -970,7 +971,7 @@ class _HomePageState extends State<HomePage> {
         return null;
       } else {
         throw Exception(
-          "Image fetch failed: ${response.statusCode}",
+          "Image fetch failed: " + response.statusCode.toString(),
         );
       }
     } on TimeoutException {
@@ -1107,7 +1108,8 @@ class _HomePageState extends State<HomePage> {
           });
           if (subscribedCourses.isEmpty) {
             throw Exception(
-              "Failed to load subscribed courses: ${response.statusCode}",
+              "Failed to load subscribed courses: " +
+                  response.statusCode.toString(),
             );
           }
         }
@@ -1131,7 +1133,7 @@ class _HomePageState extends State<HomePage> {
         if (subscribedCourses.isEmpty) {
           showErrorSnackbar("Failed to load subscribed courses");
         } else {
-          showErrorSnackbar("Using cached data - $e");
+          showErrorSnackbar("Using cached data - " + e.toString());
         }
       }
       debugPrint("Error fetching subscribed courses: $e");
@@ -1178,7 +1180,7 @@ class _HomePageState extends State<HomePage> {
         return null;
       } else {
         throw Exception(
-          "Image fetch failed: ${response.statusCode}",
+          "Image fetch failed: " + response.statusCode.toString(),
         );
       }
     } on TimeoutException {
@@ -1308,9 +1310,7 @@ class _HomePageState extends State<HomePage> {
                                       elementsImages: subjectsImages,
                                       searchType: 'subjects',
                                       onItemTap: (subject) {
-                                        // Navigate based on the current view
                                         if (isSelected[0]) {
-                                          // Scientific view - navigate to teachers
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -1321,7 +1321,6 @@ class _HomePageState extends State<HomePage> {
                                             ),
                                           );
                                         } else {
-                                          // Literary view - navigate to books
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -1455,17 +1454,17 @@ class _HomePageState extends State<HomePage> {
                                                       Themes.customLightTheme
                                                   ? isSelected[0]
                                                       ? Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
-                                                        210,
-                                                        209,
-                                                        224,
-                                                      )
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  )
                                                   : isSelected[0]
                                                   ? Color.fromARGB(
                                                     255,
@@ -1507,18 +1506,18 @@ class _HomePageState extends State<HomePage> {
                                               themeController.initialTheme ==
                                                       Themes.customLightTheme
                                                   ? isSelected[0]
-                                                      ? Color.fromARGB(
-                                                        255,
-                                                        210,
-                                                        209,
-                                                        224,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      )
+                                                      ?Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  )
                                                   : isSelected[0]
                                                   ? Color.fromARGB(
                                                     255,
@@ -1560,7 +1559,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               SizedBox(height: 10),
-                              SizedBox(
+                              Container(
                                 height: 120,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -1714,7 +1713,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               SizedBox(height: 10),
-                              SizedBox(
+                              Container(
                                 height: 180,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -2063,7 +2062,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               SizedBox(height: 10),
-                              SizedBox(
+                              Container(
                                 height: 180,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -2411,7 +2410,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               SizedBox(height: 10),
-                              SizedBox(
+                              Container(
                                 height: 180,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -2758,7 +2757,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               SizedBox(height: 10),
-                              SizedBox(
+                              Container(
                                 height: 180,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,

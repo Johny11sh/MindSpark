@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:learning_management_system/view/TasksScreen.dart';
 
+// import '../core/classes/AboutUs.dart';
+// import '../core/classes/ChangeTheme.dart';
+// import '../core/classes/ContactUs.dart';
+// import '../core/classes/Language.dart';
+// import '../core/classes/PrivacyPolicy.dart';
+import '../core/classes/TasksScreen.dart';
 import '../core/classes/WatchList.dart';
 import '../themes/Themes.dart';
 import 'NavBar.dart';
@@ -14,9 +19,9 @@ class Management extends StatelessWidget {
     return Scaffold(
       body: Container(
         color:
-            themeController.initialTheme == Themes.customLightTheme
-                ? Color.fromARGB(255, 40, 41, 61)
-                : Color.fromARGB(255, 210, 209, 224),
+                              themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
         child: Column(
           children: [
             // SizedBox(height: 50),
@@ -35,11 +40,10 @@ class Management extends StatelessWidget {
                       },
                       icon: Icon(
                         Icons.arrow_back,
-                        color:
-                            themeController.initialTheme ==
-                                    Themes.customLightTheme
-                                ? Color.fromARGB(255, 210, 209, 224)
-                                : Color.fromARGB(255, 40, 41, 61),
+                        color: themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                       ),
                     ),
                   ),
@@ -47,17 +51,14 @@ class Management extends StatelessWidget {
                     child: Center(
                       child: Padding(
                         padding: EdgeInsets.only(right: Get.width / 8),
-
+        
                         child: Text(
                           "Management".tr,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall!.copyWith(
-                            color:
-                                themeController.initialTheme ==
-                                        Themes.customLightTheme
-                                    ? Color.fromARGB(255, 210, 209, 224)
-                                    : Color.fromARGB(255, 40, 41, 61),
+                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                            color: themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                             fontWeight: FontWeight.bold,
                             fontSize: 23,
                           ),
@@ -68,14 +69,15 @@ class Management extends StatelessWidget {
                 ],
               ),
             ),
-
+        
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
                   color:
-                      themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 210, 209, 224)
-                          : Color.fromARGB(255, 40, 41, 61),
+                      themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(60),
                     topRight: Radius.circular(60),
@@ -95,11 +97,9 @@ class Management extends StatelessWidget {
                                 Get.to(() => WatchList());
                               },
                               child: Card(
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -108,20 +108,10 @@ class Management extends StatelessWidget {
                                         Icons.format_list_numbered_outlined,
                                         size: 25,
                                         color:
-                                            themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                ),
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -139,20 +129,10 @@ class Management extends StatelessWidget {
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.normal,
                                             color:
-                                                themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    ),
+                                            themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -162,37 +142,27 @@ class Management extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         size: 17,
                                         color:
-                                            themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                ),
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-
+        
+        
                             InkWell(
                               onTap: () {
                                 Get.to(TasksScreen());
+
                               },
                               child: Card(
-                                color:
-                                    themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),
+                                color:themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -201,20 +171,10 @@ class Management extends StatelessWidget {
                                         Icons.task_outlined,
                                         size: 25,
                                         color:
-                                            themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                ),
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                     Expanded(
@@ -232,20 +192,10 @@ class Management extends StatelessWidget {
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.normal,
                                             color:
-                                                themeController.initialTheme ==
-                                                        Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    ),
+                                            themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                           ),
                                         ),
                                       ),
@@ -255,26 +205,17 @@ class Management extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         size: 17,
                                         color:
-                                            themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(
-                                                  255,
-                                                  210,
-                                                  209,
-                                                  224,
-                                                )
-                                                : Color.fromARGB(
-                                                  255,
-                                                  40,
-                                                  41,
-                                                  61,
-                                                ),
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 210, 209, 224)
+                                            : Color.fromARGB(255, 40, 41, 61),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
+        
                           ],
                         ),
                       ),

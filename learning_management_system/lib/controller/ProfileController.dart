@@ -180,7 +180,7 @@ class ProfileController extends GetxController {
 
   void showErrorSnackbar(String message) {
     Get.rawSnackbar(
-      messageText: Text(message),
+      messageText: Text(message ?? ""),
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
       backgroundColor: Colors.red[800]!,

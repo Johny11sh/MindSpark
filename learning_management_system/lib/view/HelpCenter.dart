@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:learning_management_system/core/classes/FAQ.dart';
 
 import '../core/classes/AboutUs.dart';
+// import '../core/classes/ChangeTheme.dart';
 import '../core/classes/ContactUs.dart';
 import '../core/classes/PrivacyPolicy.dart';
 import '../themes/Themes.dart';
@@ -276,7 +278,7 @@ class HelpCenter extends StatelessWidget {
                             ),
                             InkWell(
                               onTap: () {
-                                // Get.to(() => AboutUs());
+                                Get.to(() => FAQ());
                               },
                               child: Card(
                                 color:themeController.initialTheme == Themes.customLightTheme

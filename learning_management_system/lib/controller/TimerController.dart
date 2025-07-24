@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:get/get.dart';
-import 'package:learning_management_system/view/Timer.dart';
+import '../core/classes/Timer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PomodoroController extends GetxController {
@@ -18,7 +18,9 @@ class PomodoroController extends GetxController {
   final RxBool isMuted = false.obs;
 
   Timer? _timer;
-  final AudioPlayer audioPlayer = AudioPlayer();
+  static AudioPlayer? audioPlayer;
+
+  // final audioCache = AudioCache(prefix: 'assets/music/');
   bool _isSoundLoaded = false;
 
   @override
@@ -27,11 +29,13 @@ class PomodoroController extends GetxController {
     loadSettings();
     resetTimer();
     _preloadSound();
+    audioPlayer = AudioPlayer();
+
   }
 
   Future<void> _preloadSound() async {
     try {
-      await audioPlayer.setSource(AssetSource('music/Song1.mp3'));
+      // await audioPlayer.setSource(AssetSource('music/Song1.mp3'));
       _isSoundLoaded = true;
       print("Sound loaded successfully");
     } catch (e) {
@@ -134,8 +138,8 @@ class PomodoroController extends GetxController {
         await _preloadSound();
       }
 
-      await audioPlayer.stop();
-      await audioPlayer.play(AssetSource('music/Song1.mp3'));
+      await audioPlayer!.stop();
+      await audioPlayer!.play(AssetSource('assets/music/Alarm'));
       print("Sound played successfully");
     } catch (e) {
       print('Error playing sound: $e');
@@ -152,7 +156,7 @@ class PomodoroController extends GetxController {
     isMuted.value = !isMuted.value;
     if (isMuted.value) {
       // إيقاف الصوت فوراً عند التكتم
-      audioPlayer.stop();
+      audioPlayer!.stop();
     }
     print("Mute toggled: ${isMuted.value}");
   }
@@ -160,7 +164,8 @@ class PomodoroController extends GetxController {
   @override
   void onClose() {
     _timer?.cancel();
-    audioPlayer.dispose();
+    audioPlayer?.dispose();
+    audioPlayer = null;
     print("Resources cleaned");
     super.onClose();
   }

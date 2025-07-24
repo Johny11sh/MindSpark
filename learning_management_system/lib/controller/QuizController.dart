@@ -4,12 +4,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:learning_management_system/core/function/SnackBarFun.dart';
-import 'package:learning_management_system/view/LogIn.dart';
-import 'package:learning_management_system/view/NavBar.dart';
-import 'package:learning_management_system/view/OnBoarding.dart';
-import 'package:learning_management_system/view/Quiz.dart';
-import 'package:learning_management_system/view/QuizScreen.dart';
+import '../../core/function/SnackBarFun.dart';
+import '../../view/LogIn.dart';
+import '../../view/NavBar.dart';
+import '../../view/OnBoarding.dart';
+import '../core/classes/Quiz.dart';
+import '../core/classes/QuizScreen.dart';
 
 class QuizController extends GetxController
     with GetSingleTickerProviderStateMixin {
