@@ -1,5 +1,6 @@
+// ignore_for_file: file_names
 import 'package:flutter/material.dart';
-import 'package:learning_management_system/core/constants/ImageAssets.dart';
+import '../constants/ImageAssets.dart';
 import 'package:lottie/lottie.dart';
 
 Widget loadingLottie() {

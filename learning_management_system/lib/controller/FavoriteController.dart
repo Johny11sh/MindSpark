@@ -1,11 +1,10 @@
+// ignore_for_file: file_names, avoid_print
+
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-// import '../main.dart';
-
 import '../services/SharedPrefs.dart';
 import '../view/NavBar.dart';
 
@@ -36,14 +35,16 @@ class FavoriteController extends GetxController {
 
   Future<void> getTFavorite() async {
     try {
-      final response = await http.get(
-        Uri.parse("$mainIP/api/getfavoriteteachers"),
-        headers: {
-          'Authorization': "Bearer $token",
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            Uri.parse("$mainIP/api/getfavoriteteachers"),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         print("response statusCode = ${response.statusCode}");
@@ -65,12 +66,19 @@ class FavoriteController extends GetxController {
         Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
       }
     } on TimeoutException {
-      Get.snackbar("Timeout", "Server took too long to respond.", backgroundColor: Colors.red);
+      Get.snackbar(
+        "Timeout",
+        "Server took too long to respond.",
+        backgroundColor: Colors.red,
+      );
     } catch (e) {
-      Get.snackbar("Error", "Failed to fetch favorite teachers: $e", backgroundColor: Colors.red);
+      Get.snackbar(
+        "Error",
+        "Failed to fetch favorite teachers: $e",
+        backgroundColor: Colors.red,
+      );
     }
   }
-
 
   Future<void> toggleFavoriteC(String id) async {
     final url = Uri.parse('$mainIP/api/course/$id/favorite');
@@ -91,14 +99,16 @@ class FavoriteController extends GetxController {
 
   Future<void> getTFavoriteC() async {
     try {
-      final response = await http.get(
-        Uri.parse("$mainIP/api/getfavoritecourses"),
-        headers: {
-          'Authorization': "Bearer $token",
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            Uri.parse("$mainIP/api/getfavoritecourses"),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         print("response statusCode = ${response.statusCode}");
@@ -120,9 +130,17 @@ class FavoriteController extends GetxController {
         Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
       }
     } on TimeoutException {
-      Get.snackbar("Timeout", "Server took too long to respond.", backgroundColor: Colors.red);
+      Get.snackbar(
+        "Timeout",
+        "Server took too long to respond.",
+        backgroundColor: Colors.red,
+      );
     } catch (e) {
-      Get.snackbar("Error", "Failed to fetch favorite courses: $e", backgroundColor: Colors.red);
+      Get.snackbar(
+        "Error",
+        "Failed to fetch favorite courses: $e",
+        backgroundColor: Colors.red,
+      );
     }
   }
 
@@ -130,7 +148,7 @@ class FavoriteController extends GetxController {
   void onInit() {
     super.onInit();
     sharedPrefs = SharedPrefs.instance;
-    token = sharedPrefs.prefs.getString("token")!;
+    token = sharedPrefs.prefs.getString("token") ?? "";
     print(token);
     getTFavorite();
     getTFavoriteC();

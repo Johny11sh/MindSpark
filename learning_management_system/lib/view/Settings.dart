@@ -1,11 +1,17 @@
+// ignore_for_file: non_constant_identifier_names, file_names
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:learning_management_system/view/OnBoarding.dart';
 
+import '../controller/FontController.dart';
 import '../core/constants/ImageAssets.dart';
 import '../locale/LocaleController.dart';
 import '../services/CacheManager.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
+import 'FontSettingsPage.dart';
+
 class Settings extends StatefulWidget {
   const Settings({super.key});
 
@@ -25,6 +31,8 @@ class SettingsState extends State<Settings> {
   ];
 
   bool isExpanded = false;
+  bool isExpanded2 = false;
+
   @override
   Widget build(BuildContext context) {
     final CacheManager cacheManager = CacheManager();
@@ -40,7 +48,7 @@ class SettingsState extends State<Settings> {
           children: [
             // SizedBox(height: 50),
             Container(
-              padding: EdgeInsets.only(top: 30),
+              padding: const EdgeInsets.only(top: 30),
               height: 100,
               // color: Colors.red,
               child: Row(
@@ -72,6 +80,7 @@ class SettingsState extends State<Settings> {
                           style: Theme.of(
                             context,
                           ).textTheme.bodySmall!.copyWith(
+                            fontFamily: FontController().currentFontFamily,
                             color:
                                 themeController.initialTheme ==
                                         Themes.customLightTheme
@@ -105,7 +114,7 @@ class SettingsState extends State<Settings> {
                     const SizedBox(height: 10),
                     Expanded(
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: ListView(
                           shrinkWrap: true,
                           children: [
@@ -116,7 +125,6 @@ class SettingsState extends State<Settings> {
                                 isExpanded = !isExpanded;
 
                                 setState(() {});
-                                print(isExpanded);
                               },
                               child: Card(
                                 color:
@@ -151,7 +159,7 @@ class SettingsState extends State<Settings> {
                                     Expanded(
                                       flex: 2,
                                       child: Container(
-                                        padding: EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           top: 10,
                                           bottom: 10,
                                         ),
@@ -159,6 +167,9 @@ class SettingsState extends State<Settings> {
                                         child: Text(
                                           "Language".tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.normal,
@@ -231,6 +242,28 @@ class SettingsState extends State<Settings> {
                                         child: SizedBox(
                                           height: 100,
                                           child: Card(
+                                            shadowColor: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                            elevation: 3,
+                                            color:
+                                                themeController.initialTheme ==
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      153,
+                                                      151,
+                                                      188,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      46,
+                                                      48,
+                                                      97,
+                                                    ),
                                             child: Row(
                                               children: [
                                                 Expanded(
@@ -255,6 +288,9 @@ class SettingsState extends State<Settings> {
                                                     "${Languages[index]["name"]}"
                                                         .tr,
                                                     style: TextStyle(
+                                                      fontFamily:
+                                                          FontController()
+                                                              .currentFontFamily,
                                                       fontSize: 18,
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -289,116 +325,59 @@ class SettingsState extends State<Settings> {
                                   );
                                 },
                               ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
 
-                            //   InkWell(
-                            //     onTap: () {
-                            //       Get.to(() => ChangeTheme());
-                            //     },
-                            //     child: Card(
-                            //       color:themeController.initialTheme == Themes.customLightTheme
-                            // ? Color.fromARGB(255, 40, 41, 61)
-                            // : Color.fromARGB(255, 210, 209, 224),
-                            //       child: Row(
-                            //         children: [
-                            //           Expanded(
-                            //             flex: 1,
-                            //             child: Icon(
-                            //               Icons.sunny,
-                            //               size: 25,
-                            //               color:
-                            //                   themeController.initialTheme ==
-                            //                       Themes.customLightTheme
-                            //                   ? Color.fromARGB(255, 210, 209, 224)
-                            //                   : Color.fromARGB(255, 40, 41, 61),
-                            //             ),
-                            //           ),
-                            //           Expanded(
-                            //             flex: 2,
-                            //             child: Container(
-                            //               padding: EdgeInsets.only(
-                            //                 top: 10,
-                            //                 bottom: 10,
-                            //               ),
-                            //               alignment: Alignment.centerLeft,
-                            //               child: Text(
-                            //                 "Theme".tr,
-                            //                 style: TextStyle(
-                            //                   fontSize: 20,
-                            //                   fontWeight: FontWeight.bold,
-                            //                   fontStyle: FontStyle.normal,
-                            //                   color:
-                            //                       themeController.initialTheme ==
-                            //                       Themes.customLightTheme
-                            //                   ? Color.fromARGB(255, 210, 209, 224)
-                            //                   : Color.fromARGB(255, 40, 41, 61),
-                            //                 ),
-                            //               ),
-                            //             ),
-                            //           ),
-                            //           Expanded(
-                            //             child: Icon(
-                            //               size: 17,
-                            //               Icons.arrow_forward_ios_outlined,
-                            //               color:
-                            //                   themeController.initialTheme ==
-                            //                       Themes.customLightTheme
-                            //                   ? Color.fromARGB(255, 210, 209, 224)
-                            //                   : Color.fromARGB(255, 40, 41, 61),
-                            //             ),
-                            //           ),
-                            //         ],
-                            //       ),
-                            //     ),
-                            //   ),
                             Obx(
                               () => Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 spacing: 10,
                                 children: [
-                                  SizedBox(width: 10,),
+                                  const SizedBox(width: 10),
 
                                   Text(
-                                        "Theme".tr,
-                                        style: TextStyle(
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  ),
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle: FontStyle.normal,
-                                        ),
-                                      ),
-                                      SizedBox(width: 100,),
-                                      themeController.initialTheme ==
-                                            Themes.customLightTheme ? Icon(
-                                    Icons.light_mode_rounded,
-                                    size: 22,
+                                    "Theme".tr,
+                                    style: TextStyle(
+                                      fontFamily:
+                                          FontController().currentFontFamily,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.normal,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 100),
+                                  themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? Icon(
+                                        Icons.light_mode_rounded,
+                                        size: 22,
 
-                                    color:
-                                        themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 40, 41, 61)
-                                            : Color.fromARGB(
-                                              255,
-                                              210,
-                                              209,
-                                              224,
-                                            ),
-                                  )
-                                  : SizedBox(width: 15,),
+                                        color:
+                                            themeController.initialTheme ==
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                ),
+                                      )
+                                      : const SizedBox(width: 15),
 
                                   Expanded(
                                     child: Switch(
@@ -429,128 +408,38 @@ class SettingsState extends State<Settings> {
                                     ),
                                   ),
                                   themeController.initialTheme ==
-                                            Themes.customLightTheme ? SizedBox(width: 15,) : Icon(
-                                    Icons.dark_mode_rounded,
-                                    size: 22,
+                                          Themes.customLightTheme
+                                      ? const SizedBox(width: 15)
+                                      : Icon(
+                                        Icons.dark_mode_rounded,
+                                        size: 22,
 
-                                    color:
-                                        themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 40, 41, 61)
-                                            : Color.fromARGB(
-                                              255,
-                                              210,
-                                              209,
-                                              224,
-                                            ),
-                                  ),
+                                        color:
+                                            themeController.initialTheme ==
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                ),
+                                      ),
                                 ],
                               ),
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
 
-                            //               SizedBox(
-                            //   height: 80,
-                            //   child: InkWell(
-                            //     onTap: () {
-                            //       // SharedPrefs.instance.Init();
-                            //       // SharedPrefs.instance.prefs;
-                            //       setState(() {
-                            //         themeController.toggleTheme("dark");
-                            //       });
-                            //       themeController.onInit();
-                            //     },
-                            //     child: Card(
-                            //       child: Row(
-                            //         children: [
-                            //           Expanded(
-                            //             flex: 1,
-                            //             child: Icon(
-                            //               Icons.light_mode,
-                            //               size: 25,
-                            //               color:
-                            //                   themeController.initialTheme ==
-                            //                           Themes.customLightTheme
-                            //                       ? Color.fromARGB(255, 40, 41, 61)
-                            //                       : Color.fromARGB(255, 210, 209, 224),
-                            //             ),
-                            //           ),
-                            //           Expanded(
-                            //             flex: 3,
-                            //             child: Container(
-                            //               padding: EdgeInsets.only(top: 10, bottom: 10),
-                            //               alignment: Alignment.centerLeft,
-                            //               child: Text(
-                            //                 "Light Mode".tr,
-                            //                 style: TextStyle(
-                            //                   fontSize: 20,
-                            //                   fontWeight: FontWeight.bold,
-                            //                   fontStyle: FontStyle.normal,
-                            //                   color:
-                            //                       themeController.initialTheme ==
-                            //                               Themes.customLightTheme
-                            //                           ? Color.fromARGB(255, 40, 41, 61)
-                            //                           : Color.fromARGB(255, 210, 209, 224),
-                            //                 ),
-                            //               ),
-                            //             ),
-                            //           ),
-                            //         ],
-                            //       ),
-                            //     ),
-                            //   ),
-                            // ),
-                            // SizedBox(height: 20),
-                            // SizedBox(
-                            //   height: 80,
-                            //   child: InkWell(
-                            //     onTap: () {
-                            //       themeController.toggleTheme("light");
-                            //       setState(() {});
-                            //     },
-                            //     child: Card(
-                            //       child: Row(
-                            //         children: [
-                            //           Expanded(
-                            //             flex: 1,
-                            //             child: Icon(
-                            //               Icons.dark_mode,
-                            //               size: 25,
-                            //               color:
-                            //                   themeController.initialTheme ==
-                            //                           Themes.customLightTheme
-                            //                       ? Color.fromARGB(255, 40, 41, 61)
-                            //                       : Color.fromARGB(255, 210, 209, 224),
-                            //             ),
-                            //           ),
-                            //           Expanded(
-                            //             flex: 3,
-                            //             child: Container(
-                            //               padding: EdgeInsets.only(top: 10, bottom: 10),
-                            //               alignment: Alignment.centerLeft,
-                            //               child: Text(
-                            //                 "Dark Mode".tr,
-                            //                 style: TextStyle(
-                            //                   fontSize: 20,
-                            //                   fontWeight: FontWeight.bold,
-                            //                   fontStyle: FontStyle.normal,
-                            //                   color:
-                            //                       themeController.initialTheme ==
-                            //                               Themes.customLightTheme
-                            //                           ? Color.fromARGB(255, 40, 41, 61)
-                            //                           : Color.fromARGB(255, 210, 209, 224),
-                            //                 ),
-                            //               ),
-                            //             ),
-                            //           ),
-                            //         ],
-                            //       ),
-                            //     ),
-                            //   ),
-                            // ),
                             InkWell(
-                              onTap: () {
-                                // Get.to(() => ContactUs());
+                              onTap: () async {
+                                isExpanded2 = !isExpanded2;
+
+                                showFontSettingsBottomSheet(context);
                               },
                               child: Card(
                                 color:
@@ -585,7 +474,7 @@ class SettingsState extends State<Settings> {
                                     Expanded(
                                       flex: 2,
                                       child: Container(
-                                        padding: EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           top: 10,
                                           bottom: 10,
                                         ),
@@ -593,6 +482,9 @@ class SettingsState extends State<Settings> {
                                         child: Text(
                                           "Fonts".tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.normal,
@@ -617,9 +509,12 @@ class SettingsState extends State<Settings> {
                                     ),
                                     Expanded(
                                       child: Icon(
-                                        size: 17,
+                                        isExpanded2
+                                            ? Icons.keyboard_arrow_up_outlined
+                                            : Icons
+                                                .keyboard_arrow_down_outlined,
+                                        size: 22,
 
-                                        Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
                                                     Themes.customLightTheme
@@ -641,7 +536,7 @@ class SettingsState extends State<Settings> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
 
                             Obx(
                               () => SwitchListTile(
@@ -653,6 +548,8 @@ class SettingsState extends State<Settings> {
                                 title: Text(
                                   "Cache Data".tr,
                                   style: TextStyle(
+                                    fontFamily:
+                                        FontController().currentFontFamily,
                                     color:
                                         themeController.initialTheme ==
                                                 Themes.customLightTheme
@@ -670,7 +567,79 @@ class SettingsState extends State<Settings> {
                                 ),
                                 value: cacheManager.isCacheEnabled.value,
                                 onChanged: (bool value) async {
+                                  // if (value == false) {
+                                  //   final confirmed = await Get.dialog(
+                                  //     AlertDialog(
+                                  //       title: Text("Clear Cached Data?".tr),
+                                  //       content: Text(
+                                  //         "This will remove all locally cached data. Continue?"
+                                  //             .tr,
+                                  //       ),
+                                  //       actions: [
+                                  //         TextButton(
+                                  //           onPressed:
+                                  //               () => Get.back(result: false),
+                                  //           child: Text("Cancel".tr),
+                                  //         ),
+                                  //         TextButton(
+                                  //           onPressed:
+                                  //               () => Get.back(result: true),
+                                  //           child: Text("Clear".tr),
+                                  //         ),
+                                  //       ],
+                                  //     ),
+                                  //   );
+
+                                  //   if (!confirmed) return;
+                                  // }
                                   await cacheManager.setCacheEnabled(value);
+
+                                  if (cacheManager.isCacheEnabled.value ==
+                                      false) {
+                                    final List<String> cacheKeyPatterns = [
+                                      // 'cached_profile',
+                                      'cached_books',
+                                      'cached_courses',
+                                      'cached_recommended_books',
+                                      'cached_top_rated_books',
+                                      'cached_recent_books',
+                                      'cached_scientific_subjects',
+                                      'cached_literary_subjects',
+                                      'cached_subscribed_courses',
+                                      'cached_recent_courses',
+                                      'cached_top_rated_courses',
+                                      'cached_recommended_courses',
+                                      'cached_teachers',
+                                      'cached_scientific_subjects',
+                                      'cached_literary_subjects',
+                                      'cached_teachers_',
+                                      'cached_lectures_',
+                                      'cached_recent_lessons_',
+                                      'cached_top_rated_lessons_',
+                                      'cached_courses_',
+                                      'cached_recent_courses_',
+                                      'cached_top_rated_courses_',
+                                      'cached_subject_books_',
+                                    ];
+
+                                    final allKeys = sharedPrefs.prefs.getKeys();
+
+                                    for (final key in allKeys) {
+                                      final shouldRemove = cacheKeyPatterns.any(
+                                        (pattern) => key.startsWith(pattern),
+                                      );
+
+                                      if (shouldRemove) {
+                                        try {
+                                          await sharedPrefs.prefs.remove(key);
+                                          print('Removed cached data: $key');
+                                        } catch (e) {
+                                          print('Error removing $key: $e');
+                                        }
+                                      }
+                                    }
+                                  }
+
                                   Get.snackbar(
                                     colorText:
                                         themeController.initialTheme ==
@@ -680,13 +649,13 @@ class SettingsState extends State<Settings> {
                                     "Setting Changed".tr,
                                     value
                                         ? "Data will be cached.".tr
-                                        : "Caching disabled. Only live data will be used."
+                                        : "Caching disabled. All cached data has been cleared."
                                             .tr,
                                   );
                                 },
                               ),
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                           ],
                         ),
                       ),

@@ -1,6 +1,5 @@
 // ignore_for_file: file_names
 
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../model/AIModel.dart';
@@ -8,7 +7,9 @@ import '../model/AIModel.dart';
 class ApiService {
   static const String _baseUrl =
       'https://openrouter.ai/api/v1/chat/completions';
-  static const String _apiKey = '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';
+  static const String _apiKey =
+      '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';
+  // static const String _apiKey = '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';
   static const Duration _timeout = Duration(seconds: 30);
 
   late AIModel _currentModel;
@@ -31,10 +32,11 @@ class ApiService {
               'model': _currentModel.id,
               'messages': [
                 {
-                  'role': 'system', 
-                  'content': 'You are an educational assistant for Syrian universities. Only answer educational questions. Politely reject non-educational requests.'
+                  'role': 'system',
+                  'content':
+                      'You are an educational assistant for Syrian universities. Only answer educational questions. Politely reject non-educational requests.',
                 },
-                {'role': 'user', 'content': question}
+                {'role': 'user', 'content': question},
               ],
               'temperature': 0.7,
               'max_tokens': 1000,
@@ -70,11 +72,11 @@ class ApiService {
       if (choices != null && choices.isNotEmpty) {
         final message =
             choices[0]['message']?['content']?.toString().trim() ?? '';
-        
+
         if (message.isEmpty) {
           return "I received an empty response. Please try rephrasing your question.";
         }
-        
+
         return _ensureEducationalFocus(message);
       } else {
         return "I couldn't understand the response format from OpenRouter.";
@@ -86,7 +88,8 @@ class ApiService {
 
   String _ensureEducationalFocus(String response) {
     final lower = response.toLowerCase();
-    final isRejection = lower.contains('i cannot') ||
+    final isRejection =
+        lower.contains('i cannot') ||
         lower.contains('sorry') ||
         lower.contains('unable') ||
         lower.contains('i\'m designed specifically') ||

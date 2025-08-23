@@ -1,4 +1,4 @@
-
+// ignore_for_file: file_names,library_private_types_in_public_api
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +6,9 @@ import 'package:get/get.dart';
 import '../../controller/QuizController.dart';
 import '../classes/Quiz.dart';
 import 'package:lottie/lottie.dart';
-
+import '../../themes/ThemeController.dart';
+import '../../themes/Themes.dart';
+import '../../controller/FontController.dart';
 import 'Calculator.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -15,20 +17,15 @@ class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key, required this.lessonId});
 
   @override
-  // ignore: library_private_types_in_public_api
   _QuizScreen createState() => _QuizScreen();
 }
 
 class _QuizScreen extends State<QuizScreen> {
-  static const Color primaryDark = Color(0xFF2E3601);
-  static const Color secondaryDark = Color(0xFF28293D);
-  static const Color primaryPurple = Color(0xFF555184);
-  static const Color lightBeige = Color(0xFFB2A6BE);
-  static const Color cream = Color(0xFFFEE9CE);
   bool _isConfirm = false;
   int? _index;
   bool isselect = false;
   final QuizController _quizController = Get.put(QuizController());
+  final ThemeController themeController = Get.find<ThemeController>();
 
   @override
   void initState() {
@@ -40,76 +37,116 @@ class _QuizScreen extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLightTheme =
+        themeController.initialTheme == Themes.customLightTheme;
+    final Color primaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
+    final Color secondaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 210, 209, 224)
+            : const Color.fromARGB(255, 40, 41, 61);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Quiz',
-          style: TextStyle(color: Color.fromARGB(255, 252, 242, 228)),
+      body: Container(
+        color: primaryColor,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 25),
+              height: 100,
+              child: Center(
+                child: Text(
+                  'Quiz',
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    fontFamily: FontController().currentFontFamily,
+                    color: secondaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 23,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: secondaryColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(60),
+                    topRight: Radius.circular(60),
+                  ),
+                ),
+                child: Obx(() {
+                  if (_quizController.isLoading.value) {
+                    return _buildLoadingScreen(primaryColor);
+                  }
+
+                  if (_quizController.error.isNotEmpty) {
+                    return _buildErrorScreen(primaryColor);
+                  }
+
+                  if (_quizController.quizCompleted.value) {
+                    return const ResultsScreen();
+                  }
+
+                  return _quizController.questions.isNotEmpty
+                      ? _buildQuizScreen(primaryColor, secondaryColor)
+                      : Center(
+                        child: Text(
+                          'No Questions Available',
+                          style: TextStyle(
+                            color: primaryColor,
+                            fontFamily: FontController().currentFontFamily,
+                          ),
+                        ),
+                      );
+                }),
+              ),
+            ),
+          ],
         ),
-        backgroundColor: const Color.fromARGB(255, 58, 60, 101),
-        actions: [
-          IconButton(
-            onPressed: () {
-              showDialog(context: context, builder: (context) => Calculator());
-            },
-            icon: Icon(Icons.calculate_outlined, size: 38),
-          ),
-        ],
       ),
-      body: Obx(() {
-        if (_quizController.isLoading.value) {
-          return _buildLoadingScreen();
-        }
-
-        if (_quizController.error.isNotEmpty) {
-          return _buildErrorScreen();
-        }
-
-        if (_quizController.quizCompleted.value) {
-          return const ResultsScreen();
-        }
-
-        return _quizController.questions.isNotEmpty
-            ? _buildQuizScreen()
-            : const Center(child: Text(' No Questions Available'));
-      }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(context: context, builder: (context) => Calculator());
+        },
+        backgroundColor: primaryColor,
+        child: Icon(Icons.calculate_outlined, size: 30, color: secondaryColor),
+      ),
     );
   }
 
-  Widget _buildQuizScreen() {
+  Widget _buildQuizScreen(Color primaryColor, Color secondaryColor) {
     final question =
         _quizController.questions[_quizController.currentQuestionIndex.value];
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color.fromARGB(255, 58, 60, 101),
-            Color.fromARGB(255, 127, 124, 168),
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-      padding: const EdgeInsets.all(16.0),
+    return Padding(
+      padding: const EdgeInsets.all(30.0),
       child: Column(
         children: [
           LinearProgressIndicator(
             value:
                 (_quizController.currentQuestionIndex.value + 1) /
                 _quizController.questions.length,
-            backgroundColor: lightBeige.withOpacity(0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(cream),
+            backgroundColor: primaryColor.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
           ),
           const SizedBox(height: 20),
-          Card(
-            color: const Color.fromARGB(255, 252, 242, 228),
-            elevation: 5,
+          Container(
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 question.questionText,
-                style: const TextStyle(fontSize: 20),
+                style: TextStyle(
+                  fontSize: 20,
+                  color: primaryColor,
+                  fontFamily: FontController().currentFontFamily,
+                ),
               ),
             ),
           ),
@@ -119,25 +156,33 @@ class _QuizScreen extends State<QuizScreen> {
             child: ListView.builder(
               itemCount: question.options.length,
               itemBuilder: (context, index) {
-                return _buildOptionButton(index, question);
+                return _buildOptionButton(
+                  index,
+                  question,
+                  primaryColor,
+                  secondaryColor,
+                );
               },
             ),
           ),
 
-          _buildNavigationButtons(),
+          _buildNavigationButtons(primaryColor, secondaryColor),
         ],
       ),
     );
   }
 
-  Widget _buildNavigationButtons() {
+  Widget _buildNavigationButtons(Color primaryColor, Color secondaryColor) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
-
       children: [
         Text(
           '${_quizController.currentQuestionIndex.value + 1} from (${_quizController.questions.length})',
-          style: const TextStyle(fontSize: 16, color: cream),
+          style: TextStyle(
+            fontSize: 16,
+            color: primaryColor,
+            fontFamily: FontController().currentFontFamily,
+          ),
         ),
         const SizedBox(height: 35),
 
@@ -155,23 +200,28 @@ class _QuizScreen extends State<QuizScreen> {
                       }
                       : null,
               style: ElevatedButton.styleFrom(
-                foregroundColor: const Color.fromARGB(255, 35, 35, 36),
-                backgroundColor: const Color.fromARGB(255, 236, 236, 252),
+                foregroundColor: secondaryColor,
+                backgroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
-                  side: const BorderSide(color: primaryPurple, width: 1),
                 ),
                 elevation: 3,
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Confirm', style: TextStyle(color: Colors.black)),
-                  SizedBox(width: 10),
+                  Text(
+                    'Confirm',
+                    style: TextStyle(
+                      color: secondaryColor,
+                      fontFamily: FontController().currentFontFamily,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                 ],
               ),
             ),
@@ -193,27 +243,29 @@ class _QuizScreen extends State<QuizScreen> {
                       }
                       : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: primaryDark,
+                backgroundColor: primaryColor,
+                foregroundColor: secondaryColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
-                  side: const BorderSide(
-                    color: Color.fromARGB(255, 53, 49, 100),
-                    width: 1,
-                  ),
                 ),
                 elevation: 3,
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(width: 10),
-                  Text("Next", style: TextStyle(color: Colors.black)),
-                  Icon(Icons.arrow_right_alt, size: 20),
+                  Text(
+                    "Next",
+                    style: TextStyle(
+                      color: secondaryColor,
+                      fontFamily: FontController().currentFontFamily,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Icon(Icons.arrow_right_alt, size: 20, color: secondaryColor),
                 ],
               ),
             ),
@@ -221,26 +273,28 @@ class _QuizScreen extends State<QuizScreen> {
         ),
 
         // زر التالي أو الإنهاء
-        Padding(padding: EdgeInsets.only(bottom: 50)),
+        const Padding(padding: EdgeInsets.only(bottom: 100)),
       ],
     );
   }
 
-  Widget _buildOptionButton(int index, Question question) {
+  Widget _buildOptionButton(
+    int index,
+    Question question,
+    Color primaryColor,
+    Color secondaryColor,
+  ) {
     return Obx(() {
       final isSelected = _quizController.selectedAnswerIndex.value == index;
       final isCorrect = index == question.correctAnswerIndex;
 
       BorderSide borderside = BorderSide(
-        color: Colors.grey[200]!,
+        color: primaryColor.withOpacity(0.3),
         width: isSelected ? 3 : 2,
       );
       if (_quizController.selectedAnswerIndex.value != null) {
         if (isSelected && !isCorrect) {
-          borderside = BorderSide(
-            color: Colors.red.withOpacity(0.4),
-            width: isSelected ? 3 : 2,
-          );
+          borderside = BorderSide(color: Colors.red, width: isSelected ? 3 : 2);
         } else if (isCorrect) {
           borderside = BorderSide(
             color: Colors.green,
@@ -254,7 +308,7 @@ class _QuizScreen extends State<QuizScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            BoxShadow(color: secondaryDark.withOpacity(0.2), blurRadius: 4),
+            BoxShadow(color: primaryColor.withOpacity(0.2), blurRadius: 4),
           ],
         ),
         child: ElevatedButton(
@@ -265,9 +319,8 @@ class _QuizScreen extends State<QuizScreen> {
           },
 
           style: ElevatedButton.styleFrom(
-            foregroundColor: cream,
-            // _getButtonColor(index, question),
-            backgroundColor: secondaryDark,
+            foregroundColor: secondaryColor,
+            backgroundColor: primaryColor.withOpacity(0.8),
             minimumSize: const Size(double.infinity, 60),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -276,38 +329,51 @@ class _QuizScreen extends State<QuizScreen> {
           ),
           child: Text(
             question.options[index],
-            style: const TextStyle(fontSize: 18, color: Colors.white),
+            style: TextStyle(
+              fontSize: 18,
+              color: secondaryColor,
+              fontFamily: FontController().currentFontFamily,
+            ),
           ),
         ),
       );
     });
   }
 
-  Widget _buildLoadingScreen() {
-    return const Center(
+  Widget _buildLoadingScreen(Color primaryColor) {
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 20),
-          Text('Loading quiz...'),
+          CircularProgressIndicator(color: primaryColor),
+          const SizedBox(height: 20),
+          Text(
+            'Loading quiz...',
+            style: TextStyle(
+              color: primaryColor,
+              fontFamily: FontController().currentFontFamily,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorScreen() {
+  Widget _buildErrorScreen(Color primaryColor) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error, size: 50, color: Colors.red),
+          Icon(Icons.error, size: 50, color: primaryColor),
           const SizedBox(height: 20),
-          Text(_quizController.error.value),
           Text(
             _quizController.error.value,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 16,
+              color: primaryColor,
+              fontFamily: FontController().currentFontFamily,
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -320,8 +386,17 @@ class _QuizScreen extends State<QuizScreen> {
                   _quizController.loadQuiz(widget.lessonId),
                   HapticFeedback.lightImpact(),
                 },
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
+            icon: Icon(Icons.refresh, color: primaryColor),
+            label: Text(
+              'Retry',
+              style: TextStyle(
+                color: primaryColor,
+                fontFamily: FontController().currentFontFamily,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor.withOpacity(0.1),
+            ),
           ),
         ],
       ),
@@ -333,13 +408,14 @@ class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
+  // ignore:
   _ResultsScreenState createState() => _ResultsScreenState();
 }
 
 class _ResultsScreenState extends State<ResultsScreen>
     with SingleTickerProviderStateMixin {
   final QuizController _quizController = Get.find();
+  final ThemeController themeController = Get.find<ThemeController>();
   late ConfettiController _confettiController;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -370,201 +446,264 @@ class _ResultsScreenState extends State<ResultsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bool isLightTheme =
+        themeController.initialTheme == Themes.customLightTheme;
+    final Color primaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
+    final Color secondaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 210, 209, 224)
+            : const Color.fromARGB(255, 40, 41, 61);
+
     final correctAnswers = _quizController.score.value;
     final totalQuestions = _quizController.questions.length;
     final percentage = (correctAnswers / totalQuestions) * 100;
     final isPassed = percentage >= 50;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // الخلفية المتدرجة
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+      body: Container(
+        color: primaryColor,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                shouldLoop: true,
+                colors: const [
+                  Colors.green,
+                  Colors.blue,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.purple,
+                ],
               ),
             ),
-          ),
 
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              shouldLoop: true,
-              colors: const [
-                Colors.green,
-                Colors.blue,
-                Colors.pink,
-                Colors.orange,
-                Colors.purple,
-              ],
-            ),
-          ),
-
-          // محتوى النتائج
-          Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // الرسم المتحرك حسب النتيجة
-                    ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: Lottie.asset(
-                        isPassed
-                            ? 'assets/lottie/success.json'
-                            : 'assets/lottie/TryAgain.json',
-
-                        width: 180,
-                        height: 180,
-                      ),
-                    ),
-
-                    //  const SizedBox(height: 15),
-                    Text(
-                      isPassed ? 'Done Successfully' : 'Better Luck',
-                      style: const TextStyle(
-                        fontSize: 28,
+            // محتوى النتائج
+            Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(top: 25),
+                  height: 100,
+                  child: Center(
+                    child: Text(
+                      "Quiz Results",
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        fontFamily: FontController().currentFontFamily,
+                        color: secondaryColor,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        fontSize: 23,
                       ),
                     ),
-
-                    const SizedBox(height: 10),
-
-                    // بطاقة النتائج
-                    Card(
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: secondaryColor,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(60),
+                        topRight: Radius.circular(60),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            // شريط التقدم الدائري
-                            SizedBox(
-                              width: 180,
-                              height: 180,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  CircularProgressIndicator(
-                                    value: percentage / 100,
-                                    strokeWidth: 10,
-                                    strokeAlign: 15,
-                                    backgroundColor: Colors.grey[200],
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      isPassed ? Colors.green : Colors.orange,
-                                    ),
-                                  ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // الرسم المتحرك حسب النتيجة
+                              ScaleTransition(
+                                scale: _scaleAnimation,
+                                child: Lottie.asset(
+                                  isPassed
+                                      ? 'assets/lottie/success.json'
+                                      : 'assets/lottie/TryAgain.json',
+                                  width: 180,
+                                  height: 180,
+                                ),
+                              ),
+
+                              Text(
+                                isPassed ? 'Done Successfully' : 'Better Luck',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontFamily:
+                                      FontController().currentFontFamily,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              // بطاقة النتائج
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
                                     children: [
-                                      Text(
-                                        '${percentage.toStringAsFixed(1)}%',
-                                        style: const TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.bold,
+                                      // شريط التقدم الدائري
+                                      SizedBox(
+                                        width: 180,
+                                        height: 180,
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            CircularProgressIndicator(
+                                              value: percentage / 100,
+                                              strokeWidth: 10,
+                                              strokeAlign: 15,
+                                              backgroundColor: primaryColor
+                                                  .withOpacity(0.2),
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    isPassed
+                                                        ? Colors.green
+                                                        : Colors.orange,
+                                                  ),
+                                            ),
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  '${percentage.toStringAsFixed(1)}%',
+                                                  style: TextStyle(
+                                                    fontSize: 28,
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: primaryColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
+                                      ),
+
+                                      const SizedBox(height: 20),
+
+                                      // تفاصيل النتائج
+                                      _buildResultDetail(
+                                        'The correct Answers',
+                                        '$correctAnswers',
+                                        Icons.check_circle,
+                                        Colors.green,
+                                        primaryColor,
+                                      ),
+                                      _buildResultDetail(
+                                        "The Wrong Answers",
+                                        '${totalQuestions - correctAnswers}',
+                                        Icons.cancel,
+                                        Colors.red,
+                                        primaryColor,
+                                      ),
+                                      _buildResultDetail(
+                                        "All Questions",
+                                        '$totalQuestions',
+                                        Icons.help_outline,
+                                        Colors.blue,
+                                        primaryColor,
                                       ),
                                     ],
                                   ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              // أزرار التحكم
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (!isPassed)
+                                    ElevatedButton.icon(
+                                      onPressed: () {
+                                        _quizController.resetQuiz();
+                                        Get.back();
+                                      },
+                                      icon: Icon(
+                                        Icons.refresh,
+                                        color: secondaryColor,
+                                      ),
+                                      label: Text(
+                                        'Try Again',
+                                        style: TextStyle(
+                                          color: secondaryColor,
+                                          fontFamily:
+                                              FontController()
+                                                  .currentFontFamily,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: primaryColor,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 12,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(width: 20),
+
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      Get.until((route) => route.isFirst);
+                                      _quizController.nextQuestion();
+                                      _quizController.resetQuiz();
+                                    },
+                                    icon: Icon(
+                                      Icons.close,
+                                      color: secondaryColor,
+                                    ),
+                                    label: Text(
+                                      'Back',
+                                      style: TextStyle(
+                                        color: secondaryColor,
+                                        fontFamily:
+                                            FontController().currentFontFamily,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: primaryColor,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // تفاصيل النتائج
-                            _buildResultDetail(
-                              'The correct Answers',
-                              '$correctAnswers',
-                              Icons.check_circle,
-                              Colors.green,
-                            ),
-                            _buildResultDetail(
-                              "The Wrong Answers",
-                              '${totalQuestions - correctAnswers}',
-                              Icons.cancel,
-                              Colors.red,
-                            ),
-                            _buildResultDetail(
-                              "All Questions",
-                              '$totalQuestions',
-                              Icons.help_outline,
-                              Colors.blue,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 10),
-
-                    // أزرار التحكم
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (!isPassed)
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              _quizController.resetQuiz();
-                              Get.back();
-                            },
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Try Again'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 20),
-
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            Get.until((route) => route.isFirst);
-                            _quizController.nextQuestion();
-                            _quizController.resetQuiz();
-                          },
-                          icon: const Icon(Icons.close),
-                          label: const Text('Back'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
-                              255,
-                              73,
-                              171,
-                              251,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -574,6 +713,7 @@ class _ResultsScreenState extends State<ResultsScreen>
     String value,
     IconData icon,
     Color color,
+    Color textColor,
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -581,11 +721,23 @@ class _ResultsScreenState extends State<ResultsScreen>
         children: [
           Icon(icon, color: color, size: 28),
           const SizedBox(width: 10),
-          Text(title, style: const TextStyle(fontSize: 16)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              color: textColor,
+              fontFamily: FontController().currentFontFamily,
+            ),
+          ),
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+              fontFamily: FontController().currentFontFamily,
+            ),
           ),
         ],
       ),

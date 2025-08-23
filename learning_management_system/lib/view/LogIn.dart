@@ -52,7 +52,7 @@ class _LogInState extends State<LogIn> {
         defaultValue: mainIP,
       );
       final APIurl = "$baseUrl/api/login";
-      print(                                         APIurl);
+      print(APIurl);
 
       if (userNameController.text.isEmpty || passwordController.text.isEmpty) {
         Get.snackbar("Error".tr, "Username and password are required".tr);
@@ -191,395 +191,479 @@ class _LogInState extends State<LogIn> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Padding(padding: EdgeInsets.all(10)),
-                  Row( mainAxisAlignment: MainAxisAlignment.start,
+                  Padding(padding: const EdgeInsets.all(10)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      SizedBox(width: 20,),
+                      const SizedBox(width: 20),
                       IconButton(
-                                    onPressed: () {
-                                      Get.to(()=>OnBoarding());
-                                    },
-                                    icon: Icon(
-                                      Icons.arrow_back_outlined,
-                                      size: 35,
-                                      color: Color.fromARGB(255, 40, 41, 61),
-                                    ),
-                                  ),
-                      SizedBox(width: Get.width/10,),
-                    Text("Welcome Back!".tr,style: const TextStyle(
-                      color: Color.fromARGB(255, 40, 41, 61),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),)
-                  ],),
-                  Padding(padding: EdgeInsets.all(10)),
+                        onPressed: () {
+                          Get.to(() => OnBoarding());
+                        },
+                        icon: Icon(
+                          Icons.arrow_back_outlined,
+                          size: 35,
+                          color: Color.fromARGB(255, 40, 41, 61),
+                        ),
+                      ),
+                      SizedBox(width: Get.width / 10),
+                      Text(
+                        "Welcome Back!".tr,
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 40, 41, 61),
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(padding: const EdgeInsets.all(10)),
 
                   Container(
                     width: Get.width,
                     height: Get.height - 50,
                     decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 40, 41, 61),
+                      color: Color.fromARGB(255, 40, 41, 61),
 
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(40),topRight: Radius.circular(40)),
-                    ),
-                      child: Column(
-                        children: [
-                          Padding(padding: EdgeInsets.all(20)),
-                          Center(
-                    child: Image.asset(
-                        ImageAssets.AppIconNoBackGround,
-                        width: 140,
-                        height: 140,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(40),
+                        topRight: Radius.circular(40),
                       ),
-                  ),
-                  Padding(padding: EdgeInsets.all(20)),
-                  Container(
-                    margin: const EdgeInsets.only(
-                      bottom: 20,
-                      left: 20,
-                      right: 20,
                     ),
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 80,
-                            padding: const EdgeInsets.only(right: 20, left: 20),
-                            child: TextFormField(
-                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                              controller: userNameController,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              cursorColor: const Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
-                              obscureText: false,
-                              keyboardType: TextInputType.name,
-                              // onSaved: (val){username = val;},
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(
-                                  Icons.perm_identity,
-                                  size: 30,
-                                ),
-                                prefixIconColor: const Color.fromARGB(
-                                  255,
-                                  210,
-                                  209,
-                                  224,
-                                ),
-                                hintText: "User Name".tr,
-                                hintStyle: TextStyle(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    210,
-                                    209,
-                                    224,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                              ),
-
-                              validator: (val) {
-                                if (val!.isEmpty) {
-                                  return "Please enter your User Name".tr;
-                                } else {
-                                  if (val.length < 3) {
-                                    return "User Name must be longer than 3 characters"
-                                        .tr;
-                                  } else if (val.length > 25) {
-                                    return "User Name must be shorter than 25 characters"
-                                        .tr;
-                                  }
-                                }
-                                return null;
-                              },
-                            ),
+                    child: Column(
+                      children: [
+                        Padding(padding: const EdgeInsets.all(20)),
+                        Center(
+                          child: Image.asset(
+                            ImageAssets.AppIconNoBackGround,
+                            width: 140,
+                            height: 140,
                           ),
-                          const SizedBox(height: 10),
-                          Container(
-                            height: 80,
-                            padding: const EdgeInsets.only(right: 20, left: 20),
-                            child: TextFormField(
-                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                              controller: passwordController,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              cursorColor: const Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
-                              maxLength: 35,
-                              obscureText: TextAsAsterisks,
-                              obscuringCharacter: '*',
-                              keyboardType: TextInputType.visiblePassword,
-                              decoration: InputDecoration(
-                                helperStyle: TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                                prefixIcon: const Icon(
-                                  Icons.lock_outline_rounded,
-                                  size: 30,
-                                ),
-                                prefixIconColor: const Color.fromARGB(
-                                  255,
-                                  210,
-                                  209,
-                                  224,
-                                ),
-                                hintText: "Password".tr,
-                                hintStyle: TextStyle(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    210,
-                                    209,
-                                    224,
-                                  ),
-                                ),
-                                suffix: IconButton(
-                                  onPressed: () {
-                                    TextAsAsterisks = !TextAsAsterisks;
-                                    temp = visibilityIcon;
-                                    visibilityIcon = invisibilityIcon;
-                                    invisibilityIcon = temp;
-
-                                    setState(() {});
-                                  },
-                                  icon: visibilityIcon,
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                              ),
-                              validator: (val) {
-                                if (val!.isEmpty) {
-                                  return "Please enter your Password".tr;
-                                } else {
-                                  if (val.length < 8) {
-                                    return "Password must be at least 8 characters"
-                                        .tr;
-                                  }
-                                  return null;
-                                }
-                              },
-                            ),
+                        ),
+                        Padding(padding: const EdgeInsets.all(20)),
+                        Container(
+                          margin: const EdgeInsets.only(
+                            bottom: 20,
+                            left: 20,
+                            right: 20,
                           ),
-                          const SizedBox(height: 20),
-                          Container(
-                            alignment: Alignment.center,
-                            width: Get.width / 1.5,
-                            height: 35,
-                            decoration: BoxDecoration(
-                              color: Color.fromARGB(255, 210, 209, 224),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: MaterialButton(
-                              onPressed: () async {
-                                await networkController
-                                    .checkConnectivityManually();
-                                isConnected = sharedPrefs.prefs.getBool(
-                                  'isConnected',
-                                );
-                                if (isConnected == true) {
-                                  if (formKey.currentState!.validate()) {
-                                    sendLogInData();
-                                    await Future.delayed(
-                                      Duration(milliseconds: 2000),
-                                    );
-
-                                    Future.microtask(() {
-                                      Get.offAll(() => NavBar());
-                                    });
-                                  } else {
-                                    Get.snackbar(
-                                      "Validation Error".tr,
-                                      "Log In failed, fill the textfields correctly"
-                                          .tr,
-                                    );
-                                  }
-                                } else {
-                                  Get.snackbar(
-                                    "Connection error".tr,
-                                    "Connection access is needed".tr,
-                                  );
-                                }
-                              },
-                              minWidth: Get.width / 1.5,
-                              height: 35,
-                              elevation: 5,
-                              child: Text(
-                                "Log In".tr,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: FontStyle.normal,
-                                  color: Color.fromARGB(255, 40, 41, 61),
-                                ),
-                              ),
-                            ),
-                          ),
-                          
-                          SizedBox(height: 40),
-                          Text(
-                            "Support team".tr,
-                            style: const TextStyle(
-                              color: Color.fromARGB(255, 210, 209, 224),
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                child: TextButton(
-                                  onPressed: () async {
-                                    _launchURL(supportTeamWhatsApp);
-                                  },
-                                  child: Text(
-                                    "WhatsApp".tr,
-                                    style: const TextStyle(
+                          child: Form(
+                            key: formKey,
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 80,
+                                  padding: const EdgeInsets.only(
+                                    right: 20,
+                                    left: 20,
+                                  ),
+                                  child: TextFormField(
+                                    style: TextStyle(
                                       color: Color.fromARGB(255, 210, 209, 224),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w400,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: Color.fromARGB(
+                                    ),
+                                    controller: userNameController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    cursorColor: const Color.fromARGB(
+                                      255,
+                                      254,
+                                      233,
+                                      204,
+                                    ),
+                                    obscureText: false,
+                                    keyboardType: TextInputType.name,
+                                    // onSaved: (val){username = val;},
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                        Icons.perm_identity,
+                                        size: 30,
+                                      ),
+                                      prefixIconColor: const Color.fromARGB(
                                         255,
                                         210,
                                         209,
                                         224,
                                       ),
+                                      hintText: "User Name".tr,
+                                      hintStyle: TextStyle(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
                                     ),
+
+                                    validator: (val) {
+                                      if (val!.isEmpty) {
+                                        return "Please enter your User Name".tr;
+                                      } else {
+                                        if (val.length < 3) {
+                                          return "User Name must be longer than 3 characters"
+                                              .tr;
+                                        } else if (val.length > 25) {
+                                          return "User Name must be shorter than 25 characters"
+                                              .tr;
+                                        }
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                              Container(
-                                child: TextButton(
-                                  onPressed: () async {
-                                    _launchURL(supportTeamTelegram);
-                                  },
-                                  child: Text(
-                                    "Telegram".tr,
-                                    style: const TextStyle(
+                                const SizedBox(height: 10),
+                                Container(
+                                  height: 80,
+                                  padding: const EdgeInsets.only(
+                                    right: 20,
+                                    left: 20,
+                                  ),
+                                  child: TextFormField(
+                                    style: TextStyle(
                                       color: Color.fromARGB(255, 210, 209, 224),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w400,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: Color.fromARGB(
+                                    ),
+                                    controller: passwordController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    cursorColor: const Color.fromARGB(
+                                      255,
+                                      254,
+                                      233,
+                                      204,
+                                    ),
+                                    maxLength: 35,
+                                    obscureText: TextAsAsterisks,
+                                    obscuringCharacter: '*',
+                                    keyboardType: TextInputType.visiblePassword,
+                                    decoration: InputDecoration(
+                                      helperStyle: TextStyle(
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.lock_outline_rounded,
+                                        size: 30,
+                                      ),
+                                      prefixIconColor: const Color.fromARGB(
                                         255,
                                         210,
                                         209,
                                         224,
                                       ),
+                                      hintText: "Password".tr,
+                                      hintStyle: TextStyle(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      suffix: IconButton(
+                                        onPressed: () {
+                                          TextAsAsterisks = !TextAsAsterisks;
+                                          temp = visibilityIcon;
+                                          visibilityIcon = invisibilityIcon;
+                                          invisibilityIcon = temp;
+
+                                          setState(() {});
+                                        },
+                                        icon: visibilityIcon,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (val) {
+                                      if (val!.isEmpty) {
+                                        return "Please enter your Password".tr;
+                                      } else {
+                                        if (val.length < 8) {
+                                          return "Password must be at least 8 characters"
+                                              .tr;
+                                        }
+                                        return null;
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Container(
+                                  alignment: Alignment.center,
+                                  width: Get.width / 1.5,
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                    color: Color.fromARGB(255, 210, 209, 224),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: MaterialButton(
+                                    onPressed: () async {
+                                      await networkController
+                                          .checkConnectivityManually();
+                                      isConnected = sharedPrefs.prefs.getBool(
+                                        'isConnected',
+                                      );
+                                      if (isConnected == true) {
+                                        if (formKey.currentState!.validate()) {
+                                          sendLogInData();
+                                          await Future.delayed(
+                                            Duration(milliseconds: 1000),
+                                          );
+
+                                          Future.microtask(() {
+                                            Get.offAll(() => NavBar());
+                                          });
+                                        } else {
+                                          Get.snackbar(
+                                            "Validation Error".tr,
+                                            "Log In failed, fill the textfields correctly"
+                                                .tr,
+                                          );
+                                        }
+                                      } else {
+                                        Get.snackbar(
+                                          "Connection error".tr,
+                                          "Connection access is needed".tr,
+                                        );
+                                      }
+                                    },
+                                    minWidth: Get.width / 1.5,
+                                    height: 35,
+                                    elevation: 5,
+                                    child: Text(
+                                      "Log In".tr,
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w600,
+                                        fontStyle: FontStyle.normal,
+                                        color: Color.fromARGB(255, 40, 41, 61),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                            
-                          ),
-                          SizedBox(height: 60,),
-                            Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Don't have an account?".tr,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color: Color.fromARGB(255, 210, 209, 224),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Get.toNamed("/SignUp");
-                                },
-                                child: Text(
-                                  "Sign Up".tr,
+
+                                const SizedBox(height: 40),
+                                Text(
+                                  "Support team".tr,
                                   style: const TextStyle(
-                                    color: Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
+                                    color: Color.fromARGB(255, 210, 209, 224),
                                     fontSize: 15,
-                                    fontWeight: FontWeight.w400,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      child: TextButton(
+                                        onPressed: () async {
+                                          _launchURL(supportTeamWhatsApp);
+                                        },
+                                        child: Text(
+                                          "WhatsApp".tr,
+                                          style: const TextStyle(
+                                            color: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w400,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      child: TextButton(
+                                        onPressed: () async {
+                                          _launchURL(supportTeamTelegram);
+                                        },
+                                        child: Text(
+                                          "Telegram".tr,
+                                          style: const TextStyle(
+                                            color: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w400,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 60),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Don't have an account?".tr,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w400,
+                                        fontStyle: FontStyle.normal,
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Get.toNamed("/SignUp");
+                                      },
+                                      child: Text(
+                                        "Sign Up".tr,
+                                        style: const TextStyle(
+                                          color: Color.fromARGB(
+                                            255,
+                                            254,
+                                            233,
+                                            204,
+                                          ),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w400,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: Color.fromARGB(
+                                            255,
+                                            254,
+                                            233,
+                                            204,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-               ) ],
+            ],
           ),
-        ]),
+        ),
       ),
-    ));
+    );
   }
 }

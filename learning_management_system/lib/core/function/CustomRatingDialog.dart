@@ -1,38 +1,52 @@
-import 'dart:convert';
+// ignore_for_file: file_names, avoid_print
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:learning_management_system/core/constants/ImageAssets.dart';
+import '../../controller/FontController.dart';
+import '../constants/ImageAssets.dart';
 import 'package:rating_dialog/rating_dialog.dart';
-
 import '../../themes/Themes.dart';
 import '../../view/NavBar.dart';
 
-void showRatingDailog(BuildContext context, int courseId,String token,String url,  VoidCallback onRated,var rating) {
+void showRatingDailog(
+  BuildContext context,
+  int courseId,
+  String token,
+  String url,
+  VoidCallback onRated,
+  var rating,
+) {
   showDialog(
     context: context,
     barrierDismissible: true,
     builder:
         (context) => RatingDialog(
-
-          initialRating:rating,
+          initialRating: rating,
           // your app's name?
           title: Text(
             'Rating Dialog'.tr,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+              fontFamily: FontController().currentFontFamily,
+            ),
           ),
           // encourage your user to leave a high rating?
           message: Text(
             'Tap a star to set your rating. Add more description here if you want.'
                 .tr,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 15),
+            style: TextStyle(
+              fontSize: 15,
+              fontFamily: FontController().currentFontFamily,
+            ),
           ),
           // your app's logo?
-          image: Image.asset("${ImageAssets.AppLogo}", height: 160),
-          submitButtonText: 'Submit',
+          image: Image.asset(ImageAssets.AppLogo, height: 160),
+          submitButtonText: 'Submit'.tr,
           submitButtonTextStyle: TextStyle(
             color:
                 themeController.initialTheme == Themes.customLightTheme
@@ -42,12 +56,19 @@ void showRatingDailog(BuildContext context, int courseId,String token,String url
             fontSize: 17,
           ),
 
-          commentHint: 'Enter Your Rating',
+          commentHint: 'Enter Your Rating'.tr,
           onCancelled: () => print('cancelled'),
           onSubmitted: (response) {
             print('rating: ${response.rating}, comment: ${response.comment}');
 
-            submitRating(courseId, response.rating, response.comment,token,url,onRated);
+            submitRating(
+              courseId,
+              response.rating,
+              response.comment,
+              token,
+              url,
+              onRated,
+            );
           },
         ),
   );
@@ -58,7 +79,8 @@ submitRating(
   double rating,
   String? comment,
   String token,
-  String url, VoidCallback onRated,
+  String url,
+  VoidCallback onRated,
 ) async {
   var response = await http.post(
     Uri.parse(url),
@@ -77,7 +99,6 @@ submitRating(
     var responseBody = json.decode(response.body);
     print(responseBody);
     print("fail");
-    Get.snackbar("Error", "Failed to submit rating");
+    Get.snackbar("Error".tr, "Failed to submit rating".tr);
   }
 }
-

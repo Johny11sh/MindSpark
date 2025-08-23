@@ -1,16 +1,16 @@
+// ignore_for_file: file_names, unrelated_type_equality_checks, non_constant_identifier_names
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:learning_management_system/core/function/SnackBarFun.dart';
-import 'package:learning_management_system/view/LogIn.dart';
-import 'package:learning_management_system/view/NavBar.dart';
-import 'package:learning_management_system/view/OnBoarding.dart';
+import '../controller/FontController.dart';
+import '../core/function/SnackBarFun.dart';
+import '../view/LogIn.dart';
+import '../view/NavBar.dart';
+import '../view/OnBoarding.dart';
 // import '../core/classes/TasksScreen.dart';
-
-
 
 class Task {
   int id;
@@ -55,7 +55,6 @@ class Task {
     );
   }
 
-
   Map<String, dynamic> toJson() {
     return {
       'title': title,
@@ -68,7 +67,6 @@ class Task {
     };
   }
 }
-
 
 class TaskController extends GetxController {
   final ApiService apiService = ApiService();
@@ -202,9 +200,7 @@ class TaskController extends GetxController {
   }
 }
 
-
 class ApiService {
-
   Future<List<Task>> getTasks() async {
     final token = sharedPrefs.prefs.getString('token') ?? '';
     if (token.isEmpty) {
@@ -287,81 +283,81 @@ class ApiService {
     }
   }
 
- Future<Task> addTask(
-  String title,
-  String text,
-  double estimatedHours,
-  String dueDate,
-) async {
-  final token = sharedPrefs.prefs.getString('token') ?? '';
-  if (token.isEmpty) {
-    debugPrint("Token empty, redirecting to login");
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.offAll(() => LogIn());
-      showErrorSnackbar("Session expired. Please log in again.");
-    });
-    throw Exception('Token not available');
-  }
-
-  try {
-    var baseUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: mainIP,
-    );
-    final APIurl = '$baseUrl/api/addtask'; 
-
-    debugPrint("Adding new task");
-    debugPrint("API URL: $APIurl");
-
-    final response = await http
-        .post(
-          Uri.parse(APIurl),
-          headers: {
-            'Authorization': "Bearer $token",
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({
-            'title': title,
-            'description': text,
-            'estimatedHours': estimatedHours,
-            'dueDate': dueDate,
-          }),
-        )
-        .timeout(const Duration(seconds: 15));
-
-    debugPrint("Add task API response: ${response.statusCode}");
-    debugPrint("Response body: ${response.body}");
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return Task.fromJson(jsonDecode(response.body));
-    } else if (response.statusCode == 401) {
+  Future<Task> addTask(
+    String title,
+    String text,
+    double estimatedHours,
+    String dueDate,
+  ) async {
+    final token = sharedPrefs.prefs.getString('token') ?? '';
+    if (token.isEmpty) {
+      debugPrint("Token empty, redirecting to login");
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.offAll(() => LogIn());
         showErrorSnackbar("Session expired. Please log in again.");
       });
-      throw Exception('Unauthorized: Invalid token');
-    } else {
-      String errorMessage = "Failed to create task";
-      try {
-        final errorResponse = jsonDecode(response.body);
-        errorMessage = errorResponse['message'] ?? errorMessage;
-      } catch (e) {
-        debugPrint("Error parsing error response: $e");
-      }
-      showErrorSnackbar("$errorMessage (${response.statusCode})");
-      throw Exception('$errorMessage (${response.statusCode})');
+      throw Exception('Token not available');
     }
-  } on TimeoutException {
-    debugPrint("Timeout adding task");
-    showErrorSnackbar("Request timeout. Please try again.");
-    throw Exception('Request timeout');
-  } catch (e) {
-    debugPrint("Error adding task: $e");
-    showErrorSnackbar("Failed to add task: $e");
-    throw Exception('Failed to add task: $e');
+
+    try {
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final APIurl = '$baseUrl/api/addtask';
+
+      debugPrint("Adding new task");
+      debugPrint("API URL: $APIurl");
+
+      final response = await http
+          .post(
+            Uri.parse(APIurl),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode({
+              'title': title,
+              'description': text,
+              'estimatedHours': estimatedHours,
+              'dueDate': dueDate,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      debugPrint("Add task API response: ${response.statusCode}");
+      debugPrint("Response body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return Task.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 401) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offAll(() => LogIn());
+          showErrorSnackbar("Session expired. Please log in again.");
+        });
+        throw Exception('Unauthorized: Invalid token');
+      } else {
+        String errorMessage = "Failed to create task";
+        try {
+          final errorResponse = jsonDecode(response.body);
+          errorMessage = errorResponse['message'] ?? errorMessage;
+        } catch (e) {
+          debugPrint("Error parsing error response: $e");
+        }
+        showErrorSnackbar("$errorMessage (${response.statusCode})");
+        throw Exception('$errorMessage (${response.statusCode})');
+      }
+    } on TimeoutException {
+      debugPrint("Timeout adding task");
+      showErrorSnackbar("Request timeout. Please try again.");
+      throw Exception('Request timeout');
+    } catch (e) {
+      debugPrint("Error adding task: $e");
+      showErrorSnackbar("Failed to add task: $e");
+      throw Exception('Failed to add task: $e');
+    }
   }
-}
 
   Future<void> checkTask(int taskId) async {
     final token = sharedPrefs.prefs.getString('token') ?? '';
@@ -469,7 +465,10 @@ class ApiService {
         debugPrint("Task $taskId moved to trash successfully");
         // Optional: Show success notification
         Get.rawSnackbar(
-          messageText: Text("Task moved to trash"),
+          messageText: Text(
+            "Task moved to trash",
+            style: TextStyle(fontFamily: FontController().currentFontFamily),
+          ),
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green[800]!,
@@ -775,7 +774,10 @@ class ApiService {
         debugPrint("Task $taskId restored successfully");
         // عرض إشعار نجاح
         Get.rawSnackbar(
-          messageText: Text("Task restored successfully"),
+          messageText: Text(
+            "Task restored successfully",
+            style: TextStyle(fontFamily: FontController().currentFontFamily),
+          ),
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green[800]!,

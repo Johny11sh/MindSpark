@@ -6,6 +6,7 @@ import '../../locale/LocaleController.dart';
 import '../../model/FaqModel.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
+import '../../controller/FontController.dart';
 
 class FAQ extends StatefulWidget {
   const FAQ({super.key});
@@ -20,29 +21,52 @@ class _FAQState extends State<FAQ> {
 
   List<FaqModel> faqList = [
     FaqModel(
-      question: "What is MindSpark?",
+      question: "What is MindSpark?".tr,
       answer:
-          "MindSpark is an educational platform that delivers high-quality video courses to save time, cost, and effort.",
+          "MindSpark is an educational platform that delivers high-quality video and PDF courses to save time, cost, and effort."
+              .tr,
     ),
     FaqModel(
-      question: "Can I use MindSpark on multiple devices?",
+      question: "Can I use MindSpark on multiple devices?".tr,
       answer:
-          "No. Each account is restricted to one device at a time. For device changes, contact support.",
+          "No. Each account is restricted to one device at a time. For device changes, contact support."
+              .tr,
     ),
     FaqModel(
-      question: "Is my personal information safe?",
+      question: "Is my personal information safe?".tr,
       answer:
-          "Absolutely. Your password is securely hashed, and we do not share your data with third parties.",
+          "Absolutely. Your password is securely hashed, and we do not share your data with third parties."
+              .tr,
     ),
     FaqModel(
-      question: "How can I reset my password?",
+      question: "How can I subscribe to a course?".tr,
       answer:
-          "You can request a password reset from the login screen. A new password will be sent to your registered phone.",
+          "There are 2 methods. The first, which doesn't apply to all courses, is to use your saprkies to get them for free after answering enough quizzes. The second is to go to one of our libraries and pay up-front for the course which will then register you as subscribed."
+              .tr,
     ),
     FaqModel(
-      question: "Do you offer certificates?",
+      question: "What if I have feedback for a certain course?".tr,
       answer:
-          "Currently, we focus on course quality. Certificates will be introduced in future updates.",
+          "You can either leave a review on that course, or one of its lectures. You can also send a message directly to the teacher of that subject to ensure your voice is heard."
+              .tr,
+    ),
+    FaqModel(
+      question: "How can I gain Sparkies?".tr,
+      answer:
+          "Sparkies can be gained by completing quizzes in the lectures of any course you're subscribed to. You need to gain 1000 sparks to get one Sparkie."
+              .tr,
+    ),
+    FaqModel(
+      question: "What can I use my Sparkies for?".tr,
+      answer:
+          "They can be used to subscribe to certain courses, free of charge. They can also be used to change the theme of the application for a fresh look."
+              .tr,
+    ),
+    FaqModel(
+      question: "How many Sparks do I get with each quiz?".tr,
+      answer:
+          "Depending on the question difficulty, you get 1 (Easy), 3 (Medium) or 5 (Hard) for each question you answer. Answering every question of the quiz flawlessly grants you a bonus."
+              .tr,
     ),
   ];
 
@@ -57,12 +81,14 @@ class _FAQState extends State<FAQ> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = themeController.initialTheme == Themes.customLightTheme;
-    final Color bgColor = isDark
-        ? const Color.fromARGB(255, 40, 41, 61)
-        : const Color.fromARGB(255, 210, 209, 224);
-    final Color fgColor = isDark
-        ? const Color.fromARGB(255, 210, 209, 224)
-        : const Color.fromARGB(255, 40, 41, 61);
+    final Color bgColor =
+        isDark
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
+    final Color fgColor =
+        isDark
+            ? const Color.fromARGB(255, 210, 209, 224)
+            : const Color.fromARGB(255, 40, 41, 61);
 
     return Scaffold(
       body: Container(
@@ -88,6 +114,7 @@ class _FAQState extends State<FAQ> {
                         child: Text(
                           "FAQ".tr,
                           style: TextStyle(
+                            fontFamily: FontController().currentFontFamily,
                             color: fgColor,
                             fontWeight: FontWeight.bold,
                             fontSize: 23,
@@ -124,13 +151,17 @@ class _FAQState extends State<FAQ> {
                             color: bgColor,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Text(
                                       faqList[i].question.tr,
                                       style: TextStyle(
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         color: fgColor,
@@ -150,15 +181,16 @@ class _FAQState extends State<FAQ> {
                         ),
                         if (isExpandedList[i])
                           Container(
-                            padding: EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(10),
                             child: Text(
                               faqList[i].answer.tr,
                               style: TextStyle(
                                 fontSize: 18,
                                 color: bgColor,
+                                fontFamily: FontController().currentFontFamily,
+                              ),
                             ),
                           ),
-                          )
                       ],
                     );
                   },

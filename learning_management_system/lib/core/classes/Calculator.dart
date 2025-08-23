@@ -1,6 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:math_expressions/math_expressions.dart';
+
+import '../../controller/FontController.dart';
 
 class Calculator extends StatefulWidget {
   const Calculator({super.key});
@@ -19,7 +20,7 @@ class _CalculatorPopupState extends State<Calculator> {
     ['7', '8', '9', '×'],
     ['4', '5', '6', '-'],
     ['1', '2', '3', '+'],
-    ['.', '0','00','='],
+    ['.', '0', '00', '='],
   ];
 
   final List<String> _scientificButtons = [
@@ -64,17 +65,19 @@ class _CalculatorPopupState extends State<Calculator> {
           .replaceAll('x³', '^3')
           .replaceAll('e', '2.71828')
           .replaceAll('00', '*100')
-.replaceAll('|x|', 'abs')
-;
+          .replaceAll('|x|', 'abs');
 
-      Parser p = Parser();
-      Expression exp = p.parse(expression);
-      ContextModel cm = ContextModel();
-      double eval = exp.evaluate(EvaluationType.REAL, cm);
+      // Use the correct API for math_expressions
+      final parser = Parser();
+      final exp = parser.parse(expression);
+      final cm = ContextModel();
+      final result = exp.evaluate(EvaluationType.REAL, cm);
 
       setState(() {
         _output =
-            eval % 1 == 0 ? eval.toInt().toString() : eval.toStringAsFixed(4);
+            result % 1 == 0
+                ? result.toInt().toString()
+                : result.toStringAsFixed(4);
       });
     } catch (e) {
       setState(() {
@@ -112,14 +115,21 @@ class _CalculatorPopupState extends State<Calculator> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       reverse: true,
-                      child: Text(_input, style: const TextStyle(fontSize: 20)),
+                      child: Text(
+                        _input,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontFamily: FontController().currentFontFamily,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _output,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
+                      fontFamily: FontController().currentFontFamily,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
                     ),
@@ -167,7 +177,8 @@ class _CalculatorPopupState extends State<Calculator> {
                       const SizedBox(width: 4),
                       Text(
                         _showScientific ? 'Hide functions' : 'Show functions',
-                        style: const TextStyle(
+                        style: TextStyle(
+                          fontFamily: FontController().currentFontFamily,
                           fontSize: 14,
                           color: Colors.blue,
                         ),
@@ -194,13 +205,11 @@ class _CalculatorPopupState extends State<Calculator> {
                   final text = _basicButtons
                       .expand((row) => row)
                       .elementAt(index);
-                //  if (text == '=') return _buildButtonEquals('=');
+                  //  if (text == '=') return _buildButtonEquals('=');
                   return _buildButton(text);
                 },
               ),
             ),
-
-       
           ],
         ),
       ),
@@ -234,6 +243,7 @@ class _CalculatorPopupState extends State<Calculator> {
             text,
             style: TextStyle(
               fontSize: 18,
+              fontFamily: FontController().currentFontFamily,
               fontWeight: FontWeight.bold,
               color:
                   buttonColor.computeLuminance() > 0.5
@@ -245,8 +255,6 @@ class _CalculatorPopupState extends State<Calculator> {
       ),
     );
   }
-
- 
 }
 
 // طريقة الاستخدام من أي مكان في التطبيق:

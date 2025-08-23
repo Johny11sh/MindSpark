@@ -16,23 +16,23 @@ final SharedPrefs sharedPrefs = SharedPrefs.instance;
 
 List<OnBoardingModel> OnBoardingList = [
   OnBoardingModel(
-    title: "shdfksdh",
+    title: "Simplicity".tr,
     subtitle:
-        "Your personal collection for your favorite subjects' lectures, that include videos filmed by the teachers themselves that are conclusive of your learning process, guaranteeing progress and utter improvement."
+        "With the rise of complicated courses and infinite ways to study them, this app with its unique UI presents you with your very own repository of your favorite courses published by your favorite teachers."
             .tr,
     image: ImageAssets.OnBoardingLottie1,
   ),
   OnBoardingModel(
-    title: "shdfksdh",
+    title: "Convenience".tr,
     subtitle:
-        "Listen and watch as the teachers guide you in a comprehensive step-by-step journey for the subjects of your picking."
+        "All lectures, all courses, all the information you could possibly need is all here. Just log in, and continue where you left off in the latest courses made by the most reputable tutors."
             .tr,
     image: ImageAssets.OnBoardingLottie2,
   ),
   OnBoardingModel(
-    title: "shdfksdh",
+    title: "Guarantee".tr,
     subtitle:
-        "Improve on your cognitive and creative abilities with the help of this compact yet simple app, each lecture right at your fingertips and at-the-ready, even when offline."
+        "With no unnecessary or bloated info, this application is a sure-fire way to leave the exam hall feeling self-confidence. Just tune in to whatever course you're in need of, and rest assured, you'll leave more informed than before."
             .tr,
     image: ImageAssets.OnBoardingLottie3,
   ),
@@ -65,16 +65,21 @@ class OnBoarding extends StatelessWidget {
         color: Color.fromARGB(255, 40, 41, 61),
         child: Column(
           children: [
-            SizedBox(height: 50),
-            
-             Container(
+            const SizedBox(height: 50),
+
+            Container(
               alignment: Alignment.topRight,
-              child: MaterialButton(onPressed: (){
-                onBoardingController.onSkip(2);
-              },
-              child: Text("Skip",style:TextStyle(color: Color.fromARGB(255, 210, 209, 224),) ),
-              )),
-              
+              child: MaterialButton(
+                onPressed: () {
+                  onBoardingController.onSkip(2);
+                },
+                child: Text(
+                  "Skip".tr,
+                  style: TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
+                ),
+              ),
+            ),
+
             Expanded(
               flex: 6,
               child: PageView.builder(
@@ -89,8 +94,11 @@ class OnBoarding extends StatelessWidget {
                         Container(
                           width: Get.width,
                           alignment: Alignment.center,
-                          child: 
-                          Lottie.asset(OnBoardingList[i].image!,width: 300,height:300)
+                          child: Lottie.asset(
+                            OnBoardingList[i].image!,
+                            width: 300,
+                            height: 300,
+                          ),
                           // Image.asset(
                           //   OnBoardingList[i].image!,
                           //   height: 300,
@@ -101,43 +109,47 @@ class OnBoarding extends StatelessWidget {
                           width: Get.width,
                           alignment: Alignment.center,
                           child: Container(
-                              padding: EdgeInsets.only(left:30,right:30),
-                              child: Text(
-                                OnBoardingList[i].title!.tr,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 210, 209, 224),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 20,
-                                ),
+                            padding: const EdgeInsets.only(left: 30, right: 30),
+                            child: Text(
+                              OnBoardingList[i].title!.tr,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 210, 209, 224),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
                               ),
                             ),
+                          ),
                         ),
                         Container(
                           width: Get.width,
                           alignment: Alignment.center,
                           child: Container(
-                              padding: EdgeInsets.only(left:30,right:30,top:20),
-                              child: Text(
-                                OnBoardingList[i].subtitle!.tr,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 210, 209, 224),
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 16,
-                                ),
+                            padding: const EdgeInsets.only(
+                              left: 30,
+                              right: 30,
+                              top: 20,
+                            ),
+                            child: Text(
+                              OnBoardingList[i].subtitle!.tr,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 210, 209, 224),
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
                               ),
                             ),
+                          ),
                         ),
                       ],
                     ),
               ),
             ),
-            SizedBox(height:Get.height/100),
+            SizedBox(height: Get.height / 100),
             Expanded(
               flex: 3,
-              child: GetBuilder<OnboardingController>( 
-                builder: 
+              child: GetBuilder<OnboardingController>(
+                builder:
                     (controller) => Column(
                       children: [
                         Row(
@@ -147,7 +159,7 @@ class OnBoarding extends StatelessWidget {
                               OnBoardingList.length,
                               (index) => AnimatedContainer(
                                 duration: Duration(milliseconds: 400),
-                                margin: EdgeInsets.all(3),
+                                margin: const EdgeInsets.all(3),
                                 width: controller.currentPage == index ? 30 : 8,
                                 height: 8,
                                 decoration: BoxDecoration(
@@ -163,7 +175,7 @@ class OnBoarding extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(height: Get.height/12,),
+                        SizedBox(height: Get.height / 12),
                         MaterialButton(
                           onPressed: () {
                             onBoardingController.next();
@@ -179,7 +191,7 @@ class OnBoarding extends StatelessWidget {
                           color: Color.fromARGB(255, 210, 209, 224),
                           clipBehavior: Clip.hardEdge,
                           child: Text(
-                             controller.currentPage == OnBoardingList.length - 1
+                            controller.currentPage == OnBoardingList.length - 1
                                 ? "Get Started".tr
                                 : "Next".tr,
                             textAlign: TextAlign.center,

@@ -1,14 +1,12 @@
+// ignore_for_file: file_names, avoid_print
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:learning_management_system/main.dart';
-import 'package:learning_management_system/model/CFavoriteModel.dart';
-
+import '../model/CFavoriteModel.dart';
 import '../model/TFavoriteModel.dart';
 import '../services/SharedPrefs.dart';
 import 'package:http/http.dart' as http;
-
 import '../view/NavBar.dart';
 
 class ViewFavoriteController extends GetxController {
@@ -46,15 +44,19 @@ class ViewFavoriteController extends GetxController {
       List responseData = responseBody["favorites"];
       print(responseData);
       tFav.addAll(responseData.map((e) => TFavoriteModel.fromJson(e)));
-      loading = false ;
+      loading = false;
       update();
     } else {
       Get.defaultDialog(
-        title: "Error",
+        title: "Error".tr,
         backgroundColor: Colors.red,
-        middleText: "Check Connections",
+        middleText: "Check Connections".tr,
       );
-      Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
+      Get.snackbar(
+        "Error".tr,
+        "Check Connections".tr,
+        backgroundColor: Colors.red,
+      );
     }
   }
 
@@ -73,19 +75,21 @@ class ViewFavoriteController extends GetxController {
       var responseBody = jsonDecode(response.body);
       List responseData = responseBody["favorites"];
       cFav.addAll(responseData.map((e) => CFavoriteModel.fromJson(e)));
-      loading2 = false ;
+      loading2 = false;
       update();
     } else {
       Get.defaultDialog(
-        title: "Error",
+        title: "Error".tr,
         backgroundColor: Colors.red,
-        middleText: "Check Connections",
+        middleText: "Check Connections".tr,
       );
-      Get.snackbar("Error", "Check Connections", backgroundColor: Colors.red);
+      Get.snackbar(
+        "Error".tr,
+        "Check Connections".tr,
+        backgroundColor: Colors.red,
+      );
     }
   }
-
-
 
   @override
   void onInit() {

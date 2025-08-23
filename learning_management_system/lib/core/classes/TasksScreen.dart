@@ -1,9 +1,13 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:learning_management_system/controller/TaskController.dart';
-import 'package:learning_management_system/locale/LocaleController.dart';
-import 'package:learning_management_system/themes/ThemeController.dart';
+import '../../controller/TaskController.dart';
+import '../../locale/LocaleController.dart';
+import '../../themes/ThemeController.dart';
+import '../../themes/Themes.dart';
+import '../../controller/FontController.dart';
 
 class TasksScreen extends StatelessWidget {
   TasksScreen({super.key});
@@ -13,105 +17,235 @@ class TasksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TaskController taskController = Get.put(TaskController());
-    LocaleController localeController = Get.put(LocaleController());
+    final bool isLightTheme =
+        themeController.initialTheme == Themes.customLightTheme;
+    final Color primaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
+    final Color secondaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 210, 209, 224)
+            : const Color.fromARGB(255, 40, 41, 61);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          locale: localeController.initialLang,
-          "Task System".tr,
+      body: Container(
+        color: primaryColor,
+        child: Column(
+          children: [
+            Row(
+              spacing: 10,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back_rounded, color: secondaryColor),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                SizedBox(
+                  // padding: const EdgeInsets.only(top: 25),
+                  height: 100,
+                  child: Center(
+                    child: Text(
+                      "Tasks Manager".tr,
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        fontFamily: FontController().currentFontFamily,
+                        color: secondaryColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 23,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 25),
+              ],
+            ),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: secondaryColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(60),
+                    topRight: Radius.circular(60),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Obx(() {
+                      if (taskController.isLoading.value) {
+                        return Expanded(
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: primaryColor,
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (taskController.errorMessage.isNotEmpty) {
+                        return Expanded(
+                          child: Center(
+                            child: Text(
+                              'حدث خطأ: ${taskController.errorMessage.value}',
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontFamily: FontController().currentFontFamily,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      switch (taskController.currentIndex.value) {
+                        case 0:
+                          return const Expanded(child: TaskListScreen());
+                        case 1:
+                          return const Expanded(child: CompletedTasksScreen());
+                        case 2:
+                          return const Expanded(child: TrashScreen());
+                        default:
+                          return const Expanded(child: TaskListScreen());
+                      }
+                    }),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: taskController.fetchTasks,
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showAddTaskDialog(),
-          ),
-        ],
       ),
-      body: Obx(() {
-        if (taskController.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      bottomNavigationBar: Obx(() {
+        final bool isLightTheme =
+            themeController.initialTheme == Themes.customLightTheme;
+        final Color primaryColor =
+            isLightTheme
+                ? const Color.fromARGB(255, 40, 41, 61)
+                : const Color.fromARGB(255, 210, 209, 224);
+        final Color secondaryColor =
+            isLightTheme
+                ? const Color.fromARGB(255, 210, 209, 224)
+                : const Color.fromARGB(255, 40, 41, 61);
 
-        if (taskController.errorMessage.isNotEmpty) {
-          return Center(
-            child: Text('حدث خطأ: ${taskController.errorMessage.value}'),
-          );
-        }
-
-        switch (taskController.currentIndex.value) {
-          case 0:
-            return const TaskListScreen();
-          case 1:
-            return const CompletedTasksScreen();
-          case 2:
-            return const TrashScreen();
-          default:
-            return const TaskListScreen();
-        }
-      }),
-      bottomNavigationBar: Obx(
-        () => BottomNavigationBar(
+        return BottomNavigationBar(
           currentIndex: taskController.currentIndex.value,
           onTap: (index) => taskController.currentIndex.value = index,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.list_alt,color: Colors.white,), label: "Tasks" ),
-            BottomNavigationBarItem( icon: Icon(Icons.check_circle,color: Colors.white), label: "Completed", ),
-            BottomNavigationBarItem(icon: Icon(Icons.delete,color: Colors.white), label: "Deleted"),
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.list_alt, color: secondaryColor),
+              label: "Tasks".tr,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.check_circle, color: secondaryColor),
+              label: "Completed".tr,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.delete, color: secondaryColor),
+              label: "Deleted".tr,
+            ),
           ],
-          backgroundColor: Color(0xFF28293D),
-          selectedItemColor: Colors.white ,
-          unselectedItemColor: Colors.black,
-        ),
+          backgroundColor: primaryColor,
+          selectedItemColor: secondaryColor,
+          unselectedItemColor: secondaryColor.withOpacity(0.7),
+        );
+      }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddTaskDialog(),
+        backgroundColor: primaryColor,
+        child: Icon(Icons.add, color: secondaryColor),
       ),
     );
   }
 
   void _showAddTaskDialog() {
     final TaskController taskController = Get.find();
+    final ThemeController themeController = Get.find<ThemeController>();
+    final bool isLightTheme =
+        themeController.initialTheme == Themes.customLightTheme;
+    final Color primaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
+    final Color secondaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 210, 209, 224)
+            : const Color.fromARGB(255, 40, 41, 61);
+
     final titleController = TextEditingController();
     final descController = TextEditingController();
     Rx<DateTime?> dueDate = Rx<DateTime?>(DateTime.now());
     RxDouble estimatedHours = 1.0.obs;
-    
+
     Get.dialog(
-      AlertDialog(
-        title: Text("Add New Task".tr,locale:
-    localeController.initialLang,),
-        content: SingleChildScrollView(
+      Dialog(
+        backgroundColor: secondaryColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: "Task Title",
-                  border: OutlineInputBorder(),
+              Text(
+                "Add New Task".tr,
+                style: TextStyle(
+                  fontFamily: FontController().currentFontFamily,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: "Task Title".tr,
+                  labelStyle: TextStyle(color: primaryColor),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                style: TextStyle(color: primaryColor),
+              ),
+              const SizedBox(height: 16),
+              TextField(
                 controller: descController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: "Description",
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: "Description".tr,
+                  labelStyle: TextStyle(color: primaryColor),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
+                style: TextStyle(color: primaryColor),
               ),
               const SizedBox(height: 16),
               Obx(
                 () => ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: const Text("Due Date"),
+                  leading: Icon(Icons.calendar_today, color: primaryColor),
+                  title: Text(
+                    "Due Date".tr,
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontFamily: FontController().currentFontFamily,
+                    ),
+                  ),
                   subtitle: Text(
                     dueDate.value == null
-                        ? "Not Date Specified"
+                        ? "Not Date Specified".tr
                         : DateFormat.yMd().add_jm().format(dueDate.value!),
+                    style: TextStyle(
+                      color: primaryColor.withOpacity(0.7),
+                      fontFamily: FontController().currentFontFamily,
+                    ),
                   ),
                   onTap: () async {
                     final selectedDate = await showDatePicker(
@@ -145,42 +279,72 @@ class TasksScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Obx(
                 () => ListTile(
-                  leading: const Icon(Icons.timer),
-                  title: const Text("Expected Duration(hours):"),
+                  leading: Icon(Icons.timer, color: primaryColor),
+                  title: Text(
+                    "Expected Duration(hours):".tr,
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontFamily: FontController().currentFontFamily,
+                    ),
+                  ),
                   subtitle: Slider(
                     value: estimatedHours.value,
                     min: 0.5,
                     max: 10,
                     divisions: 19,
-
+                    activeColor: primaryColor,
+                    inactiveColor: primaryColor.withOpacity(0.3),
                     label: estimatedHours.value.toStringAsFixed(1),
                     onChanged: (value) => estimatedHours.value = value,
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text(
+                      "Cancel".tr,
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontFamily: FontController().currentFontFamily,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: secondaryColor,
+                    ),
+                    onPressed: () {
+                      if (titleController.text.isEmpty) {
+                        Get.snackbar("Error".tr, "Please Enter Task Title.".tr);
+                        return;
+                      }
+
+                      taskController.addTask(
+                        titleController.text,
+                        descController.text,
+                        estimatedHours.value,
+                        DateFormat.yMd().add_jm().format(dueDate.value!),
+                      );
+                      Get.back();
+                    },
+                    child: Text(
+                      "Add".tr,
+                      style: TextStyle(
+                        fontFamily: FontController().currentFontFamily,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              if (titleController.text.isEmpty) {
-                Get.snackbar("Error", "Please Enter Task Title.");
-                return;
-              }
-
-              taskController.addTask(
-                titleController.text,
-                descController.text,
-                estimatedHours.value,
-                DateFormat.yMd().add_jm().format(dueDate.value!),
-              );
-              taskController.fetchTasks;
-            },
-            child: const Text("Add"),
-          ),
-        ],
       ),
     );
   }
@@ -192,13 +356,29 @@ class TaskListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TaskController taskController = Get.find();
+    final ThemeController themeController = Get.find<ThemeController>();
+    final bool isLightTheme =
+        themeController.initialTheme == Themes.customLightTheme;
+    final Color primaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
 
     return Obx(() {
       if (taskController.activeTasks.isEmpty) {
-        return const Center(child: Text("There is no Current task"));
+        return Center(
+          child: Text(
+            "There is no Current task".tr,
+            style: TextStyle(
+              color: primaryColor,
+              fontFamily: FontController().currentFontFamily,
+            ),
+          ),
+        );
       }
 
       return ListView.builder(
+        padding: const EdgeInsets.all(16),
         itemCount: taskController.activeTasks.length,
         itemBuilder: (context, index) {
           final task = taskController.activeTasks[index];
@@ -217,10 +397,31 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TaskController taskController = Get.find();
+    final ThemeController themeController = Get.find<ThemeController>();
+    final bool isLightTheme =
+        themeController.initialTheme == Themes.customLightTheme;
+    final Color primaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
+    final Color secondaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 210, 209, 224)
+            : const Color.fromARGB(255, 40, 41, 61);
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 2,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -232,29 +433,45 @@ class TaskCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     task.title,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontFamily: FontController().currentFontFamily,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
+                      color: primaryColor,
                     ),
                   ),
                 ),
-                Checkbox(
-                  value: task.isChecked,
-                  onChanged: (value) => taskController.toggleComplete(task.id),
+                // Checkbox(
+                //   value: task.isChecked,
+                //   activeColor: primaryColor,
+                //   onChanged: (value) => taskController.toggleComplete(task.id),
+                // ),
+                IconButton(
+                  icon: Icon(Icons.check_box_outlined, color: primaryColor),
+                  onPressed: () => taskController.toggleComplete(task.id),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(task.description),
+            Text(
+              task.description,
+              style: TextStyle(
+                color: primaryColor.withOpacity(0.7),
+                fontFamily: FontController().currentFontFamily,
+              ),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(Icons.date_range, size: 16),
+                Icon(Icons.date_range, size: 16, color: primaryColor),
                 const SizedBox(width: 4),
                 Text(
-                  'Creation Date: ${DateFormat.yMd().format(task.createdAt)}',
-                  style: const TextStyle(fontSize: 12),
+                  '${"Creation Date".tr}: ${DateFormat.yMd().format(task.createdAt)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: primaryColor,
+                    fontFamily: FontController().currentFontFamily,
+                  ),
                 ),
               ],
             ),
@@ -262,22 +479,30 @@ class TaskCard extends StatelessWidget {
             if (task.dueDate != null)
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, size: 16),
+                  Icon(Icons.calendar_today, size: 16, color: primaryColor),
                   const SizedBox(width: 4),
                   Text(
-                    'Delivery Date: ${DateFormat.yMd().add_jm().format(task.dueDate!)}',
-                    style: const TextStyle(fontSize: 12),
+                    '${"Delivery Date".tr}: ${DateFormat.yMd().add_jm().format(task.dueDate!)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: primaryColor,
+                      fontFamily: FontController().currentFontFamily,
+                    ),
                   ),
                 ],
               ),
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.timer, size: 16),
+                Icon(Icons.timer, size: 16, color: primaryColor),
                 const SizedBox(width: 4),
                 Text(
-                  'Expected Duration: ${task.estimatedHours} hour',
-                  style: const TextStyle(fontSize: 12),
+                  '${"Expected Duration".tr}: ${task.estimatedHours} ${"hour".tr}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: primaryColor,
+                    fontFamily: FontController().currentFontFamily,
+                  ),
                 ),
               ],
             ),
@@ -285,10 +510,7 @@ class TaskCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 IconButton(
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Color.fromARGB(255, 252, 75, 75),
-                  ),
+                  icon: Icon(Icons.delete, color: primaryColor),
                   onPressed: () => taskController.moveToTrash(task.id),
                 ),
               ],
@@ -306,24 +528,55 @@ class CompletedTasksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TaskController taskController = Get.find();
+    final ThemeController themeController = Get.find<ThemeController>();
+    final bool isLightTheme =
+        themeController.initialTheme == Themes.customLightTheme;
+    final Color primaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
 
     return Obx(() {
       if (taskController.completedTasks.isEmpty) {
-        return const Center(child: Text('There is no Task Complete'));
+        return Center(
+          child: Text(
+            'There is no Task Complete'.tr,
+            style: TextStyle(
+              color: primaryColor,
+              fontFamily: FontController().currentFontFamily,
+            ),
+          ),
+        );
       }
 
       return ListView.builder(
+        padding: const EdgeInsets.all(16),
         itemCount: taskController.completedTasks.length,
         itemBuilder: (context, index) {
           final task = taskController.completedTasks[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.green[50],
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: ListTile(
-              title: Text(task.title),
-              subtitle: Text(task.description),
+              title: Text(
+                task.title,
+                style: TextStyle(
+                  color: primaryColor,
+                  fontFamily: FontController().currentFontFamily,
+                ),
+              ),
+              subtitle: Text(
+                task.description,
+                style: TextStyle(
+                  color: primaryColor.withOpacity(0.7),
+                  fontFamily: FontController().currentFontFamily,
+                ),
+              ),
               trailing: IconButton(
-                icon: const Icon(Icons.undo),
+                icon: Icon(Icons.undo, color: primaryColor),
                 onPressed: () => taskController.toggleComplete(task.id),
               ),
             ),
@@ -340,13 +593,29 @@ class TrashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TaskController taskController = Get.find();
+    final ThemeController themeController = Get.find<ThemeController>();
+    final bool isLightTheme =
+        themeController.initialTheme == Themes.customLightTheme;
+    final Color primaryColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
 
     return Obx(() {
       if (taskController.deletedTasks.isEmpty) {
-        return const Center(child: Text('Recycle Bin is Empty'));
+        return Center(
+          child: Text(
+            'Recycle Bin is Empty'.tr,
+            style: TextStyle(
+              color: primaryColor,
+              fontFamily: FontController().currentFontFamily,
+            ),
+          ),
+        );
       }
 
       return ListView.builder(
+        padding: const EdgeInsets.all(16),
         itemCount: taskController.deletedTasks.length,
         itemBuilder: (context, index) {
           final task = taskController.deletedTasks[index];
@@ -355,30 +624,55 @@ class TrashScreen extends StatelessWidget {
                   ? 30 - DateTime.now().difference(task.trashed_at!).inDays
                   : 30;
 
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.grey[200],
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: ListTile(
-              title: Text(task.title),
+              title: Text(
+                task.title,
+                style: TextStyle(
+                  color: primaryColor,
+                  fontFamily: FontController().currentFontFamily,
+                ),
+              ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Text('سيتم حذفها نهائياً بعد $daysLeft يوم'),
                   Text(
-                    'Creation Date: ${DateFormat.yMd().format(task.createdAt)}',
+                    '${"Will be permanently deleted after".tr} $daysLeft ${"days".tr}',
+                    style: TextStyle(
+                      color: primaryColor.withOpacity(0.7),
+                      fontFamily: FontController().currentFontFamily,
+                    ),
                   ),
-                  Text(task.description),
+                  Text(
+                    '${"Creation Date".tr}: ${DateFormat.yMd().format(task.createdAt)}',
+                    style: TextStyle(
+                      color: primaryColor.withOpacity(0.7),
+                      fontFamily: FontController().currentFontFamily,
+                    ),
+                  ),
+                  Text(
+                    task.description,
+                    style: TextStyle(
+                      color: primaryColor.withOpacity(0.7),
+                      fontFamily: FontController().currentFontFamily,
+                    ),
+                  ),
                 ],
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.restore),
+                    icon: Icon(Icons.restore, color: primaryColor),
                     onPressed: () => taskController.restoreTask(task.id),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete_forever),
+                    icon: Icon(Icons.delete_forever, color: primaryColor),
                     onPressed: () => taskController.permanentDelete(task.id),
                   ),
                 ],

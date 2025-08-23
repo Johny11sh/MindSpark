@@ -1,8 +1,11 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:learning_management_system/controller/ViewFavoriteController.dart';
-import 'package:learning_management_system/core/function/loadingLottie.dart';
-import 'package:learning_management_system/core/function/noDataLottie.dart';
+import '../controller/ViewFavoriteController.dart';
+import '../controller/FontController.dart';
+import '../core/function/loadingLottie.dart';
+import '../core/function/noDataLottie.dart';
 
 import '../themes/Themes.dart';
 import '../widget/ViewCFavoriteCard.dart';
@@ -25,7 +28,7 @@ class _FavoriteState extends State<Favorites> {
 
   @override
   Widget build(BuildContext context) {
-    ViewFavoriteController controller = Get.put(ViewFavoriteController());
+    Get.put(ViewFavoriteController());
     return Scaffold(
       body: GetBuilder<ViewFavoriteController>(
         builder: (controller) {
@@ -42,7 +45,7 @@ class _FavoriteState extends State<Favorites> {
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.only(top: 30),
+                    padding: const EdgeInsets.only(top: 30),
                     height: 100,
                     // color: Colors.red,
                     child: Row(
@@ -70,6 +73,8 @@ class _FavoriteState extends State<Favorites> {
                                 style: Theme.of(
                                   context,
                                 ).textTheme.bodySmall!.copyWith(
+                                  fontFamily:
+                                      FontController().currentFontFamily,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 23,
                                   color:
@@ -85,10 +90,10 @@ class _FavoriteState extends State<Favorites> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
                   Expanded(
                     child: Container(
-                      padding: EdgeInsets.only(left: 20, right: 20),
+                      padding: const EdgeInsets.only(left: 20, right: 20),
                       decoration: BoxDecoration(
                         color:
                             themeController.initialTheme ==
@@ -102,7 +107,7 @@ class _FavoriteState extends State<Favorites> {
                       ),
                       child: Column(
                         children: [
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           Container(
                             width: 200,
                             height: 50,
@@ -146,6 +151,9 @@ class _FavoriteState extends State<Favorites> {
                                       child: Text(
                                         "Teacher",
                                         style: TextStyle(
+                                          fontFamily:
+                                              FontController()
+                                                  .currentFontFamily,
                                           fontSize: 18,
                                           color:
                                               controller.favCh == "teacher"
@@ -198,6 +206,9 @@ class _FavoriteState extends State<Favorites> {
                                       child: Text(
                                         "Course",
                                         style: TextStyle(
+                                          fontFamily:
+                                              FontController()
+                                                  .currentFontFamily,
                                           fontSize: 18,
                                           color:
                                               controller.favCh == "teacher"
@@ -221,7 +232,7 @@ class _FavoriteState extends State<Favorites> {
                               ],
                             ),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Expanded(
                             child: ListView(
                               shrinkWrap: true,

@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -16,7 +16,6 @@ import '../../themes/Themes.dart';
 import '../../controller/NetworkController.dart';
 import '../../locale/LocaleController.dart';
 import '../../view/NavBar.dart';
-
 
 class RecommendedCourses extends StatefulWidget {
   const RecommendedCourses({super.key});
@@ -32,7 +31,7 @@ class _RecommendedCoursesState extends State<RecommendedCourses> {
   final LocaleController localeController = Get.find<LocaleController>();
 
   List<Map<String, dynamic>> recommendedCourses = [];
-  final Map<int, Uint8List> recommendedCoursesImages = {};
+  // final Map<int, Uint8List> recommendedCoursesImages = {};
   List<Map<String, dynamic>> cachedRecommendedCourses = [];
 
   @override
@@ -77,58 +76,10 @@ class _RecommendedCoursesState extends State<RecommendedCourses> {
       }
 
       // Load images for recommended courses
-      await _loadRecommendedCoursesImages();
+      // await _loadRecommendedCoursesImages();
     } catch (e) {
       debugPrint("Error loading cached data: $e");
     }
-  }
-
-  Future<void> _loadRecommendedCoursesImages() async {
-    for (var course in recommendedCourses) {
-      final imageKey = 'recommended_course_image_${course['id']}';
-      final cachedImage = sharedPrefs.prefs.getString(imageKey);
-      if (cachedImage != null && mounted) {
-        setState(() {
-          recommendedCoursesImages[course['id']] = base64Decode(cachedImage);
-        });
-      }
-    }
-  }
-
-  Future<void> _cacheRecommendedCourses() async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'cached_recommended_courses',
-        jsonEncode(recommendedCourses),
-      );
-      cachedRecommendedCourses = List.from(recommendedCourses);
-    } catch (e) {
-      debugPrint("Error caching recommended courses: $e");
-    }
-  }
-
-  Future<void> _cacheRecommendedCourseImage(
-    int courseId,
-    Uint8List imageBytes,
-  ) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'recommended_course_image_$courseId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching recommended course image: $e");
-    }
-  }
-
-  void showErrorSnackbar(String message) {
-    Get.rawSnackbar(
-      messageText: Text(message),
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
-      backgroundColor: Colors.red[800]!,
-      icon: const Icon(Icons.error_outline, color: Colors.white),
-    );
   }
 
   Future<void> getRecommendedCoursesData() async {
@@ -175,19 +126,6 @@ class _RecommendedCoursesState extends State<RecommendedCourses> {
           });
           await _cacheRecommendedCourses();
         }
-
-        await Future.wait(
-          recommendedCoursesList.map((course) async {
-            final courseId = course['id'] as int;
-            final imageBytes = await getRecommendedCourseImage(course);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                recommendedCoursesImages[courseId] = imageBytes;
-              });
-              await _cacheRecommendedCourseImage(courseId, imageBytes);
-            }
-          }),
-        );
       } else if (response.statusCode == 401) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Get.offAll(() => LogIn());
@@ -231,54 +169,26 @@ class _RecommendedCoursesState extends State<RecommendedCourses> {
     }
   }
 
-  Future<Uint8List?> getRecommendedCourseImage(dynamic course) async {
-    final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString(
-      'recommended_course_image_$courseId',
-    );
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-
+  Future<void> _cacheRecommendedCourses() async {
     try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
+      await sharedPrefs.prefs.setString(
+        'cached_recommended_courses',
+        jsonEncode(recommendedCourses),
       );
-      final url = '$baseUrl/api/getcourseimage/$courseId';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Recommended course image not found for ID: $courseId");
-        return null;
-      } else {
-        throw Exception("Image fetch failed: ${response.statusCode}");
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for recommended course $courseId");
-      return null;
+      cachedRecommendedCourses = List.from(recommendedCourses);
     } catch (e) {
-      debugPrint("Error fetching recommended course image: $e");
-      return null;
+      debugPrint("Error caching recommended courses: $e");
     }
+  }
+
+  void showErrorSnackbar(String message) {
+    Get.rawSnackbar(
+      messageText: Text(message),
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 3),
+      backgroundColor: Colors.red[800]!,
+      icon: const Icon(Icons.error_outline, color: Colors.white),
+    );
   }
 
   @override
@@ -298,153 +208,190 @@ class _RecommendedCoursesState extends State<RecommendedCourses> {
             icon: Icon(Icons.arrow_back),
           ),
         ),
-        body: recommendedCourses.isEmpty
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 40, 41, 61)
-                      : Color.fromARGB(255, 210, 209, 224),
-                ),
-              )
-            : RefreshIndicator(
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 40, 41, 61)
-                    : Color.fromARGB(255, 210, 209, 224),
-                backgroundColor: themeController.initialTheme ==
-                        Themes.customLightTheme
-                    ? Color.fromARGB(255, 210, 209, 224)
-                    : Color.fromARGB(255, 46, 48, 97),
-                onRefresh: () async {
-                  await networkController.checkConnectivityManually();
-                  await getRecommendedCoursesData();
-                },
-                child: ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: recommendedCourses.length + 1, // +1 for bottom spacing
-                  itemBuilder: (context, index) {
-                    if (index == recommendedCourses.length) {
-                      // Bottom spacing item
-                      return SizedBox(height: 30);
-                    }
+        body:
+            recommendedCourses.isEmpty
+                ? Center(
+                  child: CircularProgressIndicator(
+                    color:
+                        themeController.initialTheme == Themes.customLightTheme
+                            ? Color.fromARGB(255, 40, 41, 61)
+                            : Color.fromARGB(255, 210, 209, 224),
+                  ),
+                )
+                : RefreshIndicator(
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                  backgroundColor:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 210, 209, 224)
+                          : Color.fromARGB(255, 46, 48, 97),
+                  onRefresh: () async {
+                    await networkController.checkConnectivityManually();
+                    await getRecommendedCoursesData();
+                  },
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: recommendedCourses.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == recommendedCourses.length) {
+                        return SizedBox(height: 30);
+                      }
 
-                    int courseId = recommendedCourses[index]["id"];
-                    Uint8List? imageBytes = recommendedCoursesImages[courseId];
+                      int courseId = recommendedCourses[index]["id"];
+                      // Uint8List? imageBytes =
+                      //     recommendedCoursesImages[courseId];
 
-                    return Container(
-                      margin: EdgeInsets.only(bottom: 16),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CoursesLessons(
-                                CoursesData: recommendedCourses[index],
-                                index: index, CoursesImage: null,
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => CoursesLessons(
+                                      CoursesData: recommendedCourses[index],
+                                      index: index,
+                                    ),
                               ),
-                            ),
-                          );
-                        },
-                        child: Card(
-                          elevation: 4,
-                          child: Container(
-                            height: 120,
-                            child: Row(
-                              children: [
-                                // Course Image
-                                Container(
-                                  width: 120,
-                                  height: 120,
-                                  child: imageBytes != null
-                                      ? Image.memory(
-                                          imageBytes,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Image.asset(
+                            );
+                          },
+                          child: Card(
+                            elevation: 4,
+                            child: SizedBox(
+                              height: 120,
+                              child: Row(
+                                children: [
+                                  // Course Image
+                                  SizedBox(
+                                    width: 120,
+                                    height: 120,
+                                    child:
+                                        recommendedCourses[index]["image"] !=
+                                                null
+                                            ? CachedNetworkImage(
+                                              imageUrl:
+                                                  "$mainIP/${recommendedCourses[index]["image"]}",
+                                              height: 60,
+                                              width: 60,
+                                            )
+                                            : Image.asset(
                                               ImageAssets.subject,
                                               fit: BoxFit.cover,
-                                            );
-                                          },
-                                        )
-                                      : Image.asset(
-                                          ImageAssets.subject,
-                                          fit: BoxFit.cover,
-                                        ),
-                                ),
-                                // Course Details
-                                Expanded(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "${recommendedCourses[index]["name"]}".tr,
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61)
-                                                : Color.fromARGB(255, 210, 209, 224),
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        SizedBox(height: 8),
-                                        Text(
-                                          "Course ID: ${recommendedCourses[index]["id"]}",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: themeController.initialTheme ==
-                                                    Themes.customLightTheme
-                                                ? Color.fromARGB(255, 40, 41, 61).withOpacity(0.7)
-                                                : Color.fromARGB(255, 210, 209, 224).withOpacity(0.7),
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.star,
-                                              size: 16,
-                                              color: Colors.amber,
                                             ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              "Recommended",
-                                              style: TextStyle(
-                                                fontSize: 12,
+                                  ),
+                                  // Course Details
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "${recommendedCourses[index]["name"]}"
+                                                .tr,
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  themeController
+                                                              .initialTheme ==
+                                                          Themes
+                                                              .customLightTheme
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      ),
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            "Course ID: ${recommendedCourses[index]["id"]}",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  themeController
+                                                              .initialTheme ==
+                                                          Themes
+                                                              .customLightTheme
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      ).withValues(alpha: 0.7)
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      ).withValues(alpha: 0.7),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.star,
+                                                size: 16,
                                                 color: Colors.amber,
-                                                fontWeight: FontWeight.w500,
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                "Recommended",
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.amber,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                // Arrow Icon
-                                Padding(
-                                  padding: EdgeInsets.only(right: 16),
-                                  child: Icon(
-                                    Icons.arrow_forward_ios,
-                                    color: themeController.initialTheme ==
-                                            Themes.customLightTheme
-                                        ? Color.fromARGB(255, 40, 41, 61)
-                                        : Color.fromARGB(255, 210, 209, 224),
+                                  // Arrow Icon
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 16),
+                                    child: Icon(
+                                      Icons.arrow_forward_ios,
+                                      color:
+                                          themeController.initialTheme ==
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
       ),
     );
   }

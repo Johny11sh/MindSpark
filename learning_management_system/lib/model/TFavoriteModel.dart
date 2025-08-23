@@ -1,3 +1,4 @@
+// ignore_for_file: file_names
 class TFavoriteModel {
   int? id;
   String? name;
@@ -11,18 +12,19 @@ class TFavoriteModel {
   String? updatedAt;
   Pivot? pivot;
 
-  TFavoriteModel(
-      {this.id,
-        this.name,
-        this.userName,
-        this.countryCode,
-        this.number,
-        this.password,
-        this.image,
-        this.links,
-        this.createdAt,
-        this.updatedAt,
-        this.pivot});
+  TFavoriteModel({
+    this.id,
+    this.name,
+    this.userName,
+    this.countryCode,
+    this.number,
+    this.password,
+    this.image,
+    this.links,
+    this.createdAt,
+    this.updatedAt,
+    this.pivot,
+  });
 
   TFavoriteModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -35,23 +37,23 @@ class TFavoriteModel {
     links = json['links'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
-    pivot = json['pivot'] != null ? new Pivot.fromJson(json['pivot']) : null;
+    pivot = json['pivot'] != null ? Pivot.fromJson(json['pivot']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['userName'] = this.userName;
-    data['countryCode'] = this.countryCode;
-    data['number'] = this.number;
-    data['password'] = this.password;
-    data['image'] = this.image;
-    data['links'] = this.links;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    if (this.pivot != null) {
-      data['pivot'] = this.pivot!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['userName'] = userName;
+    data['countryCode'] = countryCode;
+    data['number'] = number;
+    data['password'] = password;
+    data['image'] = image;
+    data['links'] = links;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    if (pivot != null) {
+      data['pivot'] = pivot!.toJson();
     }
     return data;
   }
@@ -73,11 +75,11 @@ class Pivot {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['user_id'] = this.userId;
-    data['teacher_id'] = this.teacherId;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['user_id'] = userId;
+    data['teacher_id'] = teacherId;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
     return data;
   }
 }

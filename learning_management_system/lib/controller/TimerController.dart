@@ -1,3 +1,4 @@
+// ignore_for_file: file_names, avoid_print
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -20,7 +21,6 @@ class PomodoroController extends GetxController {
   Timer? _timer;
   static AudioPlayer? audioPlayer;
 
-  // final audioCache = AudioCache(prefix: 'assets/music/');
   bool _isSoundLoaded = false;
 
   @override
@@ -30,7 +30,6 @@ class PomodoroController extends GetxController {
     resetTimer();
     _preloadSound();
     audioPlayer = AudioPlayer();
-
   }
 
   Future<void> _preloadSound() async {
@@ -139,7 +138,7 @@ class PomodoroController extends GetxController {
       }
 
       await audioPlayer!.stop();
-      await audioPlayer!.play(AssetSource('assets/music/Alarm'));
+      await audioPlayer!.play(AssetSource('assets/music/Alarm.mp3'));
       print("Sound played successfully");
     } catch (e) {
       print('Error playing sound: $e');

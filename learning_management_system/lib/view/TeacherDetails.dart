@@ -1,19 +1,19 @@
-// ignore_for_file: non_constant_identifier_names, file_names, unnecessary_null_comparison
+// ignore_for_file: non_constant_identifier_names, file_names, unnecessary_null_comparison, dead_code
 
 import 'dart:typed_data';
-import 'package:flutter/cupertino.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:like_button/like_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 // import '../controller/NetworkController.dart';
 import '../controller/FavoriteController.dart';
+import '../controller/FontController.dart';
 import '../core/constants/ImageAssets.dart';
 import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/SharedPrefs.dart';
@@ -22,12 +22,12 @@ import 'NavBar.dart';
 class TeacherDetails extends StatefulWidget {
   final Map<String, dynamic> TeacherData;
 
-  final Uint8List? teacherImage;
+  // final Uint8List? teacherImage;
 
   const TeacherDetails({
     super.key,
     required this.TeacherData,
-    required this.teacherImage,
+    // required this.teacherImage,
   });
 
   @override
@@ -50,12 +50,16 @@ class _TeacherDetailsState extends State<TeacherDetails> {
   }
 
   Future<void> _fetchTeacherCourses() async {
-    setState(() { isCoursesLoading = true; });
+    setState(() {
+      isCoursesLoading = true;
+    });
     try {
-      final sharedPrefs = await SharedPrefs.instance;
+      final sharedPrefs = SharedPrefs.instance;
       final token = sharedPrefs.prefs.getString('token') ?? '';
       if (token.isEmpty) {
-        setState(() { isCoursesLoading = false; });
+        setState(() {
+          isCoursesLoading = false;
+        });
         return;
       }
       final cacheKey = 'cached_courses_${widget.TeacherData['id']}';
@@ -78,24 +82,35 @@ class _TeacherDetailsState extends State<TeacherDetails> {
       }
       // Fetch from API if online
       if (sharedPrefs.prefs.getBool('isConnected') == true) {
-        var baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: mainIP);
-        final APIurl = '$baseUrl/api/getteachercourses/${widget.TeacherData['id']}';
-        final response = await http.get(
-          Uri.parse(APIurl),
-          headers: {
-            'Authorization': "Bearer $token",
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Accept': 'application/json',
-          },
-        ).timeout(const Duration(seconds: 15));
+        var baseUrl = String.fromEnvironment(
+          'API_BASE_URL',
+          defaultValue: mainIP,
+        );
+        final APIurl =
+            '$baseUrl/api/getteachercourses/${widget.TeacherData['id']}';
+        final response = await http
+            .get(
+              Uri.parse(APIurl),
+              headers: {
+                'Authorization': "Bearer $token",
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Accept': 'application/json',
+              },
+            )
+            .timeout(const Duration(seconds: 15));
         if (response.statusCode == 200) {
           final responseBody = jsonDecode(response.body);
           final List<dynamic> coursesList =
-            responseBody is List ? responseBody : (responseBody['courses'] ?? [responseBody]);
+              responseBody is List
+                  ? responseBody
+                  : (responseBody['courses'] ?? [responseBody]);
           setState(() {
             teacherCourses = List<Map<String, dynamic>>.from(coursesList);
           });
-          await sharedPrefs.prefs.setString(cacheKey, jsonEncode(teacherCourses));
+          await sharedPrefs.prefs.setString(
+            cacheKey,
+            jsonEncode(teacherCourses),
+          );
           // Cache images
           for (final course in teacherCourses) {
             final imageKey = 'course_image_${course['id']}';
@@ -105,7 +120,10 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                 try {
                   final imgResp = await http.get(Uri.parse(imageUrl));
                   if (imgResp.statusCode == 200) {
-                    await sharedPrefs.prefs.setString(imageKey, base64Encode(imgResp.bodyBytes));
+                    await sharedPrefs.prefs.setString(
+                      imageKey,
+                      base64Encode(imgResp.bodyBytes),
+                    );
                     setState(() {
                       coursesImages[course['id']] = imgResp.bodyBytes;
                     });
@@ -114,7 +132,9 @@ class _TeacherDetailsState extends State<TeacherDetails> {
               }
             } else {
               setState(() {
-                coursesImages[course['id']] = base64Decode(sharedPrefs.prefs.getString(imageKey)!);
+                coursesImages[course['id']] = base64Decode(
+                  sharedPrefs.prefs.getString(imageKey)!,
+                );
               });
             }
           }
@@ -123,14 +143,16 @@ class _TeacherDetailsState extends State<TeacherDetails> {
     } catch (e) {
       // ignore
     }
-    setState(() { isCoursesLoading = false; });
+    setState(() {
+      isCoursesLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final ThemeController themeController = Get.find<ThemeController>();
     final LocaleController localeController = Get.find<LocaleController>();
-    Uint8List? imageBytes = widget.teacherImage;
+    // Uint8List? imageBytes = widget.teacherImage;
 
     final featuredRatings =
         widget.TeacherData["FeaturedRatings"] as List<dynamic>? ?? [];
@@ -178,12 +200,13 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                           ? Color.fromARGB(255, 40, 41, 61)
                           : Color.fromARGB(255, 210, 209, 224),
                   fontSize: 15,
+                  fontFamily: FontController().currentFontFamily,
                   fontWeight: FontWeight.w300,
                 ),
               ),
             ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             flex: 3,
             child: Stack(
@@ -209,7 +232,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
               ],
             ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             flex: 1,
             child: Align(
@@ -222,6 +245,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                           ? Color.fromARGB(255, 40, 41, 61)
                           : Color.fromARGB(255, 210, 209, 224),
                   fontSize: 15,
+                  fontFamily: FontController().currentFontFamily,
                   fontWeight: FontWeight.w300,
                 ),
               ),
@@ -253,7 +277,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                   children: [
                     Column(
                       children: [
-                        Container(
+                        SizedBox(
                           height: Get.height / 2.5,
 
                           child: Column(
@@ -296,6 +320,8 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 224,
                                               ),
                                       fontWeight: FontWeight.w500,
+                                      fontFamily:
+                                          FontController().currentFontFamily,
                                       fontSize: 20,
                                     ),
                                   ),
@@ -331,7 +357,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               Container(
                                 width: Get.width,
                                 height: Get.height / 3.005,
@@ -349,7 +375,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                 child: Column(
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.only(top: 20),
+                                      padding: const EdgeInsets.only(top: 20),
                                       alignment: Alignment.topCenter,
                                       child: CircleAvatar(
                                         backgroundColor: Color.fromARGB(
@@ -360,22 +386,12 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                         ),
                                         radius: 60,
                                         child:
-                                            imageBytes != null
-                                                ? Image.memory(
-                                                  imageBytes,
-                                                  width: Get.width * (2 / 10),
-                                                  height: Get.width * (2 / 10),
-                                                  errorBuilder: (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) {
-                                                    return Image.asset(
-                                                      ImageAssets.teacher,
-                                                      // height: 125,
-                                                      fit: BoxFit.cover,
-                                                    );
-                                                  },
+                                            widget.TeacherData["image"] != null
+                                                ? CachedNetworkImage(
+                                                  imageUrl:
+                                                      "$mainIP/${widget.TeacherData['image']}",
+                                                  height: 60,
+                                                  width: 60,
                                                 )
                                                 : Image.asset(
                                                   ImageAssets.teacher,
@@ -385,12 +401,14 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 ),
                                       ),
                                     ),
-                                    SizedBox(height: 10),
+                                    const SizedBox(height: 10),
                                     Text(
                                       "${widget.TeacherData["name"]}".tr,
                                       style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w600,
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                         fontStyle: FontStyle.normal,
                                         color:
                                             themeController.initialTheme ==
@@ -409,7 +427,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 ),
                                       ),
                                     ),
-                                    SizedBox(height: 10),
+                                    const SizedBox(height: 10),
                                     Text(
                                       "${widget.TeacherData["major"]}".tr,
                                       style: TextStyle(
@@ -431,15 +449,17 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                   41,
                                                   61,
                                                 ),
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                       ),
                                     ),
-                                    SizedBox(height: 10),
+                                    const SizedBox(height: 10),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
                                         widget.TeacherData["Facebook"] == null
-                                            ? SizedBox()
+                                            ? const SizedBox()
                                             : IconButton(
                                               onPressed: () async {
                                                 _launchURL(
@@ -470,7 +490,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                               ),
                                             ),
                                         widget.TeacherData["Telegram"] == null
-                                            ? SizedBox()
+                                            ? const SizedBox()
                                             : IconButton(
                                               onPressed: () async {
                                                 _launchURL(
@@ -501,7 +521,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                               ),
                                             ),
                                         widget.TeacherData["YouTube"] == null
-                                            ? SizedBox()
+                                            ? const SizedBox()
                                             : IconButton(
                                               onPressed: () async {
                                                 _launchURL(
@@ -531,7 +551,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                               ),
                                             ),
                                         widget.TeacherData["WhatsApp"] == null
-                                            ? SizedBox()
+                                            ? const SizedBox()
                                             : IconButton(
                                               onPressed: () async {
                                                 _launchURL(
@@ -655,6 +675,8 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 209,
                                                 224,
                                               ),
+                                      fontFamily:
+                                          FontController().currentFontFamily,
                                     ),
                                   ),
                                 ),
@@ -744,6 +766,8 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 209,
                                                 224,
                                               ),
+                                      fontFamily:
+                                          FontController().currentFontFamily,
                                     ),
                                   ),
                                 ),
@@ -833,6 +857,8 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 209,
                                                 224,
                                               ),
+                                      fontFamily:
+                                          FontController().currentFontFamily,
                                     ),
                                   ),
                                 ),
@@ -840,7 +866,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
                         ChosenScreen == "Reviews"
                             ? Column(
@@ -850,7 +876,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     spacing: 10,
                                     children: [
-                                      SizedBox(width: 20),
+                                      const SizedBox(width: 20),
                                       Column(
                                         children: [
                                           IconButton(
@@ -869,13 +895,16 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 : "Rate This".tr,
                                             style: TextStyle(
                                               color: Colors.blue,
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               fontSize: 16,
                                               fontWeight: FontWeight.w400,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      SizedBox(width: 10),
+                                      const SizedBox(width: 10),
                                       Column(
                                         children: [
                                           Row(
@@ -886,7 +915,8 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                 size: 25,
                                               ),
                                               Text(
-                                                "${widget.TeacherData["rating"].toString()}",
+                                                widget.TeacherData["rating"]
+                                                    .toString(),
                                                 style: TextStyle(
                                                   color:
                                                       themeController
@@ -905,6 +935,9 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                             209,
                                                             224,
                                                           ),
+                                                  fontFamily:
+                                                      FontController()
+                                                          .currentFontFamily,
                                                   fontSize: 22,
                                                   fontWeight: FontWeight.w700,
                                                 ),
@@ -932,6 +965,9 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                         209,
                                                         224,
                                                       ),
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               fontSize: 20,
                                               fontWeight: FontWeight.w700,
                                             ),
@@ -946,17 +982,17 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                 Column(
                                   children: [
                                     buildRatingBar(5),
-                                    SizedBox(height: 6),
+                                    const SizedBox(height: 6),
                                     buildRatingBar(4),
-                                    SizedBox(height: 6),
+                                    const SizedBox(height: 6),
                                     buildRatingBar(3),
-                                    SizedBox(height: 6),
+                                    const SizedBox(height: 6),
                                     buildRatingBar(2),
-                                    SizedBox(height: 6),
+                                    const SizedBox(height: 6),
                                     buildRatingBar(1),
                                   ],
                                 ),
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 Container(
                                   height: 1,
                                   width: Get.width / 1.1,
@@ -969,7 +1005,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                   ),
                                 ),
 
-                                Container(
+                                SizedBox(
                                   height:
                                       Get.height *
                                       0.6, // 40% of screen height, adjust as needed
@@ -981,7 +1017,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           featuredRatings[index]
                                               as Map<String, dynamic>? ??
                                           {};
-                                      return Container(
+                                      return SizedBox(
                                         width: Get.width / 1.1,
                                         child: StatefulBuilder(
                                           builder: (context, setState) {
@@ -1059,6 +1095,9 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                                         209,
                                                                         224,
                                                                       ),
+                                                              fontFamily:
+                                                                  FontController()
+                                                                      .currentFontFamily,
                                                               fontSize: 20,
                                                               fontWeight:
                                                                   FontWeight
@@ -1082,6 +1121,9 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                                     'no rating'
                                                                         .tr,
                                                                 style: TextStyle(
+                                                                  fontFamily:
+                                                                      FontController()
+                                                                          .currentFontFamily,
                                                                   color:
                                                                       themeController.initialTheme ==
                                                                               Themes.customLightTheme
@@ -1116,6 +1158,9 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                                 .tr ??
                                                             ''.tr,
                                                         style: TextStyle(
+                                                          fontFamily:
+                                                              FontController()
+                                                                  .currentFontFamily,
                                                           color:
                                                               themeController
                                                                           .initialTheme ==
@@ -1156,6 +1201,9 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                               : TextOverflow
                                                                   .ellipsis,
                                                       style: TextStyle(
+                                                        fontFamily:
+                                                            FontController()
+                                                                .currentFontFamily,
                                                         color:
                                                             themeController
                                                                         .initialTheme ==
@@ -1186,15 +1234,20 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                                   isExpanded =
                                                                       true,
                                                             ),
-                                                        child: Text(
-                                                          'Read more...',
-                                                        ),
                                                         style:
                                                             TextButton.styleFrom(
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
                                                             ),
+                                                        child: Text(
+                                                          'Read more...',
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                FontController()
+                                                                    .currentFontFamily,
+                                                          ),
+                                                        ),
                                                       ),
                                                     if (isExpanded && isLong)
                                                       TextButton(
@@ -1204,19 +1257,24 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                                   isExpanded =
                                                                       false,
                                                             ),
-                                                        child: Text(
-                                                          'Show less',
-                                                        ),
                                                         style:
                                                             TextButton.styleFrom(
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
                                                             ),
+                                                        child: Text(
+                                                          'Show less',
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                FontController()
+                                                                    .currentFontFamily,
+                                                          ),
+                                                        ),
                                                       ),
                                                   ],
                                                 ),
-                                                SizedBox(height: 10),
+                                                const SizedBox(height: 10),
                                                 Container(
                                                   height: 1,
                                                   width: Get.width / 1.1,
@@ -1245,7 +1303,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                               ],
                             )
                             : ChosenScreen == "Courses"
-                            ? Container(
+                            ? SizedBox(
                               height: Get.height * 0.6,
                               child: SingleChildScrollView(
                                 physics: AlwaysScrollableScrollPhysics(),
@@ -1259,7 +1317,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          SizedBox(width: 5),
+                                          const SizedBox(width: 5),
                                           Text(
                                             "Courses:".tr,
                                             style: TextStyle(
@@ -1280,16 +1338,23 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                         209,
                                                         224,
                                                       ),
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               fontSize: 18,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
 
-                                          SizedBox(width: 10),
+                                          const SizedBox(width: 10),
                                           Text(
-                                            "${widget.TeacherData['coursesNum'].toString()}"
+                                            widget.TeacherData['coursesNum']
+                                                .toString()
                                                 .tr,
                                             style: TextStyle(
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               color:
                                                   themeController
                                                               .initialTheme ==
@@ -1313,9 +1378,18 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: Get.height / 25),
+                                      const Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 20,
+                                          right: 20,
+                                        ),
+                                        child: Divider(
+                                          height: 30,
+                                          thickness: 1,
+                                        ),
+                                      ),
                                       Container(
-                                        padding: EdgeInsets.only(left: 5),
+                                        padding: const EdgeInsets.only(left: 5),
                                         child: Text(
                                           "My Courses".tr,
                                           style: TextStyle(
@@ -1335,102 +1409,243 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                                       224,
                                                     ),
                                             fontSize: 18,
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ),
-                                      SizedBox(height: 10),
+                                      const SizedBox(height: 10),
                                       isCoursesLoading
-                                        ? Center(child: CircularProgressIndicator())
-                                        : teacherCourses.isEmpty
-                                          ? Center(child: Text("No courses found".tr,style: TextStyle(color: themeController.initialTheme == Themes.customLightTheme
-                                                                  ? Color.fromARGB(255, 40, 41, 61)
-                                                                  : Color.fromARGB(255, 210, 209, 224),),))
-                                          : ListView.builder(
-                                              shrinkWrap: true,
-                                              physics: AlwaysScrollableScrollPhysics(),
-                                              itemCount: teacherCourses.length,
-                                              itemBuilder: (context, i) {
-                                                final course = teacherCourses[i];
-                                                final imageBytes = coursesImages[course['id']];
-                                                return Container(
-                                                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  decoration: BoxDecoration(
-                                                    color: themeController.initialTheme == Themes.customLightTheme
-                                                        ? Color.fromARGB(255, 210, 209, 224)
-                                                        : Color.fromARGB(255, 40, 41, 61),
-                                                    borderRadius: BorderRadius.circular(12),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: themeController.initialTheme == Themes.customLightTheme
-                                                                  ? Color.fromARGB(255, 40, 41, 61)
-                                                                  : Color.fromARGB(255, 210, 209, 224),
-                                                        blurRadius: 4,
-                                                        offset: Offset(0, 2),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Row(
-                                                    children: [
-                                                      Container(
-                                                        width: 80,
-                                                        height: 80,
-                                                        margin: EdgeInsets.all(8),
-                                                        child: imageBytes != null
-                                                          ? Image.memory(imageBytes, fit: BoxFit.cover)
-                                                          : Image.asset(ImageAssets.book, fit: BoxFit.cover),
-                                                      ),
-                                                      SizedBox(width: 12),
-                                                      Expanded(
-                                                        child: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              course['name'] ?? '',
-                                                              style: TextStyle(
-                                                                fontSize: 16,
-                                                                fontWeight: FontWeight.w600,
-                                                                color: themeController.initialTheme == Themes.customLightTheme
-                                                                  ? Color.fromARGB(255, 40, 41, 61)
-                                                                  : Color.fromARGB(255, 210, 209, 224),
-                                                              ),
-                                                              maxLines: 2,
-                                                              overflow: TextOverflow.ellipsis,
-                                                            ),
-                                                            SizedBox(height: 4),
-                                                            Text(
-                                                              'Type: Course',
-                                                              style: TextStyle(
-                                                                fontSize: 12,
-                                                                color: themeController.initialTheme == Themes.customLightTheme
-                                                                  ? Color.fromARGB(255, 40, 41, 61)
-                                                                  : Color.fromARGB(255, 210, 209, 224),
-                                                              ),
-                                                            ),
-                                                            SizedBox(height: 4),
-                                                            Text(
-                                                              'Duration: --',
-                                                              style: TextStyle(
-                                                                fontSize: 12,
-                                                                color: themeController.initialTheme == Themes.customLightTheme
-                                                                  ? Color.fromARGB(255, 40, 41, 61)
-                                                                  : Color.fromARGB(255, 210, 209, 224),
-                                                              ),
-                                                            ),
-                                                          ],
+                                          ? Center(
+                                            child: CircularProgressIndicator(),
+                                          )
+                                          : teacherCourses.isEmpty
+                                          ? Center(
+                                            child: Text(
+                                              "No courses found".tr,
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    FontController()
+                                                        .currentFontFamily,
+                                                color:
+                                                    themeController
+                                                                .initialTheme ==
+                                                            Themes
+                                                                .customLightTheme
+                                                        ? Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        )
+                                                        : Color.fromARGB(
+                                                          255,
+                                                          210,
+                                                          209,
+                                                          224,
                                                         ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
+                                              ),
                                             ),
+                                          )
+                                          : ListView.builder(
+                                            shrinkWrap: true,
+                                            physics:
+                                                AlwaysScrollableScrollPhysics(),
+                                            itemCount: teacherCourses.length,
+                                            itemBuilder: (context, i) {
+                                              final course = teacherCourses[i];
+                                              final imageBytes =
+                                                  coursesImages[course['id']];
+                                              return Container(
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 5,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      themeController
+                                                                  .initialTheme ==
+                                                              Themes
+                                                                  .customLightTheme
+                                                          ? Color.fromARGB(
+                                                            255,
+                                                            210,
+                                                            209,
+                                                            224,
+                                                          )
+                                                          : Color.fromARGB(
+                                                            255,
+                                                            40,
+                                                            41,
+                                                            61,
+                                                          ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color:
+                                                          themeController
+                                                                      .initialTheme ==
+                                                                  Themes
+                                                                      .customLightTheme
+                                                              ? Color.fromARGB(
+                                                                255,
+                                                                40,
+                                                                41,
+                                                                61,
+                                                              )
+                                                              : Color.fromARGB(
+                                                                255,
+                                                                210,
+                                                                209,
+                                                                224,
+                                                              ),
+                                                      blurRadius: 4,
+                                                      offset: Offset(0, 2),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      width: 80,
+                                                      height: 80,
+                                                      margin:
+                                                          const EdgeInsets.all(
+                                                            8,
+                                                          ),
+                                                      child:
+                                                          imageBytes != null
+                                                              ? Image.memory(
+                                                                imageBytes,
+                                                                fit:
+                                                                    BoxFit
+                                                                        .cover,
+                                                              )
+                                                              : Image.asset(
+                                                                ImageAssets
+                                                                    .book,
+                                                                fit:
+                                                                    BoxFit
+                                                                        .cover,
+                                                              ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            course['name'] ??
+                                                                '',
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              fontFamily:
+                                                                  FontController()
+                                                                      .currentFontFamily,
+                                                              color:
+                                                                  themeController
+                                                                              .initialTheme ==
+                                                                          Themes
+                                                                              .customLightTheme
+                                                                      ? Color.fromARGB(
+                                                                        255,
+                                                                        40,
+                                                                        41,
+                                                                        61,
+                                                                      )
+                                                                      : Color.fromARGB(
+                                                                        255,
+                                                                        210,
+                                                                        209,
+                                                                        224,
+                                                                      ),
+                                                            ),
+                                                            maxLines: 2,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 4,
+                                                          ),
+                                                          Text(
+                                                            'Type: Course',
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  FontController()
+                                                                      .currentFontFamily,
+                                                              fontSize: 12,
+                                                              color:
+                                                                  themeController
+                                                                              .initialTheme ==
+                                                                          Themes
+                                                                              .customLightTheme
+                                                                      ? Color.fromARGB(
+                                                                        255,
+                                                                        40,
+                                                                        41,
+                                                                        61,
+                                                                      )
+                                                                      : Color.fromARGB(
+                                                                        255,
+                                                                        210,
+                                                                        209,
+                                                                        224,
+                                                                      ),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 4,
+                                                          ),
+                                                          Text(
+                                                            'Duration: --',
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontFamily:
+                                                                  FontController()
+                                                                      .currentFontFamily,
+                                                              color:
+                                                                  themeController
+                                                                              .initialTheme ==
+                                                                          Themes
+                                                                              .customLightTheme
+                                                                      ? Color.fromARGB(
+                                                                        255,
+                                                                        40,
+                                                                        41,
+                                                                        61,
+                                                                      )
+                                                                      : Color.fromARGB(
+                                                                        255,
+                                                                        210,
+                                                                        209,
+                                                                        224,
+                                                                      ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
                                     ],
                                   ),
                                 ),
                               ),
                             )
-                            : Container(
+                            : SizedBox(
                               height: Get.height * 0.8,
                               child: SingleChildScrollView(
                                 physics: AlwaysScrollableScrollPhysics(),
@@ -1441,10 +1656,13 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Container(
-                                        padding: EdgeInsets.only(left: 5),
+                                        padding: const EdgeInsets.only(left: 5),
                                         child: Text(
                                           "About Me".tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             color:
                                                 themeController.initialTheme ==
                                                         Themes.customLightTheme
@@ -1466,7 +1684,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                         ),
                                       ),
                                       Container(
-                                        padding: EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           left: 5,
                                           top: 10,
                                         ),
@@ -1474,6 +1692,9 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           "${widget.TeacherData['description']}"
                                               .tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             color:
                                                 themeController.initialTheme ==
                                                         Themes.customLightTheme
@@ -1494,12 +1715,24 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           ),
                                         ),
                                       ),
-                                      SizedBox(height: 20),
+                                      const Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 20,
+                                          right: 20,
+                                        ),
+                                        child: Divider(
+                                          height: 30,
+                                          thickness: 1,
+                                        ),
+                                      ),
                                       Container(
-                                        padding: EdgeInsets.only(left: 5),
+                                        padding: const EdgeInsets.only(left: 5),
                                         child: Text(
                                           "My Courses".tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             color:
                                                 themeController.initialTheme ==
                                                         Themes.customLightTheme
@@ -1520,14 +1753,19 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           ),
                                         ),
                                       ),
+
                                       Container(
-                                        padding: EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           left: 5,
                                           top: 10,
                                         ),
                                         child: Text(
-                                          "${widget.TeacherData['courses']}".tr,
+                                          "${widget.TeacherData['courseNames']}"
+                                              .tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             color:
                                                 themeController.initialTheme ==
                                                         Themes.customLightTheme
@@ -1548,15 +1786,27 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           ),
                                         ),
                                       ),
-                                      SizedBox(height: 20),
+                                      const Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 20,
+                                          right: 20,
+                                        ),
+                                        child: Divider(
+                                          height: 30,
+                                          thickness: 1,
+                                        ),
+                                      ),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          SizedBox(width: 5),
+                                          const SizedBox(width: 5),
                                           Text(
                                             "Students:".tr,
                                             style: TextStyle(
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               color:
                                                   themeController
                                                               .initialTheme ==
@@ -1579,11 +1829,15 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                             ),
                                           ),
 
-                                          SizedBox(width: 10),
+                                          const SizedBox(width: 10),
                                           Text(
-                                            "${widget.TeacherData['UserSubs'].toString()}"
+                                            widget.TeacherData['UserSubs']
+                                                .toString()
                                                 .tr,
                                             style: TextStyle(
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               color:
                                                   themeController
                                                               .initialTheme ==
@@ -1607,16 +1861,28 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 20),
+                                      const Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 20,
+                                          right: 20,
+                                        ),
+                                        child: Divider(
+                                          height: 30,
+                                          thickness: 1,
+                                        ),
+                                      ),
 
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          SizedBox(width: 5),
+                                          const SizedBox(width: 5),
                                           Text(
                                             "Number:".tr,
                                             style: TextStyle(
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               color:
                                                   themeController
                                                               .initialTheme ==
@@ -1639,11 +1905,14 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                             ),
                                           ),
 
-                                          SizedBox(width: 10),
+                                          const SizedBox(width: 10),
                                           Text(
                                             "0${widget.TeacherData['number'].toString()}"
                                                 .tr,
                                             style: TextStyle(
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               color:
                                                   themeController
                                                               .initialTheme ==
@@ -1667,7 +1936,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 60),
+                                      const SizedBox(height: 60),
                                     ],
                                   ),
                                 ),

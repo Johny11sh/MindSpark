@@ -2,17 +2,21 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
-import 'package:learning_management_system/controller/ProfileController.dart';
+import 'package:learning_management_system/controller/WatchlistController.dart';
+import 'package:learning_management_system/core/classes/PdfCard.dart';
+import 'package:learning_management_system/core/classes/SubjectsBooks.dart';
 import 'package:like_button/like_button.dart';
+import 'package:lottie/lottie.dart';
 import '../core/classes/Courses.dart';
+import '../controller/FontController.dart';
+import '../services/CacheManager.dart';
 import 'LogIn.dart';
 import 'SubjectTeachers.dart';
-import '../core/classes/SubjectsBooks.dart';
 import 'Favorites.dart';
 import 'CoursesLessons.dart';
 import '../services/SharedPrefs.dart';
@@ -39,14 +43,11 @@ class _HomePageState extends State<HomePage> {
   final ThemeController themeController = Get.find<ThemeController>();
   final NetworkController networkController = Get.find<NetworkController>();
   final LocaleController localeController = Get.find<LocaleController>();
- final ProfileController profileController= Get.put(ProfileController());
+  // final ProfileController profileController = Get.put(ProfileController());
 
   List<Map<String, dynamic>> subjects = [];
-  final Map<int, Uint8List> subjectsImages = {};
   List<Map<String, dynamic>> recommendedCourses = [];
-  final Map<int, Uint8List> recommendedCoursesImages = {};
   List<Map<String, dynamic>> TopRatedCourses = [];
-  final Map<int, Uint8List> TopRatedCoursesImages = {};
   bool isFavorite = false;
   bool isLiterary = false;
   String subjectType = 'scientific';
@@ -54,22 +55,19 @@ class _HomePageState extends State<HomePage> {
 
   List<bool> isSelected = [true, false];
 
-  // Add new variables for caching
   List<Map<String, dynamic>> scientificSubjects = [];
   List<Map<String, dynamic>> literarySubjects = [];
   List<Map<String, dynamic>> cachedRecommendedCourses = [];
   List<Map<String, dynamic>> cachedTopRatedCourses = [];
 
-  // Most Recent Courses
   List<Map<String, dynamic>> recentCourses = [];
-  final Map<int, Uint8List> recentCoursesImages = {};
   List<Map<String, dynamic>> cachedRecentCourses = [];
 
-  // Subscribed Courses
   List<Map<String, dynamic>> subscribedCourses = [];
-  final Map<int, Uint8List> subscribedCoursesImages = {};
   List<Map<String, dynamic>> cachedSubscribedCourses = [];
   late FavoriteController favoriteController;
+  late WatchlistController watchlistController;
+  final CacheManager cacheManager = CacheManager();
 
   @override
   void initState() {
@@ -81,6 +79,7 @@ class _HomePageState extends State<HomePage> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _initSharedPreferences().then((_) => _loadInitialData());
     favoriteController = Get.put(FavoriteController());
+    watchlistController = Get.put(WatchlistController());
   }
 
   Future<void> _initSharedPreferences() async {
@@ -88,18 +87,341 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadInitialData() async {
-    // Try to load from cache first
-    await _loadCachedData();
-    await _loadCachedRecentCourses();
-    await _loadCachedSubscribedCourses();
-
-    // Then try to fetch fresh data if online
     if (sharedPrefs.prefs.getBool('isConnected') == true) {
       await getSubjectsData(subjectType);
-      await getRecommendedCoursesData();
-      await getTopRatedCoursesData();
-      await getRecentCoursesData();
-      await getSubscribedCoursesData();
+      await getCoursesData();
+    } else {
+      if (cacheManager.isCacheEnabled.value == true) {
+        await _loadCachedData();
+      }
+    }
+  }
+
+  void showErrorSnackbar(String message) {
+    Get.rawSnackbar(
+      messageText: Text(
+        message,
+        style: TextStyle(fontFamily: FontController().currentFontFamily),
+      ),
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 3),
+      backgroundColor: Colors.red[800]!,
+      icon: const Icon(Icons.error_outline, color: Colors.white),
+    );
+  }
+
+  Future<void> getSubjectsData(String subjectType) async {
+    // 1. Token Handling
+    final token = sharedPrefs.prefs.getString('token') ?? '';
+    if (token.isEmpty) {
+      debugPrint("Token empty, redirecting to login");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAll(() => LogIn());
+        showErrorSnackbar("Session expired. Please log in again.");
+      });
+      return;
+    }
+
+    try {
+      // 2. Configurable API URL
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final APIurl = '$baseUrl/api/subjects/$subjectType';
+
+      // 3. API Request
+      final response = await http
+          .get(
+            Uri.parse(APIurl),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+
+      debugPrint("Subjects API response: ${response.statusCode}");
+
+      // 4. Response Handling
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+
+        // Handle both array and object responses
+        final List<dynamic> subjectsList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['subjects'] ?? [responseBody]);
+
+        // 5. Update state and cache
+        if (mounted) {
+          setState(() {
+            subjects = List<Map<String, dynamic>>.from(subjectsList);
+          });
+          if (cacheManager.isCacheEnabled.value == true) {
+            await _cacheSubjectsData();
+          }
+        }
+      } else if (response.statusCode == 401) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offAll(() => LogIn());
+          showErrorSnackbar("Session expired. Please log in again.");
+        });
+      } else {
+        // If API fails, use cached data for the current subject type
+        if (subjects.isEmpty) {
+          setState(() {
+            subjects =
+                subjectType == 'scientific'
+                    ? scientificSubjects
+                    : literarySubjects;
+          });
+          if (subjects.isEmpty) {
+            throw Exception("Failed to load subjects: ${response.statusCode}");
+          }
+        }
+      }
+    } on TimeoutException {
+      // If we have cached data, use it
+      if (subjects.isEmpty) {
+        setState(() {
+          subjects =
+              subjectType == 'scientific'
+                  ? scientificSubjects
+                  : literarySubjects;
+        });
+        if (subjects.isEmpty) {
+          showErrorSnackbar("Request timeout. Please try again.");
+        } else {
+          showErrorSnackbar("Using cached data - connection is slow");
+        }
+      }
+    } catch (e) {
+      // If we have cached data, use it
+      if (subjects.isEmpty) {
+        setState(() {
+          subjects =
+              subjectType == 'scientific'
+                  ? scientificSubjects
+                  : literarySubjects;
+        });
+        if (subjects.isEmpty) {
+          showErrorSnackbar("Failed to load subjects");
+        } else {
+          showErrorSnackbar("Using cached data - ${e.toString()}");
+        }
+      }
+      debugPrint("Error fetching subjects: $e");
+    }
+  }
+
+  Future<void> getCoursesData() async {
+    final token = sharedPrefs.prefs.getString('token') ?? '';
+    if (token.isEmpty) {
+      debugPrint("Token empty, redirecting to login");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAll(() => LogIn());
+        showErrorSnackbar("Session expired. Please log in again.");
+      });
+      return;
+    }
+
+    try {
+      var baseUrl = String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: mainIP,
+      );
+      final APIurl = '$baseUrl/api/getallhomepage';
+
+      final response = await http
+          .get(
+            Uri.parse(APIurl),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final List<dynamic> recommendedCoursesList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['recommended'] ?? [responseBody]);
+
+        final List<dynamic> TopRatedCoursesList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['top_rated'] ?? [responseBody]);
+
+        final List<dynamic> recentCoursesList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['recent'] ?? [responseBody]);
+
+        final List<dynamic> subscribedCoursesList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['most_subscribed'] ?? [responseBody]);
+
+        if (mounted) {
+          setState(() {
+            recommendedCourses = List<Map<String, dynamic>>.from(
+              recommendedCoursesList,
+            );
+            TopRatedCourses = List<Map<String, dynamic>>.from(
+              TopRatedCoursesList,
+            );
+            recentCourses = List<Map<String, dynamic>>.from(recentCoursesList);
+            subscribedCourses = List<Map<String, dynamic>>.from(
+              subscribedCoursesList,
+            );
+          });
+          if (cacheManager.isCacheEnabled.value == true) {
+            await _cacheRecommendedCourses();
+            await _cacheTopRatedCourses();
+            await _cacheRecentCourses();
+            await _cacheSubscribedCourses();
+          }
+        }
+      } else if (response.statusCode == 401) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offAll(() => LogIn());
+          showErrorSnackbar("Session expired. Please log in again.");
+        });
+      } else {
+        if (recommendedCourses.isEmpty ||
+            TopRatedCourses.isEmpty ||
+            recentCourses.isEmpty ||
+            subscribedCourses.isEmpty) {
+          setState(() {
+            recommendedCourses = List.from(cachedRecommendedCourses);
+            TopRatedCourses = List.from(cachedTopRatedCourses);
+            recentCourses = List.from(cachedRecentCourses);
+            subscribedCourses = List.from(cachedSubscribedCourses);
+          });
+          if (recommendedCourses.isEmpty ||
+              TopRatedCourses.isEmpty ||
+              recentCourses.isEmpty ||
+              subscribedCourses.isEmpty) {
+            throw Exception(
+              "Failed to load recommended courses: ${response.statusCode}",
+            );
+          }
+        }
+      }
+    } on TimeoutException {
+      if (recommendedCourses.isEmpty ||
+          TopRatedCourses.isEmpty ||
+          recentCourses.isEmpty ||
+          subscribedCourses.isEmpty) {
+        setState(() {
+          recommendedCourses = List.from(cachedRecommendedCourses);
+          TopRatedCourses = List.from(cachedTopRatedCourses);
+          recentCourses = List.from(cachedRecentCourses);
+          subscribedCourses = List.from(cachedSubscribedCourses);
+        });
+        if (recommendedCourses.isEmpty ||
+            TopRatedCourses.isEmpty ||
+            recentCourses.isEmpty ||
+            subscribedCourses.isEmpty) {
+          showErrorSnackbar("Request timeout. Please try again.");
+        } else {
+          showErrorSnackbar("Using cached data - connection is slow");
+        }
+      }
+    } catch (e) {
+      if (recommendedCourses.isEmpty ||
+          TopRatedCourses.isEmpty ||
+          recentCourses.isEmpty ||
+          subscribedCourses.isEmpty) {
+        setState(() {
+          recommendedCourses = List.from(cachedRecommendedCourses);
+          TopRatedCourses = List.from(cachedTopRatedCourses);
+          recentCourses = List.from(cachedRecentCourses);
+          subscribedCourses = List.from(cachedSubscribedCourses);
+        });
+        if (recommendedCourses.isEmpty ||
+            TopRatedCourses.isEmpty ||
+            recentCourses.isEmpty ||
+            subscribedCourses.isEmpty) {
+          showErrorSnackbar("Failed to load recommended courses");
+        } else {
+          showErrorSnackbar("Using cached data - ${e.toString()}");
+        }
+      }
+      debugPrint("Error fetching recommended courses: $e");
+    }
+  }
+
+  Future<void> _cacheSubjectsData() async {
+    try {
+      if (subjectType == 'scientific') {
+        await sharedPrefs.prefs.setString(
+          'cached_scientific_subjects',
+          jsonEncode(subjects),
+        );
+        scientificSubjects = List.from(subjects);
+      } else {
+        await sharedPrefs.prefs.setString(
+          'cached_literary_subjects',
+          jsonEncode(subjects),
+        );
+        literarySubjects = List.from(subjects);
+      }
+    } catch (e) {
+      debugPrint("Error caching subjects data: $e");
+    }
+  }
+
+  Future<void> _cacheRecommendedCourses() async {
+    try {
+      await sharedPrefs.prefs.setString(
+        'cached_recommended_courses',
+        jsonEncode(recommendedCourses),
+      );
+      cachedRecommendedCourses = List.from(recommendedCourses);
+    } catch (e) {
+      debugPrint("Error caching recommended courses: $e");
+    }
+  }
+
+  Future<void> _cacheTopRatedCourses() async {
+    try {
+      await sharedPrefs.prefs.setString(
+        'cached_top_rated_courses',
+        jsonEncode(TopRatedCourses),
+      );
+      cachedTopRatedCourses = List.from(TopRatedCourses);
+    } catch (e) {
+      debugPrint("Error caching top-rated courses: $e");
+    }
+  }
+
+  Future<void> _cacheRecentCourses() async {
+    try {
+      await sharedPrefs.prefs.setString(
+        'cached_recent_courses',
+        jsonEncode(recentCourses),
+      );
+      cachedRecentCourses = List.from(recentCourses);
+    } catch (e) {
+      debugPrint("Error caching recent courses: $e");
+    }
+  }
+
+  Future<void> _cacheSubscribedCourses() async {
+    try {
+      await sharedPrefs.prefs.setString(
+        'cached_subscribed_courses',
+        jsonEncode(subscribedCourses),
+      );
+      cachedSubscribedCourses = List.from(subscribedCourses);
+    } catch (e) {
+      debugPrint("Error caching subscribed courses: $e");
     }
   }
 
@@ -155,836 +477,13 @@ class _HomePageState extends State<HomePage> {
         TopRatedCourses = List.from(cachedTopRatedCourses);
       }
 
-      // Load recent courses data
-      await _loadCachedRecentCourses();
-      // Load subscribed courses data
-      await _loadCachedSubscribedCourses();
-
-      // Set initial subjects based on current subjectType
-      setState(() {
-        subjects =
-            subjectType == 'scientific' ? scientificSubjects : literarySubjects;
-      });
-
-      // Load images for all subject types
-      await Future.wait([
-        _loadImagesForSubjects(scientificSubjects),
-        _loadImagesForSubjects(literarySubjects),
-        _loadRecommendedCoursesImages(),
-        _loadTopRatedCoursesImages(),
-        _loadRecentCoursesImages(),
-        _loadSubscribedCoursesImages(),
-      ]);
-    } catch (e) {
-      debugPrint("Error loading cached data: $e");
-    }
-  }
-
-  Future<void> _loadImagesForSubjects(
-    List<Map<String, dynamic>> subjectList,
-  ) async {
-    for (var subject in subjectList) {
-      final imageKey = 'subject_image_${subject['id']}';
-      final cachedImage = sharedPrefs.prefs.getString(imageKey);
-      if (cachedImage != null && mounted) {
-        setState(() {
-          subjectsImages[subject['id']] = base64Decode(cachedImage);
-        });
-      }
-    }
-  }
-
-  Future<void> _loadRecommendedCoursesImages() async {
-    for (var course in recommendedCourses) {
-      final imageKey = 'recommended_course_image_${course['id']}';
-      final cachedImage = sharedPrefs.prefs.getString(imageKey);
-      if (cachedImage != null && mounted) {
-        setState(() {
-          recommendedCoursesImages[course['id']] = base64Decode(cachedImage);
-        });
-      }
-    }
-  }
-
-  Future<void> _loadTopRatedCoursesImages() async {
-    for (var course in TopRatedCourses) {
-      final imageKey = 'top_rated_course_image_${course['id']}';
-      final cachedImage = sharedPrefs.prefs.getString(imageKey);
-      if (cachedImage != null && mounted) {
-        setState(() {
-          TopRatedCoursesImages[course['id']] = base64Decode(cachedImage);
-        });
-      }
-    }
-  }
-
-  Future<void> _cacheSubjectsData() async {
-    try {
-      if (subjectType == 'scientific') {
-        await sharedPrefs.prefs.setString(
-          'cached_scientific_subjects',
-          jsonEncode(subjects),
-        );
-        scientificSubjects = List.from(subjects);
-      } else {
-        await sharedPrefs.prefs.setString(
-          'cached_literary_subjects',
-          jsonEncode(subjects),
-        );
-        literarySubjects = List.from(subjects);
-      }
-    } catch (e) {
-      debugPrint("Error caching subjects data: $e");
-    }
-  }
-
-  Future<void> _cacheSubjectImage(int uniId, Uint8List imageBytes) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'subject_image_$uniId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching subject image: $e");
-    }
-  }
-
-  Future<void> _cacheRecommendedCourses() async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'cached_recommended_courses',
-        jsonEncode(recommendedCourses),
-      );
-      cachedRecommendedCourses = List.from(recommendedCourses);
-    } catch (e) {
-      debugPrint("Error caching recommended courses: $e");
-    }
-  }
-
-  Future<void> _cacheTopRatedCourses() async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'cached_top_rated_courses',
-        jsonEncode(TopRatedCourses),
-      );
-      cachedTopRatedCourses = List.from(TopRatedCourses);
-    } catch (e) {
-      debugPrint("Error caching top-rated courses: $e");
-    }
-  }
-
-  Future<void> _cacheRecommendedCourseImage(
-    int courseId,
-    Uint8List imageBytes,
-  ) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'recommended_course_image_$courseId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching recommended course image: $e");
-    }
-  }
-
-  Future<void> _cacheTopRatedCourseImage(
-    int courseId,
-    Uint8List imageBytes,
-  ) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'top_rated_course_image_$courseId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching top-rated course image: $e");
-    }
-  }
-
-  Future<void> getSubjectsData(String subjectType) async {
-    // 1. Token Handling
-    final token = sharedPrefs.prefs.getString('token') ?? '';
-    if (token.isEmpty) {
-      debugPrint("Token empty, redirecting to login");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAll(() => LogIn());
-        showErrorSnackbar("Session expired. Please log in again.");
-      });
-      return;
-    }
-
-    try {
-      // 2. Configurable API URL
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final APIurl = '$baseUrl/api/subjects/$subjectType';
-
-      // 3. API Request
-      final response = await http
-          .get(
-            Uri.parse(APIurl),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Accept': 'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-
-      debugPrint("Subjects API response: ${response.statusCode}");
-
-      // 4. Response Handling
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-
-        // Handle both array and object responses
-        final List<dynamic> subjectsList =
-            responseBody is List
-                ? responseBody
-                : (responseBody['subjects'] ?? [responseBody]);
-
-        // 5. Update state and cache
-        if (mounted) {
-          setState(() {
-            subjects = List<Map<String, dynamic>>.from(subjectsList);
-          });
-          await _cacheSubjectsData();
-        }
-
-        // 6. Parallel Image Loading and caching
-        await Future.wait(
-          subjectsList.map((uni) async {
-            final uniId = uni["id"] as int;
-            final imageBytes = await getSubjectImage(uni);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                subjectsImages[uniId] = imageBytes;
-              });
-              await _cacheSubjectImage(uniId, imageBytes);
-            }
-          }),
-        );
-      } else if (response.statusCode == 401) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.offAll(() => LogIn());
-          showErrorSnackbar("Session expired. Please log in again.");
-        });
-      } else {
-        // If API fails, use cached data for the current subject type
-        if (subjects.isEmpty) {
-          setState(() {
-            subjects =
-                subjectType == 'scientific'
-                    ? scientificSubjects
-                    : literarySubjects;
-          });
-          if (subjects.isEmpty) {
-            throw Exception("Failed to load subjects: ${response.statusCode}");
-          }
-        }
-      }
-    } on TimeoutException {
-      // If we have cached data, use it
-      if (subjects.isEmpty) {
-        setState(() {
-          subjects =
-              subjectType == 'scientific'
-                  ? scientificSubjects
-                  : literarySubjects;
-        });
-        if (subjects.isEmpty) {
-          showErrorSnackbar("Request timeout. Please try again.");
-        } else {
-          showErrorSnackbar("Using cached data - connection is slow");
-        }
-      }
-    } catch (e) {
-      // If we have cached data, use it
-      if (subjects.isEmpty) {
-        setState(() {
-          subjects =
-              subjectType == 'scientific'
-                  ? scientificSubjects
-                  : literarySubjects;
-        });
-        if (subjects.isEmpty) {
-          showErrorSnackbar("Failed to load subjects");
-        } else {
-          showErrorSnackbar("Using cached data - ${e.toString()}");
-        }
-      }
-      debugPrint("Error fetching subjects: $e");
-    }
-  }
-
-  Future<Uint8List?> getSubjectImage(dynamic subject) async {
-    // First try to get from cache
-    final uniId = subject is Map ? subject['id'] as int : subject as int;
-    final cachedImage = sharedPrefs.prefs.getString('subject_image_$uniId');
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-
-    // If not in cache and offline, return null
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-
-    // Otherwise fetch from API
-    try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getsubjectimage/$uniId';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Subject image not found for ID: $uniId");
-        return null;
-      } else {
-        throw Exception("Image fetch failed: ${response.statusCode}");
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for subject $uniId");
-      return null;
-    } catch (e) {
-      debugPrint("Error fetching subject image: $e");
-      return null;
-    }
-  }
-
-  void showErrorSnackbar(String message) {
-    Get.rawSnackbar(
-      messageText: Text(message),
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
-      backgroundColor: Colors.red[800]!,
-      icon: const Icon(Icons.error_outline, color: Colors.white),
-    );
-  }
-
-  Future<void> getRecommendedCoursesData() async {
-    final token = sharedPrefs.prefs.getString('token') ?? '';
-    if (token.isEmpty) {
-      debugPrint("Token empty, redirecting to login");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAll(() => LogIn());
-        showErrorSnackbar("Session expired. Please log in again.");
-      });
-      return;
-    }
-
-    try {
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final APIurl = '$baseUrl/api/getallcoursesrecommended';
-
-      final response = await http
-          .get(
-            Uri.parse(APIurl),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Accept': 'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final List<dynamic> recommendedCoursesList =
-            responseBody is List
-                ? responseBody
-                : (responseBody['courses'] ?? [responseBody]);
-
-        if (mounted) {
-          setState(() {
-            recommendedCourses = List<Map<String, dynamic>>.from(
-              recommendedCoursesList,
-            );
-          });
-          await _cacheRecommendedCourses();
-        }
-
-        await Future.wait(
-          recommendedCoursesList.map((course) async {
-            final courseId = course['id'] as int;
-            final imageBytes = await getRecommendedCourseImage(course);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                recommendedCoursesImages[courseId] = imageBytes;
-              });
-              await _cacheRecommendedCourseImage(courseId, imageBytes);
-            }
-          }),
-        );
-      } else if (response.statusCode == 401) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.offAll(() => LogIn());
-          showErrorSnackbar("Session expired. Please log in again.");
-        });
-      } else {
-        if (recommendedCourses.isEmpty) {
-          setState(() {
-            recommendedCourses = List.from(cachedRecommendedCourses);
-          });
-          if (recommendedCourses.isEmpty) {
-            throw Exception(
-              "Failed to load recommended courses: ${response.statusCode}",
-            );
-          }
-        }
-      }
-    } on TimeoutException {
-      if (recommendedCourses.isEmpty) {
-        setState(() {
-          recommendedCourses = List.from(cachedRecommendedCourses);
-        });
-        if (recommendedCourses.isEmpty) {
-          showErrorSnackbar("Request timeout. Please try again.");
-        } else {
-          showErrorSnackbar("Using cached data - connection is slow");
-        }
-      }
-    } catch (e) {
-      if (recommendedCourses.isEmpty) {
-        setState(() {
-          recommendedCourses = List.from(cachedRecommendedCourses);
-        });
-        if (recommendedCourses.isEmpty) {
-          showErrorSnackbar("Failed to load recommended courses");
-        } else {
-          showErrorSnackbar("Using cached data - ${e.toString()}");
-        }
-      }
-      debugPrint("Error fetching recommended courses: $e");
-    }
-  }
-
-  Future<Uint8List?> getRecommendedCourseImage(dynamic course) async {
-    final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString(
-      'recommended_course_image_$courseId',
-    );
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-
-    try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getcourseimage/$courseId';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Recommended course image not found for ID: $courseId");
-        return null;
-      } else {
-        throw Exception("Image fetch failed: ${response.statusCode}");
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for recommended course $courseId");
-      return null;
-    } catch (e) {
-      debugPrint("Error fetching recommended course image: $e");
-      return null;
-    }
-  }
-
-  Future<void> getTopRatedCoursesData() async {
-    final token = sharedPrefs.prefs.getString('token') ?? '';
-    if (token.isEmpty) {
-      debugPrint("Token empty, redirecting to login");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAll(() => LogIn());
-        showErrorSnackbar("Session expired. Please log in again.");
-      });
-      return;
-    }
-
-    try {
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final APIurl = '$baseUrl/api/getallcoursesrated';
-
-      final response = await http
-          .get(
-            Uri.parse(APIurl),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Accept': 'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final List<dynamic> topRatedCoursesList =
-            responseBody is List
-                ? responseBody
-                : (responseBody['courses'] ?? [responseBody]);
-
-        if (mounted) {
-          setState(() {
-            TopRatedCourses = List<Map<String, dynamic>>.from(
-              topRatedCoursesList,
-            );
-          });
-          await _cacheTopRatedCourses();
-        }
-
-        await Future.wait(
-          topRatedCoursesList.map((course) async {
-            final courseId = course['id'] as int;
-            final imageBytes = await getTopRatedCourseImage(course);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                TopRatedCoursesImages[courseId] = imageBytes;
-              });
-              await _cacheTopRatedCourseImage(courseId, imageBytes);
-            }
-          }),
-        );
-      } else if (response.statusCode == 401) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.offAll(() => LogIn());
-          showErrorSnackbar("Session expired. Please log in again.");
-        });
-      } else {
-        if (TopRatedCourses.isEmpty) {
-          setState(() {
-            TopRatedCourses = List.from(cachedTopRatedCourses);
-          });
-          if (TopRatedCourses.isEmpty) {
-            throw Exception(
-              "Failed to load top-rated courses: ${response.statusCode}",
-            );
-          }
-        }
-      }
-    } on TimeoutException {
-      if (TopRatedCourses.isEmpty) {
-        setState(() {
-          TopRatedCourses = List.from(cachedTopRatedCourses);
-        });
-        if (TopRatedCourses.isEmpty) {
-          showErrorSnackbar("Request timeout. Please try again.");
-        } else {
-          showErrorSnackbar("Using cached data - connection is slow");
-        }
-      }
-    } catch (e) {
-      if (TopRatedCourses.isEmpty) {
-        setState(() {
-          TopRatedCourses = List.from(cachedTopRatedCourses);
-        });
-        if (TopRatedCourses.isEmpty) {
-          showErrorSnackbar("Failed to load top-rated courses");
-        } else {
-          showErrorSnackbar("Using cached data - ${e.toString()}");
-        }
-      }
-      debugPrint("Error fetching top-rated courses: $e");
-    }
-  }
-
-  Future<Uint8List?> getTopRatedCourseImage(dynamic course) async {
-    final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString(
-      'top_rated_course_image_$courseId',
-    );
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-
-    try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getcourseimage/$courseId';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Top-rated course image not found for ID: $courseId");
-        return null;
-      } else {
-        throw Exception("Image fetch failed: ${response.statusCode}");
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for top-rated course $courseId");
-      return null;
-    } catch (e) {
-      debugPrint("Error fetching top-rated course image: $e");
-      return null;
-    }
-  }
-
-  Future<void> _loadCachedRecentCourses() async {
-    try {
       final cachedRecent = sharedPrefs.prefs.getString('cached_recent_courses');
       if (cachedRecent != null) {
         final List<dynamic> parsedRecentList = jsonDecode(cachedRecent);
         cachedRecentCourses = List<Map<String, dynamic>>.from(parsedRecentList);
         recentCourses = List.from(cachedRecentCourses);
       }
-      await _loadRecentCoursesImages();
-    } catch (e) {
-      debugPrint("Error loading cached recent courses: $e");
-    }
-  }
 
-  Future<void> _loadRecentCoursesImages() async {
-    for (var course in recentCourses) {
-      final imageKey = 'recent_course_image_${course['id']}';
-      final cachedImage = sharedPrefs.prefs.getString(imageKey);
-      if (cachedImage != null && mounted) {
-        setState(() {
-          recentCoursesImages[course['id']] = base64Decode(cachedImage);
-        });
-      }
-    }
-  }
-
-  Future<void> _cacheRecentCourses() async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'cached_recent_courses',
-        jsonEncode(recentCourses),
-      );
-      cachedRecentCourses = List.from(recentCourses);
-    } catch (e) {
-      debugPrint("Error caching recent courses: $e");
-    }
-  }
-
-  Future<void> _cacheRecentCourseImage(
-    int courseId,
-    Uint8List imageBytes,
-  ) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'recent_course_image_$courseId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching recent course image: $e");
-    }
-  }
-
-  Future<void> getRecentCoursesData() async {
-    final token = sharedPrefs.prefs.getString('token') ?? '';
-    if (token.isEmpty) {
-      debugPrint("Token empty, redirecting to login");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAll(() => LogIn());
-        showErrorSnackbar("Session expired. Please log in again.");
-      });
-      return;
-    }
-
-    try {
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final APIurl = '$baseUrl/api/getallcoursesrecent';
-
-      final response = await http
-          .get(
-            Uri.parse(APIurl),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Accept': 'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final List<dynamic> recentCoursesList =
-            responseBody is List
-                ? responseBody
-                : (responseBody['courses'] ?? [responseBody]);
-
-        if (mounted) {
-          setState(() {
-            recentCourses = List<Map<String, dynamic>>.from(recentCoursesList);
-          });
-          await _cacheRecentCourses();
-        }
-
-        await Future.wait(
-          recentCoursesList.map((course) async {
-            final courseId = course['id'] as int;
-            final imageBytes = await getRecentCourseImage(course);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                recentCoursesImages[courseId] = imageBytes;
-              });
-              await _cacheRecentCourseImage(courseId, imageBytes);
-            }
-          }),
-        );
-      } else if (response.statusCode == 401) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.offAll(() => LogIn());
-          showErrorSnackbar("Session expired. Please log in again.");
-        });
-      } else {
-        if (recentCourses.isEmpty) {
-          setState(() {
-            recentCourses = List.from(cachedRecentCourses);
-          });
-          if (recentCourses.isEmpty) {
-            throw Exception(
-              "Failed to load recent courses: " +
-                  response.statusCode.toString(),
-            );
-          }
-        }
-      }
-    } on TimeoutException {
-      if (recentCourses.isEmpty) {
-        setState(() {
-          recentCourses = List.from(cachedRecentCourses);
-        });
-        if (recentCourses.isEmpty) {
-          showErrorSnackbar("Request timeout. Please try again.");
-        } else {
-          showErrorSnackbar("Using cached data - connection is slow");
-        }
-      }
-    } catch (e) {
-      if (recentCourses.isEmpty) {
-        setState(() {
-          recentCourses = List.from(cachedRecentCourses);
-        });
-        if (recentCourses.isEmpty) {
-          showErrorSnackbar("Failed to load recent courses");
-        } else {
-          showErrorSnackbar("Using cached data - " + e.toString());
-        }
-      }
-      debugPrint("Error fetching recent courses: $e");
-    }
-  }
-
-  Future<Uint8List?> getRecentCourseImage(dynamic course) async {
-    final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString(
-      'recent_course_image_$courseId',
-    );
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-
-    try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getcourseimage/$courseId';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Recent course image not found for ID: $courseId");
-        return null;
-      } else {
-        throw Exception(
-          "Image fetch failed: " + response.statusCode.toString(),
-        );
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for recent course $courseId");
-      return null;
-    } catch (e) {
-      debugPrint("Error fetching recent course image: $e");
-      return null;
-    }
-  }
-
-  Future<void> _loadCachedSubscribedCourses() async {
-    try {
       final cachedSubscribed = sharedPrefs.prefs.getString(
         'cached_subscribed_courses',
       );
@@ -995,238 +494,46 @@ class _HomePageState extends State<HomePage> {
         );
         subscribedCourses = List.from(cachedSubscribedCourses);
       }
-      await _loadSubscribedCoursesImages();
-    } catch (e) {
-      debugPrint("Error loading cached subscribed courses: $e");
-    }
-  }
 
-  Future<void> _loadSubscribedCoursesImages() async {
-    for (var course in subscribedCourses) {
-      final imageKey = 'subscribed_course_image_${course['id']}';
-      final cachedImage = sharedPrefs.prefs.getString(imageKey);
-      if (cachedImage != null && mounted) {
-        setState(() {
-          subscribedCoursesImages[course['id']] = base64Decode(cachedImage);
-        });
-      }
-    }
-  }
+      // Load recent courses data
+      // await _loadCachedRecentCourses();
+      // Load subscribed courses data
+      // await _loadCachedSubscribedCourses();
 
-  Future<void> _cacheSubscribedCourses() async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'cached_subscribed_courses',
-        jsonEncode(subscribedCourses),
-      );
-      cachedSubscribedCourses = List.from(subscribedCourses);
-    } catch (e) {
-      debugPrint("Error caching subscribed courses: $e");
-    }
-  }
-
-  Future<void> _cacheSubscribedCourseImage(
-    int courseId,
-    Uint8List imageBytes,
-  ) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'subscribed_course_image_$courseId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching subscribed course image: $e");
-    }
-  }
-
-  Future<void> getSubscribedCoursesData() async {
-    final token = sharedPrefs.prefs.getString('token') ?? '';
-    if (token.isEmpty) {
-      debugPrint("Token empty, redirecting to login");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAll(() => LogIn());
-        showErrorSnackbar("Session expired. Please log in again.");
+      // Set initial subjects based on current subjectType
+      setState(() {
+        subjects =
+            subjectType == 'scientific' ? scientificSubjects : literarySubjects;
       });
-      return;
-    }
 
-    try {
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final APIurl = '$baseUrl/api/getallcoursessubscribed';
-
-      final response = await http
-          .get(
-            Uri.parse(APIurl),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Accept': 'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final List<dynamic> subscribedCoursesList =
-            responseBody is List
-                ? responseBody
-                : (responseBody['courses'] ?? [responseBody]);
-
-        if (mounted) {
-          setState(() {
-            subscribedCourses = List<Map<String, dynamic>>.from(
-              subscribedCoursesList,
-            );
-          });
-          await _cacheSubscribedCourses();
-        }
-
-        await Future.wait(
-          subscribedCoursesList.map((course) async {
-            final courseId = course['id'] as int;
-            final imageBytes = await getSubscribedCourseImage(course);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                subscribedCoursesImages[courseId] = imageBytes;
-              });
-              await _cacheSubscribedCourseImage(courseId, imageBytes);
-            }
-          }),
-        );
-      } else if (response.statusCode == 401) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.offAll(() => LogIn());
-          showErrorSnackbar("Session expired. Please log in again.");
-        });
-      } else {
-        if (subscribedCourses.isEmpty) {
-          setState(() {
-            subscribedCourses = List.from(cachedSubscribedCourses);
-          });
-          if (subscribedCourses.isEmpty) {
-            throw Exception(
-              "Failed to load subscribed courses: " +
-                  response.statusCode.toString(),
-            );
-          }
-        }
-      }
-    } on TimeoutException {
-      if (subscribedCourses.isEmpty) {
-        setState(() {
-          subscribedCourses = List.from(cachedSubscribedCourses);
-        });
-        if (subscribedCourses.isEmpty) {
-          showErrorSnackbar("Request timeout. Please try again.");
-        } else {
-          showErrorSnackbar("Using cached data - connection is slow");
-        }
-      }
+      // Load images for all subject types
+      // await Future.wait([
+      //   _loadImagesForSubjects(scientificSubjects),
+      //   _loadImagesForSubjects(literarySubjects),
+      //   _loadRecommendedCoursesImages(),
+      //   _loadTopRatedCoursesImages(),
+      //   _loadRecentCoursesImages(),
+      //   _loadSubscribedCoursesImages(),
+      // ]);
     } catch (e) {
-      if (subscribedCourses.isEmpty) {
-        setState(() {
-          subscribedCourses = List.from(cachedSubscribedCourses);
-        });
-        if (subscribedCourses.isEmpty) {
-          showErrorSnackbar("Failed to load subscribed courses");
-        } else {
-          showErrorSnackbar("Using cached data - " + e.toString());
-        }
-      }
-      debugPrint("Error fetching subscribed courses: $e");
-    }
-  }
-
-  Future<Uint8List?> getSubscribedCourseImage(dynamic course) async {
-    final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString(
-      'subscribed_course_image_$courseId',
-    );
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-
-    try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getcourseimage/$courseId';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Subscribed course image not found for ID: $courseId");
-        return null;
-      } else {
-        throw Exception(
-          "Image fetch failed: " + response.statusCode.toString(),
-        );
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for subscribed course $courseId");
-      return null;
-    } catch (e) {
-      debugPrint("Error fetching subscribed course image: $e");
-      return null;
+      debugPrint("Error loading cached data: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return
-    // MaterialApp(
-    //   theme: themeController.initialTheme,
-    //   locale: localeController.initialLang,
-    //   debugShowCheckedModeBanner: false,
-    //   home:
-    Scaffold(
-      // appBar: AppBar(
-      //   leading: IconButton(
-      //     onPressed: () {
-      //       Navigator.push(
-      //         context,
-      //         MaterialPageRoute(builder: (context) => Favorites()),
-      //       );
-      //     },
-      //     icon: Icon(Icons.favorite),
-      //   ),
-      //   title: Text("Home Page".tr),
-      //   centerTitle: true,
-      //   actions: [
-      //     IconButton(
-      //       onPressed: () {
-      //         showSearch(
-      //           context: context,
-      //           delegate: SearchCustom(subjects, subjectsImages),
-      //         );
-      //       },
-      //       icon: Icon(Icons.search_outlined),
-      //     ),
-      //   ],
-      // ),
+    return Scaffold(
       body:
-          subjects.isEmpty
+          (cacheManager.isCacheEnabled.value == false &&
+                  sharedPrefs.prefs.getBool('isConnected') == false)
+              ? Center(
+                child: Lottie.asset(
+                  ImageAssets.noDataLottie,
+                  width: 300,
+                  height: 300,
+                ),
+              )
+              : subjects.isEmpty
               ? Center(
                 child: CircularProgressIndicator(
                   color:
@@ -1256,7 +563,7 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     children: [
                       Container(
-                        padding: EdgeInsets.only(top: 30),
+                        padding: const EdgeInsets.only(top: 30),
                         height: 80,
                         // color: Colors.red,
                         child: Row(
@@ -1282,6 +589,8 @@ class _HomePageState extends State<HomePage> {
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodySmall!.copyWith(
+                                      fontFamily:
+                                          FontController().currentFontFamily,
                                       color:
                                           themeController.initialTheme ==
                                                   Themes.customLightTheme
@@ -1307,7 +616,7 @@ class _HomePageState extends State<HomePage> {
                                     context: context,
                                     delegate: DynamicSearch(
                                       elements: subjects,
-                                      elementsImages: subjectsImages,
+                                      // elementsImages: subjectsImages,
                                       searchType: 'subjects',
                                       onItemTap: (subject) {
                                         if (isSelected[0]) {
@@ -1350,10 +659,10 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
                       Expanded(
                         child: Container(
-                          padding: EdgeInsets.only(left: 20),
+                          padding: const EdgeInsets.only(left: 20),
                           decoration: BoxDecoration(
                             color:
                                 themeController.initialTheme ==
@@ -1370,7 +679,7 @@ class _HomePageState extends State<HomePage> {
                             scrollDirection: Axis.vertical,
                             physics: AlwaysScrollableScrollPhysics(),
                             children: [
-                              SizedBox(height: 30),
+                              const SizedBox(height: 30),
                               Center(
                                 child: ToggleButtons(
                                   isSelected: isSelected,
@@ -1448,23 +757,26 @@ class _HomePageState extends State<HomePage> {
                                         "Scientific".tr,
                                         style: TextStyle(
                                           fontWeight: FontWeight.w400,
+                                          fontFamily:
+                                              FontController()
+                                                  .currentFontFamily,
                                           fontSize: 18,
                                           color:
                                               themeController.initialTheme ==
                                                       Themes.customLightTheme
                                                   ? isSelected[0]
                                                       ? Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
                                                   : isSelected[0]
                                                   ? Color.fromARGB(
                                                     255,
@@ -1500,24 +812,27 @@ class _HomePageState extends State<HomePage> {
                                       child: Text(
                                         "Literary".tr,
                                         style: TextStyle(
+                                          fontFamily:
+                                              FontController()
+                                                  .currentFontFamily,
                                           fontWeight: FontWeight.w400,
                                           fontSize: 18,
                                           color:
                                               themeController.initialTheme ==
                                                       Themes.customLightTheme
                                                   ? isSelected[0]
-                                                      ?Color.fromARGB(
-                                                    255,
-                                                    40,
-                                                    41,
-                                                    61,
-                                                  )
-                                                  : Color.fromARGB(
-                                                    255,
-                                                    210,
-                                                    209,
-                                                    224,
-                                                  )
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      )
                                                   : isSelected[0]
                                                   ? Color.fromARGB(
                                                     255,
@@ -1537,13 +852,15 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                              SizedBox(height: 30),
+                              const SizedBox(height: 30),
                               Center(
                                 child: Text(
                                   "Subjects".tr,
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
+                                    fontFamily:
+                                        FontController().currentFontFamily,
                                     fontStyle: FontStyle.normal,
                                     color:
                                         themeController.initialTheme ==
@@ -1558,8 +875,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 10),
-                              Container(
+                              const SizedBox(height: 10),
+                              SizedBox(
                                 height: 120,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -1572,8 +889,8 @@ class _HomePageState extends State<HomePage> {
                                   itemCount: subjects.length,
                                   itemBuilder: (context, i) {
                                     int uniId = subjects[i]["id"];
-                                    Uint8List? imageBytes =
-                                        subjectsImages[uniId];
+                                    // Uint8List? imageBytes =
+                                    //     subjectsImages[uniId];
 
                                     return InkWell(
                                       onTap: () {
@@ -1588,11 +905,11 @@ class _HomePageState extends State<HomePage> {
                                         );
                                       },
                                       child: Container(
-                                        margin: EdgeInsets.only(
+                                        margin: const EdgeInsets.only(
                                           right: 11,
                                           left: 1,
                                         ),
-                                        padding: EdgeInsets.all(10),
+                                        padding: const EdgeInsets.all(10),
                                         height: 120,
                                         width: 120,
                                         decoration: BoxDecoration(
@@ -1623,44 +940,28 @@ class _HomePageState extends State<HomePage> {
                                             Expanded(
                                               flex: 3,
                                               child:
-                                                  // imageBytes != null
-                                                  //     ? Image.memory(
-                                                  //       imageBytes,
-                                                  //       fit: BoxFit.fill,
-                                                  //       errorBuilder: (
-                                                  //         context,
-                                                  //         error,
-                                                  //         stackTrace,
-                                                  //       ) {
-                                                  //         return Image.asset(
-                                                  //           ImageAssets.subject,
-                                                  //           height: 125,
-                                                  //           fit: BoxFit.cover,
-                                                  //         );
-                                                  //       },
-                                                  //     )
-                                                  //     : Image.asset(
-                                                  //       ImageAssets.subject,
-                                                  //     ),
                                                   subjects[i]["image"] != null
-                                                      // ? CachedNetworkImage(
-                                                      //   imageUrl:
-                                                      //       "$mainIP/${subjects[i]["image"]}",
-                                                      // )
-                                                      ? Image.asset(
-                                                        ImageAssets.book,
+                                                      ? CachedNetworkImage(
+                                                        imageUrl:
+                                                            "$mainIP/${subjects[i]["image"]}",
                                                       )
+                                                      // ? Image.network(
+                                                      //   subjects[i]["image"],
+                                                      // )
                                                       : Image.asset(
                                                         ImageAssets.book,
                                                       ),
                                             ),
-                                            SizedBox(height: 10),
+                                            const SizedBox(height: 10),
                                             Expanded(
                                               flex: 1,
                                               child: Text(
                                                 "${subjects[i]["name"]}".tr,
                                                 style: TextStyle(
                                                   fontSize: 16,
+                                                  fontFamily:
+                                                      FontController()
+                                                          .currentFontFamily,
                                                   fontWeight: FontWeight.w400,
                                                   fontStyle: FontStyle.normal,
                                                   color:
@@ -1691,13 +992,15 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
 
-                              SizedBox(height: 30),
+                              const SizedBox(height: 30),
                               Center(
                                 child: Text(
                                   "Recommended Courses".tr,
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
+                                    fontFamily:
+                                        FontController().currentFontFamily,
                                     fontStyle: FontStyle.normal,
                                     color:
                                         themeController.initialTheme ==
@@ -1712,8 +1015,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 10),
-                              Container(
+                              const SizedBox(height: 10),
+                              SizedBox(
                                 height: 180,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -1734,8 +1037,7 @@ class _HomePageState extends State<HomePage> {
                                               builder:
                                                   (context) => Courses(
                                                     courses: recommendedCourses,
-                                                    CoursesImages:
-                                                        recommendedCoursesImages,
+
                                                     title:
                                                         "Recommended Courses",
                                                   ),
@@ -1777,6 +1079,9 @@ class _HomePageState extends State<HomePage> {
                                                 "More".tr,
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
+                                                  fontFamily:
+                                                      FontController()
+                                                          .currentFontFamily,
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w400,
                                                   fontStyle: FontStyle.normal,
@@ -1806,8 +1111,8 @@ class _HomePageState extends State<HomePage> {
                                     }
 
                                     int uniId = recommendedCourses[i]["id"];
-                                    Uint8List? imageBytes =
-                                        recommendedCoursesImages[uniId];
+                                    // Uint8List? imageBytes =
+                                    //     recommendedCoursesImages[uniId];
 
                                     return InkWell(
                                       onTap: () {
@@ -1819,18 +1124,17 @@ class _HomePageState extends State<HomePage> {
                                                   CoursesData:
                                                       recommendedCourses[i],
                                                   index: i,
-                                                  CoursesImage: imageBytes,
                                                 ),
                                           ),
                                         );
                                       },
                                       child: Container(
-                                        margin: EdgeInsets.only(
+                                        margin: const EdgeInsets.only(
                                           left: 1,
                                           right: 10,
                                         ),
-                                        // padding: EdgeInsets.only(left: 10,right: 10),
-                                        padding: EdgeInsets.all(10),
+                                        // padding: const EdgeInsets.only(left: 10,right: 10),
+                                        padding: const EdgeInsets.all(10),
                                         height: 130,
                                         width: 120,
                                         decoration: BoxDecoration(
@@ -1871,7 +1175,7 @@ class _HomePageState extends State<HomePage> {
                                                       ? Container(
                                                         height: 23,
                                                         padding:
-                                                            EdgeInsets.symmetric(
+                                                            const EdgeInsets.symmetric(
                                                               horizontal: 6,
                                                             ),
                                                         decoration: BoxDecoration(
@@ -1913,7 +1217,9 @@ class _HomePageState extends State<HomePage> {
                                                               ),
                                                               size: 20,
                                                             ),
-                                                            SizedBox(width: 2),
+                                                            const SizedBox(
+                                                              width: 2,
+                                                            ),
                                                             Text(
                                                               // "${recommendedCourses[i]["rating"]}",
                                                               double.parse(
@@ -1923,6 +1229,9 @@ class _HomePageState extends State<HomePage> {
                                                                 1,
                                                               ),
                                                               style: TextStyle(
+                                                                fontFamily:
+                                                                    FontController()
+                                                                        .currentFontFamily,
                                                                 overflow:
                                                                     TextOverflow
                                                                         .clip,
@@ -1939,7 +1248,7 @@ class _HomePageState extends State<HomePage> {
                                                           ],
                                                         ),
                                                       )
-                                                      : SizedBox.shrink(),
+                                                      : const SizedBox.shrink(),
 
                                                   // Like button on the right
                                                   GetBuilder<
@@ -1989,12 +1298,19 @@ class _HomePageState extends State<HomePage> {
                                                     MainAxisAlignment.center,
                                                 children: [
                                                   const SizedBox(height: 36),
-                                                  imageBytes != null
-                                                      ? Image.asset(
-                                                        ImageAssets.book,
+                                                  recommendedCourses[i]["image"] !=
+                                                          null
+                                                      ? CachedNetworkImage(
+                                                        imageUrl:
+                                                            "$mainIP/${recommendedCourses[i]["image"]}",
                                                         height: 90,
                                                         width: 90,
                                                       )
+                                                      // ? Image.network(
+                                                      //   recommendedCourses[i]["image"],
+                                                      //   height: 90,
+                                                      //   width: 90,
+                                                      // )
                                                       : Image.asset(
                                                         ImageAssets.subject,
                                                       ),
@@ -2007,6 +1323,9 @@ class _HomePageState extends State<HomePage> {
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
+                                                        fontFamily:
+                                                            FontController()
+                                                                .currentFontFamily,
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -2040,7 +1359,7 @@ class _HomePageState extends State<HomePage> {
                                   },
                                 ),
                               ),
-                              SizedBox(height: 30),
+                              const SizedBox(height: 30),
                               Center(
                                 child: Text(
                                   "Top Rated Courses".tr,
@@ -2048,6 +1367,8 @@ class _HomePageState extends State<HomePage> {
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     fontStyle: FontStyle.normal,
+                                    fontFamily:
+                                        FontController().currentFontFamily,
                                     color:
                                         themeController.initialTheme ==
                                                 Themes.customLightTheme
@@ -2061,8 +1382,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 10),
-                              Container(
+                              const SizedBox(height: 10),
+                              SizedBox(
                                 height: 180,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -2083,8 +1404,6 @@ class _HomePageState extends State<HomePage> {
                                               builder:
                                                   (context) => Courses(
                                                     courses: TopRatedCourses,
-                                                    CoursesImages:
-                                                        TopRatedCoursesImages,
                                                     title: "Top Courses",
                                                   ),
                                             ),
@@ -2125,6 +1444,9 @@ class _HomePageState extends State<HomePage> {
                                                 "More".tr,
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
+                                                  fontFamily:
+                                                      FontController()
+                                                          .currentFontFamily,
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w400,
                                                   fontStyle: FontStyle.normal,
@@ -2154,8 +1476,8 @@ class _HomePageState extends State<HomePage> {
                                     }
 
                                     int uniId = TopRatedCourses[i]["id"];
-                                    Uint8List? imageBytes =
-                                        TopRatedCoursesImages[uniId];
+                                    // Uint8List? imageBytes =
+                                    //     TopRatedCoursesImages[uniId];
 
                                     return InkWell(
                                       onTap: () {
@@ -2167,18 +1489,17 @@ class _HomePageState extends State<HomePage> {
                                                   CoursesData:
                                                       recommendedCourses[i],
                                                   index: i,
-                                                  CoursesImage: imageBytes,
                                                 ),
                                           ),
                                         );
                                       },
                                       child: Container(
-                                        margin: EdgeInsets.only(
+                                        margin: const EdgeInsets.only(
                                           left: 1,
                                           right: 10,
                                         ),
-                                        // padding: EdgeInsets.only(left: 10,right: 10),
-                                        padding: EdgeInsets.all(10),
+                                        // padding: const EdgeInsets.only(left: 10,right: 10),
+                                        padding: const EdgeInsets.all(10),
                                         height: 130,
                                         width: 120,
                                         decoration: BoxDecoration(
@@ -2219,7 +1540,7 @@ class _HomePageState extends State<HomePage> {
                                                       ? Container(
                                                         height: 23,
                                                         padding:
-                                                            EdgeInsets.symmetric(
+                                                            const EdgeInsets.symmetric(
                                                               horizontal: 6,
                                                             ),
                                                         decoration: BoxDecoration(
@@ -2261,7 +1582,9 @@ class _HomePageState extends State<HomePage> {
                                                               ),
                                                               size: 20,
                                                             ),
-                                                            SizedBox(width: 2),
+                                                            const SizedBox(
+                                                              width: 2,
+                                                            ),
                                                             Text(
                                                               // "${recommendedCourses[i]["rating"]}",
                                                               double.parse(
@@ -2271,6 +1594,9 @@ class _HomePageState extends State<HomePage> {
                                                                 1,
                                                               ),
                                                               style: TextStyle(
+                                                                fontFamily:
+                                                                    FontController()
+                                                                        .currentFontFamily,
                                                                 overflow:
                                                                     TextOverflow
                                                                         .clip,
@@ -2287,8 +1613,8 @@ class _HomePageState extends State<HomePage> {
                                                           ],
                                                         ),
                                                       )
-                                                      : SizedBox.shrink(),
-                                                  SizedBox.shrink(),
+                                                      : const SizedBox.shrink(),
+                                                  const SizedBox.shrink(),
 
                                                   GetBuilder<
                                                     FavoriteController
@@ -2337,12 +1663,19 @@ class _HomePageState extends State<HomePage> {
                                                     MainAxisAlignment.center,
                                                 children: [
                                                   const SizedBox(height: 35),
-                                                  imageBytes != null
-                                                      ? Image.asset(
-                                                        ImageAssets.book,
+                                                  TopRatedCourses[i]["image"] !=
+                                                          null
+                                                      ? CachedNetworkImage(
+                                                        imageUrl:
+                                                            "$mainIP/${TopRatedCourses[i]["image"]}",
                                                         height: 90,
                                                         width: 90,
                                                       )
+                                                      // ? Image.network(
+                                                      //   TopRatedCourses[i]["image"],
+                                                      //   height: 90,
+                                                      //   width: 90,
+                                                      // )
                                                       : Image.asset(
                                                         ImageAssets.subject,
                                                       ),
@@ -2355,6 +1688,9 @@ class _HomePageState extends State<HomePage> {
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
+                                                        fontFamily:
+                                                            FontController()
+                                                                .currentFontFamily,
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -2388,13 +1724,15 @@ class _HomePageState extends State<HomePage> {
                                   },
                                 ),
                               ),
-                              SizedBox(height: 30),
+                              const SizedBox(height: 30),
                               Center(
                                 child: Text(
                                   "Most Recent Courses".tr,
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
+                                    fontFamily:
+                                        FontController().currentFontFamily,
                                     fontStyle: FontStyle.normal,
                                     color:
                                         themeController.initialTheme ==
@@ -2409,8 +1747,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 10),
-                              Container(
+                              const SizedBox(height: 10),
+                              SizedBox(
                                 height: 180,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -2431,8 +1769,6 @@ class _HomePageState extends State<HomePage> {
                                               builder:
                                                   (context) => Courses(
                                                     courses: recentCourses,
-                                                    CoursesImages:
-                                                        recentCoursesImages,
                                                     title: "recent Courses",
                                                   ),
                                             ),
@@ -2473,6 +1809,9 @@ class _HomePageState extends State<HomePage> {
                                                 "More".tr,
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
+                                                  fontFamily:
+                                                      FontController()
+                                                          .currentFontFamily,
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w400,
                                                   fontStyle: FontStyle.normal,
@@ -2502,8 +1841,8 @@ class _HomePageState extends State<HomePage> {
                                     }
 
                                     int uniId = recentCourses[i]["id"];
-                                    Uint8List? imageBytes =
-                                        recentCoursesImages[uniId];
+                                    // Uint8List? imageBytes =
+                                    //     recentCoursesImages[uniId];
 
                                     return InkWell(
                                       onTap: () {
@@ -2514,18 +1853,17 @@ class _HomePageState extends State<HomePage> {
                                                 (context) => CoursesLessons(
                                                   CoursesData: recentCourses[i],
                                                   index: i,
-                                                  CoursesImage: imageBytes,
                                                 ),
                                           ),
                                         );
                                       },
                                       child: Container(
-                                        margin: EdgeInsets.only(
+                                        margin: const EdgeInsets.only(
                                           left: 1,
                                           right: 10,
                                         ),
-                                        // padding: EdgeInsets.only(left: 10,right: 10),
-                                        padding: EdgeInsets.all(10),
+                                        // padding: const EdgeInsets.only(left: 10,right: 10),
+                                        padding: const EdgeInsets.all(10),
                                         height: 130,
                                         width: 120,
                                         decoration: BoxDecoration(
@@ -2566,7 +1904,7 @@ class _HomePageState extends State<HomePage> {
                                                       ? Container(
                                                         height: 23,
                                                         padding:
-                                                            EdgeInsets.symmetric(
+                                                            const EdgeInsets.symmetric(
                                                               horizontal: 6,
                                                             ),
                                                         decoration: BoxDecoration(
@@ -2608,7 +1946,9 @@ class _HomePageState extends State<HomePage> {
                                                               ),
                                                               size: 20,
                                                             ),
-                                                            SizedBox(width: 2),
+                                                            const SizedBox(
+                                                              width: 2,
+                                                            ),
                                                             Text(
                                                               // "${recentCourses[i]["rating"]}",
                                                               double.parse(
@@ -2618,6 +1958,9 @@ class _HomePageState extends State<HomePage> {
                                                                 1,
                                                               ),
                                                               style: TextStyle(
+                                                                fontFamily:
+                                                                    FontController()
+                                                                        .currentFontFamily,
                                                                 overflow:
                                                                     TextOverflow
                                                                         .clip,
@@ -2634,8 +1977,8 @@ class _HomePageState extends State<HomePage> {
                                                           ],
                                                         ),
                                                       )
-                                                      : SizedBox.shrink(),
-                                                  SizedBox.shrink(),
+                                                      : const SizedBox.shrink(),
+                                                  const SizedBox.shrink(),
 
                                                   GetBuilder<
                                                     FavoriteController
@@ -2684,12 +2027,20 @@ class _HomePageState extends State<HomePage> {
                                                     MainAxisAlignment.center,
                                                 children: [
                                                   const SizedBox(height: 34),
-                                                  imageBytes != null
-                                                      ? Image.asset(
-                                                        ImageAssets.book,
+                                                  recentCourses[i]["image"] !=
+                                                          null
+                                                      ? CachedNetworkImage(
+                                                        imageUrl:
+                                                            "$mainIP/${recentCourses[i]["image"]}",
                                                         height: 90,
                                                         width: 90,
+                                                        // fit: BoxFit.contain,
                                                       )
+                                                      // ? Image.network(
+                                                      //   recentCourses[i]["image"],
+                                                      //   height: 90,
+                                                      //   width: 90,
+                                                      // )
                                                       : Image.asset(
                                                         ImageAssets.subject,
                                                       ),
@@ -2702,6 +2053,9 @@ class _HomePageState extends State<HomePage> {
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
+                                                        fontFamily:
+                                                            FontController()
+                                                                .currentFontFamily,
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -2735,13 +2089,15 @@ class _HomePageState extends State<HomePage> {
                                   },
                                 ),
                               ),
-                              SizedBox(height: 30),
+                              const SizedBox(height: 30),
                               Center(
                                 child: Text(
                                   "Most Subscribed Courses".tr,
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
+                                    fontFamily:
+                                        FontController().currentFontFamily,
                                     fontStyle: FontStyle.normal,
                                     color:
                                         themeController.initialTheme ==
@@ -2756,8 +2112,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 10),
-                              Container(
+                              const SizedBox(height: 10),
+                              SizedBox(
                                 height: 180,
                                 child: GridView.builder(
                                   scrollDirection: Axis.horizontal,
@@ -2778,8 +2134,6 @@ class _HomePageState extends State<HomePage> {
                                               builder:
                                                   (context) => Courses(
                                                     courses: subscribedCourses,
-                                                    CoursesImages:
-                                                        subscribedCoursesImages,
                                                     title:
                                                         "Most Subscribed Courses",
                                                   ),
@@ -2821,6 +2175,9 @@ class _HomePageState extends State<HomePage> {
                                                 "More".tr,
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
+                                                  fontFamily:
+                                                      FontController()
+                                                          .currentFontFamily,
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w400,
                                                   fontStyle: FontStyle.normal,
@@ -2850,8 +2207,8 @@ class _HomePageState extends State<HomePage> {
                                     }
 
                                     int uniId = subscribedCourses[i]["id"];
-                                    Uint8List? imageBytes =
-                                        subscribedCoursesImages[uniId];
+                                    // Uint8List? imageBytes =
+                                    //     subscribedCoursesImages[uniId];
 
                                     return InkWell(
                                       onTap: () {
@@ -2863,18 +2220,17 @@ class _HomePageState extends State<HomePage> {
                                                   CoursesData:
                                                       subscribedCourses[i],
                                                   index: i,
-                                                  CoursesImage: imageBytes,
                                                 ),
                                           ),
                                         );
                                       },
                                       child: Container(
-                                        margin: EdgeInsets.only(
+                                        margin: const EdgeInsets.only(
                                           left: 1,
                                           right: 10,
                                         ),
-                                        // padding: EdgeInsets.only(left: 10,right: 10),
-                                        padding: EdgeInsets.all(10),
+                                        // padding: const EdgeInsets.only(left: 10,right: 10),
+                                        padding: const EdgeInsets.all(10),
                                         height: 130,
                                         width: 120,
                                         decoration: BoxDecoration(
@@ -2915,7 +2271,7 @@ class _HomePageState extends State<HomePage> {
                                                       ? Container(
                                                         height: 23,
                                                         padding:
-                                                            EdgeInsets.symmetric(
+                                                            const EdgeInsets.symmetric(
                                                               horizontal: 6,
                                                             ),
                                                         decoration: BoxDecoration(
@@ -2957,7 +2313,9 @@ class _HomePageState extends State<HomePage> {
                                                               ),
                                                               size: 20,
                                                             ),
-                                                            SizedBox(width: 2),
+                                                            const SizedBox(
+                                                              width: 2,
+                                                            ),
                                                             Text(
                                                               // "${subscribedCourses[i]["rating"]}",
                                                               double.parse(
@@ -2967,6 +2325,9 @@ class _HomePageState extends State<HomePage> {
                                                                 1,
                                                               ),
                                                               style: TextStyle(
+                                                                fontFamily:
+                                                                    FontController()
+                                                                        .currentFontFamily,
                                                                 overflow:
                                                                     TextOverflow
                                                                         .clip,
@@ -2983,8 +2344,8 @@ class _HomePageState extends State<HomePage> {
                                                           ],
                                                         ),
                                                       )
-                                                      : SizedBox.shrink(),
-                                                  SizedBox.shrink(),
+                                                      : const SizedBox.shrink(),
+                                                  const SizedBox.shrink(),
 
                                                   GetBuilder<
                                                     FavoriteController
@@ -3033,12 +2394,19 @@ class _HomePageState extends State<HomePage> {
                                                     MainAxisAlignment.center,
                                                 children: [
                                                   const SizedBox(height: 34),
-                                                  imageBytes != null
-                                                      ? Image.asset(
-                                                        ImageAssets.book,
+                                                  subscribedCourses[i]['image'] !=
+                                                          null
+                                                      ? CachedNetworkImage(
+                                                        imageUrl:
+                                                            "$mainIP/${subscribedCourses[i]["image"]}",
                                                         height: 90,
                                                         width: 90,
                                                       )
+                                                      // ? Image.network(
+                                                      //   subscribedCourses[i]['image'],
+                                                      //   height: 90,
+                                                      //   width: 90,
+                                                      // )
                                                       : Image.asset(
                                                         ImageAssets.subject,
                                                       ),
@@ -3051,6 +2419,9 @@ class _HomePageState extends State<HomePage> {
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
+                                                        fontFamily:
+                                                            FontController()
+                                                                .currentFontFamily,
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -3084,7 +2455,64 @@ class _HomePageState extends State<HomePage> {
                                   },
                                 ),
                               ),
-                              SizedBox(height: 30),
+                              Container(
+                                padding: EdgeInsets.only(
+                                  left: 110,
+                                  right: 110,
+                                  top: 30,
+                                ),
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => PdfLibraryScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Card(
+                                    color:
+                                        themeController.initialTheme ==
+                                                Themes.customLightTheme
+                                            ? Color.fromARGB(255, 40, 41, 61)
+                                            : Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        textAlign: TextAlign.center,
+                                        "Previous Exams".tr,
+                                        style: TextStyle(
+                                          fontFamily:
+                                              FontController()
+                                                  .currentFontFamily,
+                                          color:
+                                              themeController.initialTheme ==
+                                                      Themes.customLightTheme
+                                                  ? Color.fromARGB(
+                                                    255,
+                                                    210,
+                                                    209,
+                                                    224,
+                                                  )
+                                                  : Color.fromARGB(
+                                                    255,
+                                                    40,
+                                                    41,
+                                                    61,
+                                                  ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 30),
                             ],
                           ),
                         ),

@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:get/get.dart';
 
 import 'SharedPrefs.dart';
@@ -10,12 +12,12 @@ class CacheManager extends GetxController {
   final RxBool isCacheEnabled = true.obs;
 
   Future<void> init() async {
-    final prefs = await SharedPrefs.instance;
+    final prefs = SharedPrefs.instance;
     isCacheEnabled.value = prefs.prefs.getBool('cacheEnabled') ?? true;
   }
 
   Future<void> setCacheEnabled(bool enabled) async {
-    final prefs = await SharedPrefs.instance;
+    final prefs = SharedPrefs.instance;
     await prefs.prefs.setBool('cacheEnabled', enabled);
     isCacheEnabled.value = enabled;
   }

@@ -1,23 +1,25 @@
 // ignore_for_file: file_names, non_constant_identifier_names
 
 import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:learning_management_system/view/NavBar.dart';
+import '../../controller/FontController.dart';
 import '../constants/ImageAssets.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
-// import '../../locale/LocaleController.dart';
 
 class DynamicSearch extends SearchDelegate {
   final List elements;
-  final Map<int, Uint8List> elementsImages;
-  final String searchType; // 'subjects', 'books', 'courses', 'teachers', 'lessons'
+  // final Map<int, Uint8List> elementsImages;
+  final String searchType;
   final Function(Map<String, dynamic>) onItemTap;
-  final String? subjectName; // For books and lessons context
+  final String? subjectName;
 
   DynamicSearch({
     required this.elements,
-    required this.elementsImages,
+    // required this.elementsImages,
     required this.searchType,
     required this.onItemTap,
     this.subjectName,
@@ -34,9 +36,11 @@ class DynamicSearch extends SearchDelegate {
         },
         icon: Icon(
           Icons.clear,
-          color: Get.find<ThemeController>().initialTheme == Themes.customLightTheme
-              ? Color.fromARGB(255, 40, 41, 61)
-              : Color.fromARGB(255, 210, 209, 224),
+          color:
+              Get.find<ThemeController>().initialTheme ==
+                      Themes.customLightTheme
+                  ? Color.fromARGB(255, 40, 41, 61)
+                  : Color.fromARGB(255, 210, 209, 224),
         ),
       ),
     ];
@@ -50,9 +54,10 @@ class DynamicSearch extends SearchDelegate {
       },
       icon: Icon(
         Icons.arrow_back,
-        color: Get.find<ThemeController>().initialTheme == Themes.customLightTheme
-            ? Color.fromARGB(255, 40, 41, 61)
-            : Color.fromARGB(255, 210, 209, 224),
+        color:
+            Get.find<ThemeController>().initialTheme == Themes.customLightTheme
+                ? Color.fromARGB(255, 40, 41, 61)
+                : Color.fromARGB(255, 210, 209, 224),
       ),
     );
   }
@@ -60,31 +65,33 @@ class DynamicSearch extends SearchDelegate {
   @override
   Widget buildResults(BuildContext context) {
     final themeController = Get.find<ThemeController>();
-    
-    sortedItems = elements
-        .where(
-          (element) =>
-              element["name"].toLowerCase().contains(query.toLowerCase()),
-        )
-        .toList();
+
+    sortedItems =
+        elements
+            .where(
+              (element) =>
+                  element["name"].toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList();
 
     if (sortedItems!.isEmpty) {
       return _buildNoResults(context);
     }
 
     return Container(
-      color: themeController.initialTheme == Themes.customLightTheme
-          ? Color.fromARGB(255, 210, 209, 224)
-          : Color.fromARGB(255, 40, 41, 61),
+      color:
+          themeController.initialTheme == Themes.customLightTheme
+              ? Color.fromARGB(255, 210, 209, 224)
+              : Color.fromARGB(255, 40, 41, 61),
       child: Column(
         children: [
-          // Search Header
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 40, 41, 61)
-                  : Color.fromARGB(255, 210, 209, 224),
+              color:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
@@ -94,42 +101,44 @@ class DynamicSearch extends SearchDelegate {
               children: [
                 Icon(
                   _getSearchIcon(),
-                  color: themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 210, 209, 224)
-                      : Color.fromARGB(255, 40, 41, 61),
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 210, 209, 224)
+                          : Color.fromARGB(255, 40, 41, 61),
                   size: 24,
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Text(
                   "${_getSearchTitle()} (${sortedItems!.length})".tr,
                   style: TextStyle(
-                    color: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 40, 41, 61),
+                    color:
+                        themeController.initialTheme == Themes.customLightTheme
+                            ? Color.fromARGB(255, 210, 209, 224)
+                            : Color.fromARGB(255, 40, 41, 61),
                     fontSize: 18,
+                    fontFamily: FontController().currentFontFamily,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 16),
-          
-          // Results List
+          const SizedBox(height: 16),
+
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: sortedItems!.length,
               itemBuilder: (context, index) {
                 int elementsId = sortedItems![index]["id"];
-                Uint8List? imageBytes = elementsImages[elementsId];
+                // Uint8List? imageBytes = elementsImages[elementsId];
 
                 return Container(
-                  margin: EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: 12),
                   child: _buildSearchCard(
                     context,
                     sortedItems![index],
-                    imageBytes,
+                    elements[index]['image'],
                     themeController,
                   ),
                 );
@@ -144,13 +153,14 @@ class DynamicSearch extends SearchDelegate {
   @override
   Widget buildSuggestions(BuildContext context) {
     final themeController = Get.find<ThemeController>();
-    
-    sortedItems = elements
-        .where(
-          (element) =>
-              element["name"].toLowerCase().contains(query.toLowerCase()),
-        )
-        .toList();
+
+    sortedItems =
+        elements
+            .where(
+              (element) =>
+                  element["name"].toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList();
 
     if (query.isEmpty) {
       return _buildInitialState(context);
@@ -161,18 +171,19 @@ class DynamicSearch extends SearchDelegate {
     }
 
     return Container(
-      color: themeController.initialTheme == Themes.customLightTheme
-          ? Color.fromARGB(255, 210, 209, 224)
-          : Color.fromARGB(255, 40, 41, 61),
+      color:
+          themeController.initialTheme == Themes.customLightTheme
+              ? Color.fromARGB(255, 210, 209, 224)
+              : Color.fromARGB(255, 40, 41, 61),
       child: Column(
         children: [
-          // Search Header
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 40, 41, 61)
-                  : Color.fromARGB(255, 210, 209, 224),
+              color:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
@@ -182,42 +193,44 @@ class DynamicSearch extends SearchDelegate {
               children: [
                 Icon(
                   _getSearchIcon(),
-                  color: themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 210, 209, 224)
-                      : Color.fromARGB(255, 40, 41, 61),
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 210, 209, 224)
+                          : Color.fromARGB(255, 40, 41, 61),
                   size: 24,
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Text(
                   "${_getSearchTitle()} (${sortedItems!.length})".tr,
                   style: TextStyle(
-                    color: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 210, 209, 224)
-                        : Color.fromARGB(255, 40, 41, 61),
+                    color:
+                        themeController.initialTheme == Themes.customLightTheme
+                            ? Color.fromARGB(255, 210, 209, 224)
+                            : Color.fromARGB(255, 40, 41, 61),
                     fontSize: 18,
+                    fontFamily: FontController().currentFontFamily,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 16),
-          
-          // Results List
+          const SizedBox(height: 16),
+
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: sortedItems!.length,
               itemBuilder: (context, index) {
                 int elementsId = sortedItems![index]["id"];
-                Uint8List? imageBytes = elementsImages[elementsId];
+                // Uint8List? imageBytes = elementsImages[elementsId];
 
                 return Container(
-                  margin: EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: 12),
                   child: _buildSearchCard(
                     context,
                     sortedItems![index],
-                    imageBytes,
+                    elements[index]['image'],
                     themeController,
                   ),
                 );
@@ -232,52 +245,48 @@ class DynamicSearch extends SearchDelegate {
   Widget _buildSearchCard(
     BuildContext context,
     Map<String, dynamic> item,
-    Uint8List? imageBytes,
+    String? imageBytes,
     ThemeController themeController,
   ) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: InkWell(
         onTap: () {
           onItemTap(item);
         },
         borderRadius: BorderRadius.circular(15),
         child: Container(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Image Section
               Container(
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
+                    color:
+                        themeController.initialTheme == Themes.customLightTheme
+                            ? Color.fromARGB(255, 40, 41, 61)
+                            : Color.fromARGB(255, 210, 209, 224),
                     width: 1,
                   ),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(9),
-                  child: imageBytes != null
-                      ? Image.memory(
-                          imageBytes,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _getDefaultImage();
-                          },
-                        )
-                      : _getDefaultImage(),
+                  child:
+                      imageBytes != null
+                          ? CachedNetworkImage(
+                            imageUrl: "$mainIP/$imageBytes",
+                            height: 60,
+                            width: 60,
+                          )
+                          : _getDefaultImage(),
                 ),
               ),
-              SizedBox(width: 16),
-              
-              // Content Section
+              const SizedBox(width: 16),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,32 +295,32 @@ class DynamicSearch extends SearchDelegate {
                       item["name"]?.toString() ?? "Unknown",
                       style: TextStyle(
                         fontSize: 16,
+                        fontFamily: FontController().currentFontFamily,
                         fontWeight: FontWeight.w600,
-                        color: themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
+                        color:
+                            themeController.initialTheme ==
+                                    Themes.customLightTheme
+                                ? Color.fromARGB(255, 40, 41, 61)
+                                : Color.fromARGB(255, 210, 209, 224),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 4),
-                    
+                    const SizedBox(height: 4),
+
                     // Additional info based on type
                     if (searchType == 'books' && subjectName != null)
                       Row(
                         children: [
-                          Icon(
-                            Icons.book,
-                            size: 14,
-                            color: Colors.blue,
-                          ),
-                          SizedBox(width: 4),
+                          Icon(Icons.book, size: 14, color: Colors.blue),
+                          const SizedBox(width: 4),
                           Text(
                             subjectName!,
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.blue,
                               fontWeight: FontWeight.w500,
+                              fontFamily: FontController().currentFontFamily,
                             ),
                           ),
                         ],
@@ -323,17 +332,20 @@ class DynamicSearch extends SearchDelegate {
                           fontSize: 12,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w400,
+                          fontFamily: FontController().currentFontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       )
-                    else if (searchType == 'courses' && item["description"] != null)
+                    else if (searchType == 'courses' &&
+                        item["description"] != null)
                       Text(
                         item["description"].toString(),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w400,
+                          fontFamily: FontController().currentFontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -341,14 +353,15 @@ class DynamicSearch extends SearchDelegate {
                   ],
                 ),
               ),
-              
+
               // Arrow Icon
               Icon(
                 Icons.arrow_forward_ios,
                 size: 16,
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 40, 41, 61)
-                    : Color.fromARGB(255, 210, 209, 224),
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
               ),
             ],
           ),
@@ -359,11 +372,12 @@ class DynamicSearch extends SearchDelegate {
 
   Widget _buildInitialState(BuildContext context) {
     final themeController = Get.find<ThemeController>();
-    
+
     return Container(
-      color: themeController.initialTheme == Themes.customLightTheme
-          ? Color.fromARGB(255, 210, 209, 224)
-          : Color.fromARGB(255, 40, 41, 61),
+      color:
+          themeController.initialTheme == Themes.customLightTheme
+              ? Color.fromARGB(255, 210, 209, 224)
+              : Color.fromARGB(255, 40, 41, 61),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -371,27 +385,31 @@ class DynamicSearch extends SearchDelegate {
             Icon(
               _getSearchIcon(),
               size: 80,
-              color: themeController.initialTheme == Themes.customLightTheme
-                  ? Color.fromARGB(255, 40, 41, 61)
-                  : Color.fromARGB(255, 210, 209, 224),
+              color:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? Color.fromARGB(255, 40, 41, 61)
+                      : Color.fromARGB(255, 210, 209, 224),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               "Search ${_getSearchTitle()}".tr,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 40, 41, 61)
-                    : Color.fromARGB(255, 210, 209, 224),
+                fontFamily: FontController().currentFontFamily,
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               "Type to start searching...".tr,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],
+                fontFamily: FontController().currentFontFamily,
               ),
             ),
           ],
@@ -402,37 +420,37 @@ class DynamicSearch extends SearchDelegate {
 
   Widget _buildNoResults(BuildContext context) {
     final themeController = Get.find<ThemeController>();
-    
+
     return Container(
-      color: themeController.initialTheme == Themes.customLightTheme
-          ? Color.fromARGB(255, 210, 209, 224)
-          : Color.fromARGB(255, 40, 41, 61),
+      color:
+          themeController.initialTheme == Themes.customLightTheme
+              ? Color.fromARGB(255, 210, 209, 224)
+              : Color.fromARGB(255, 40, 41, 61),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 80,
-              color: Colors.grey[400],
-            ),
-            SizedBox(height: 20),
+            Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 20),
             Text(
               "No ${_getSearchTitle()} found".tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 40, 41, 61)
-                    : Color.fromARGB(255, 210, 209, 224),
+                fontFamily: FontController().currentFontFamily,
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               "Try different keywords".tr,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
+                fontFamily: FontController().currentFontFamily,
               ),
             ),
           ],
@@ -444,35 +462,17 @@ class DynamicSearch extends SearchDelegate {
   Widget _getDefaultImage() {
     switch (searchType) {
       case 'subjects':
-        return Image.asset(
-          ImageAssets.subject,
-          fit: BoxFit.cover,
-        );
+        return Image.asset(ImageAssets.subject, fit: BoxFit.cover);
       case 'books':
-        return Image.asset(
-          ImageAssets.book,
-          fit: BoxFit.cover,
-        );
+        return Image.asset(ImageAssets.book, fit: BoxFit.cover);
       case 'teachers':
-        return Image.asset(
-          ImageAssets.teacher,
-          fit: BoxFit.cover,
-        );
+        return Image.asset(ImageAssets.teacher, fit: BoxFit.cover);
       case 'courses':
-        return Image.asset(
-          ImageAssets.course,
-          fit: BoxFit.cover,
-        );
+        return Image.asset(ImageAssets.course, fit: BoxFit.cover);
       case 'lessons':
-        return Image.asset(
-          ImageAssets.lecture,
-          fit: BoxFit.cover,
-        );
+        return Image.asset(ImageAssets.lecture, fit: BoxFit.cover);
       default:
-        return Image.asset(
-          ImageAssets.subject,
-          fit: BoxFit.cover,
-        );
+        return Image.asset(ImageAssets.subject, fit: BoxFit.cover);
     }
   }
 
@@ -509,4 +509,4 @@ class DynamicSearch extends SearchDelegate {
         return 'Items';
     }
   }
-} 
+}

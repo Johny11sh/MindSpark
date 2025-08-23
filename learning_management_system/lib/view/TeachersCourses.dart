@@ -2,11 +2,14 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:like_button/like_button.dart';
+import 'package:lottie/lottie.dart';
 
 import '../controller/FavoriteController.dart';
+import '../controller/FontController.dart';
+import '../services/CacheManager.dart';
 import '../view/LogIn.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -41,12 +44,16 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   late FavoriteController favoriteController;
 
   List<Map<String, dynamic>> teacherData = [];
-  final Map<int, Uint8List> coursesImages = {};
+  // final Map<int, Uint8List> coursesImages = {};
   bool isFavorite = false;
 
   // --- Most Recent Courses ---
   List<Map<String, dynamic>> recentCoursesData = [];
-  final Map<int, Uint8List> recentCoursesImages = {};
+  // final Map<int, Uint8List> recentCoursesImages = {};
+
+  List<Map<String, dynamic>> topRatedCoursesData = [];
+
+  final CacheManager cacheManager = CacheManager();
 
   @override
   void initState() {
@@ -66,13 +73,14 @@ class _TeachersCoursesState extends State<TeachersCourses> {
 
   Future<void> _loadInitialData() async {
     // Try to load from cache first
-    await _loadCachedCourses();
+    // await _loadCachedCourses();
 
-    // Then try to fetch fresh data if online
     if (sharedPrefs.prefs.getBool('isConnected') == true) {
       await getCoursesData();
-      // await getTopRatedCoursesData();
-      // await getRecentCoursesData();
+    } else {
+      if (cacheManager.isCacheEnabled.value == true) {
+        await _loadCachedCourses();
+      }
     }
   }
 
@@ -87,39 +95,27 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           teacherData = List<Map<String, dynamic>>.from(parsedList);
         });
 
-        // Load cached images
-        for (final course in teacherData) {
-          final imageKey = 'course_image_${course['id']}';
-          final imageString = sharedPrefs.prefs.getString(imageKey);
-          if (imageString != null && mounted) {
-            setState(() {
-              coursesImages[course['id']] = base64Decode(imageString);
-            });
-          }
+        final cacheKey2 =
+            'cached_top_rated_courses_${widget.TeacherData['id']}';
+        final cachedData2 = sharedPrefs.prefs.getString(cacheKey2);
+        if (cachedData2 != null) {
+          final List<dynamic> parsedList = jsonDecode(cachedData2);
+          setState(() {
+            topRatedCoursesData = List<Map<String, dynamic>>.from(parsedList);
+          });
+        }
+
+        final cacheKey3 = 'cached_recent_courses_${widget.TeacherData['id']}';
+        final cachedData3 = sharedPrefs.prefs.getString(cacheKey3);
+        if (cachedData3 != null) {
+          final List<dynamic> parsedList = jsonDecode(cachedData3);
+          setState(() {
+            recentCoursesData = List<Map<String, dynamic>>.from(parsedList);
+          });
         }
       }
     } catch (e) {
       debugPrint("Error loading cached courses: $e");
-    }
-  }
-
-  Future<void> _cacheCourses() async {
-    try {
-      final cacheKey = 'cached_courses_${widget.TeacherData['id']}';
-      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(teacherData));
-    } catch (e) {
-      debugPrint("Error caching courses: $e");
-    }
-  }
-
-  Future<void> _cacheCourseImage(int courseId, Uint8List imageBytes) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'course_image_$courseId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching course image: $e");
     }
   }
 
@@ -168,27 +164,33 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 ? responseBody
                 : (responseBody['courses'] ?? [responseBody]);
 
+        final List<dynamic> recentCoursesList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['recent'] ?? [responseBody]);
+
+        final List<dynamic> topRatedCoursesList =
+            responseBody is List
+                ? responseBody
+                : (responseBody['top_rated'] ?? [responseBody]);
+
         // 5. State Management and caching
         if (mounted) {
           setState(() {
             teacherData = List<Map<String, dynamic>>.from(coursesList);
+            recentCoursesData = List<Map<String, dynamic>>.from(
+              recentCoursesList,
+            );
+            topRatedCoursesData = List<Map<String, dynamic>>.from(
+              topRatedCoursesList,
+            );
           });
-          await _cacheCourses();
+          if (cacheManager.isCacheEnabled.value == true) {
+            await _cacheCourses();
+            await _cacheRecentCourses();
+            await _cacheTopRatedCourses();
+          }
         }
-
-        // 6. Parallel Image Loading and caching
-        await Future.wait(
-          coursesList.map((course) async {
-            final courseId = course["id"] as int;
-            final imageBytes = await getCoursesImage(course);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                coursesImages[courseId] = imageBytes;
-              });
-              await _cacheCourseImage(courseId, imageBytes);
-            }
-          }),
-        );
       } else if (response.statusCode == 401) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Get.offAll(() => LogIn());
@@ -196,20 +198,26 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         });
       } else {
         // If API fails but we have cached data, don't throw error
-        if (teacherData.isEmpty) {
+        if (teacherData.isEmpty ||
+            recentCoursesData.isEmpty ||
+            topRatedCoursesData.isEmpty) {
           throw Exception("Failed to load courses: ${response.statusCode}");
         }
       }
     } on TimeoutException {
       // If we have cached data, just show a warning
-      if (teacherData.isEmpty) {
+      if (teacherData.isEmpty ||
+          recentCoursesData.isEmpty ||
+          topRatedCoursesData.isEmpty) {
         showErrorSnackbar("Request timeout. Please try again.");
       } else {
         showErrorSnackbar("Using cached data - connection is slow");
       }
     } catch (e) {
       // If we have cached data, just show a warning
-      if (teacherData.isEmpty) {
+      if (teacherData.isEmpty ||
+          recentCoursesData.isEmpty ||
+          topRatedCoursesData.isEmpty) {
         showErrorSnackbar("Failed to load courses");
       } else {
         showErrorSnackbar("Using cached data - ${e.toString()}");
@@ -218,89 +226,12 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<Uint8List?> getCoursesImage(dynamic course) async {
-    // First try to get from cache
-    final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString('course_image_$courseId');
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-
-    // If not in cache and offline, return null
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-
-    // Otherwise fetch from API
+  Future<void> _cacheCourses() async {
     try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getcourseimage/$courseId';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("course image not found for ID: $courseId");
-        return null;
-      } else {
-        throw Exception("Image fetch failed: ${response.statusCode}");
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for course $courseId");
-      return null;
+      final cacheKey = 'cached_courses_${widget.TeacherData['id']}';
+      await sharedPrefs.prefs.setString(cacheKey, jsonEncode(teacherData));
     } catch (e) {
-      debugPrint("Error fetching course image: $e");
-      return null;
-    }
-  }
-
-  void showErrorSnackbar(String message) {
-    Get.rawSnackbar(
-      messageText: Text(message),
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
-      backgroundColor: Colors.red[800]!,
-      icon: const Icon(Icons.error_outline, color: Colors.white),
-    );
-  }
-
-  Future<void> _loadCachedRecentCourses() async {
-    try {
-      final cacheKey = 'cached_recent_courses_${widget.TeacherData['id']}';
-      final cachedData = sharedPrefs.prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final List<dynamic> parsedList = jsonDecode(cachedData);
-        setState(() {
-          recentCoursesData = List<Map<String, dynamic>>.from(parsedList);
-        });
-        // Load cached images
-        for (final course in recentCoursesData) {
-          final imageKey = 'recent_course_image_${course['id']}';
-          final imageString = sharedPrefs.prefs.getString(imageKey);
-          if (imageString != null && mounted) {
-            setState(() {
-              recentCoursesImages[course['id']] = base64Decode(imageString);
-            });
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint("Error loading cached recent courses: $e");
+      debugPrint("Error caching courses: $e");
     }
   }
 
@@ -316,178 +247,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<void> _cacheRecentCourseImage(
-    int courseId,
-    Uint8List imageBytes,
-  ) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'recent_course_image_$courseId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching recent course image: $e");
-    }
-  }
-
-  Future<void> getRecentCoursesData() async {
-    final token = sharedPrefs.prefs.getString('token') ?? '';
-    if (token.isEmpty) {
-      debugPrint("Token empty, redirecting to login");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAll(() => LogIn());
-        showErrorSnackbar("Session expired. Please log in again.");
-      });
-      return;
-    }
-    try {
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final APIurl =
-          '$baseUrl/api/getteachercoursesrecent/${widget.TeacherData['id']}';
-      final response = await http
-          .get(
-            Uri.parse(APIurl),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Accept': 'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-      debugPrint(
-        "Recent Courses API response: " + response.statusCode.toString(),
-      );
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final List<dynamic> coursesList =
-            responseBody is List
-                ? responseBody
-                : (responseBody['courses'] ?? [responseBody]);
-        if (mounted) {
-          setState(() {
-            recentCoursesData = List<Map<String, dynamic>>.from(coursesList);
-          });
-          await _cacheRecentCourses();
-        }
-        await Future.wait(
-          coursesList.map((course) async {
-            final courseId = course["id"] as int;
-            final imageBytes = await getRecentCourseImage(course);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                recentCoursesImages[courseId] = imageBytes;
-              });
-              await _cacheRecentCourseImage(courseId, imageBytes);
-            }
-          }),
-        );
-      } else if (response.statusCode == 401) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.offAll(() => LogIn());
-          showErrorSnackbar("Session expired. Please log in again.");
-        });
-      } else {
-        if (recentCoursesData.isEmpty) {
-          throw Exception(
-            "Failed to load recent courses: " + response.statusCode.toString(),
-          );
-        }
-      }
-    } on TimeoutException {
-      if (recentCoursesData.isEmpty) {
-        showErrorSnackbar("Request timeout. Please try again.");
-      } else {
-        showErrorSnackbar("Using cached data - connection is slow");
-      }
-    } catch (e) {
-      if (recentCoursesData.isEmpty) {
-        showErrorSnackbar("Failed to load recent courses");
-      } else {
-        showErrorSnackbar("Using cached data - " + e.toString());
-      }
-      debugPrint("Error fetching recent courses: $e");
-    }
-  }
-
-  Future<Uint8List?> getRecentCourseImage(dynamic course) async {
-    final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString(
-      'recent_course_image_$courseId',
-    );
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-    try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getcourseimage/$courseId';
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Recent course image not found for ID: $courseId");
-        return null;
-      } else {
-        throw Exception(
-          "Image fetch failed: " + response.statusCode.toString(),
-        );
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for recent course $courseId");
-      return null;
-    } catch (e) {
-      debugPrint("Error fetching recent course image: $e");
-      return null;
-    }
-  }
-
-  // --- Top Rated Courses ---
-  List<Map<String, dynamic>> topRatedCoursesData = [];
-  final Map<int, Uint8List> topRatedCoursesImages = {};
-
-  Future<void> _loadCachedTopRatedCourses() async {
-    try {
-      final cacheKey = 'cached_top_rated_courses_${widget.TeacherData['id']}';
-      final cachedData = sharedPrefs.prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final List<dynamic> parsedList = jsonDecode(cachedData);
-        setState(() {
-          topRatedCoursesData = List<Map<String, dynamic>>.from(parsedList);
-        });
-        // Load cached images
-        for (final course in topRatedCoursesData) {
-          final imageKey = 'top_rated_course_image_${course['id']}';
-          final imageString = sharedPrefs.prefs.getString(imageKey);
-          if (imageString != null && mounted) {
-            setState(() {
-              topRatedCoursesImages[course['id']] = base64Decode(imageString);
-            });
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint("Error loading cached top rated courses: $e");
-    }
-  }
-
   Future<void> _cacheTopRatedCourses() async {
     try {
       final cacheKey = 'cached_top_rated_courses_${widget.TeacherData['id']}';
@@ -500,541 +259,441 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<void> _cacheTopRatedCourseImage(
-    int courseId,
-    Uint8List imageBytes,
-  ) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'top_rated_course_image_$courseId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching top rated course image: $e");
-    }
-  }
-
-  Future<void> getTopRatedCoursesData() async {
-    final token = sharedPrefs.prefs.getString('token') ?? '';
-    if (token.isEmpty) {
-      debugPrint("Token empty, redirecting to login");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAll(() => LogIn());
-        showErrorSnackbar("Session expired. Please log in again.");
-      });
-      return;
-    }
-    try {
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final APIurl =
-          '$baseUrl/api/getteachercoursesrated/${widget.TeacherData['id']}';
-      final response = await http
-          .get(
-            Uri.parse(APIurl),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Accept': 'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-      debugPrint(
-        "Top Rated Courses API response: " + response.statusCode.toString(),
-      );
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final List<dynamic> coursesList =
-            responseBody is List
-                ? responseBody
-                : (responseBody['courses'] ?? [responseBody]);
-        if (mounted) {
-          setState(() {
-            topRatedCoursesData = List<Map<String, dynamic>>.from(coursesList);
-          });
-          await _cacheTopRatedCourses();
-        }
-        await Future.wait(
-          coursesList.map((course) async {
-            final courseId = course["id"] as int;
-            final imageBytes = await getTopRatedCourseImage(course);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                topRatedCoursesImages[courseId] = imageBytes;
-              });
-              await _cacheTopRatedCourseImage(courseId, imageBytes);
-            }
-          }),
-        );
-      } else if (response.statusCode == 401) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.offAll(() => LogIn());
-          showErrorSnackbar("Session expired. Please log in again.");
-        });
-      } else {
-        if (topRatedCoursesData.isEmpty) {
-          throw Exception(
-            "Failed to load top rated courses: " +
-                response.statusCode.toString(),
-          );
-        }
-      }
-    } on TimeoutException {
-      if (topRatedCoursesData.isEmpty) {
-        showErrorSnackbar("Request timeout. Please try again.");
-      } else {
-        showErrorSnackbar("Using cached data - connection is slow");
-      }
-    } catch (e) {
-      if (topRatedCoursesData.isEmpty) {
-        showErrorSnackbar("Failed to load top rated courses");
-      } else {
-        showErrorSnackbar("Using cached data - " + e.toString());
-      }
-      debugPrint("Error fetching top rated courses: $e");
-    }
-  }
-
-  Future<Uint8List?> getTopRatedCourseImage(dynamic course) async {
-    final courseId = course is Map ? course['id'] as int : course as int;
-    final cachedImage = sharedPrefs.prefs.getString(
-      'top_rated_course_image_$courseId',
+  void showErrorSnackbar(String message) {
+    Get.rawSnackbar(
+      messageText: Text(
+        message,
+        style: TextStyle(fontFamily: FontController().currentFontFamily),
+      ),
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 3),
+      backgroundColor: Colors.red[800]!,
+      icon: const Icon(Icons.error_outline, color: Colors.white),
     );
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-    try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getcourseimage/$courseId';
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Top rated course image not found for ID: $courseId");
-        return null;
-      } else {
-        throw Exception(
-          "Image fetch failed: " + response.statusCode.toString(),
-        );
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for top rated course $courseId");
-      return null;
-    } catch (e) {
-      debugPrint("Error fetching top rated course image: $e");
-      return null;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return
-    //  MaterialApp(
-    //   theme: themeController.initialTheme,
-    //   locale: localeController.initialLang,
-    //   debugShowCheckedModeBanner: false,
-    //   home: 
-      Scaffold(
-        // appBar: AppBar(
-        //   leading: IconButton(
-        //     onPressed: () {
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(builder: (context) => Favorites()),
-        //       );
-        //     },
-        //     icon: Icon(Icons.favorite),
-        //   ),
-        //   title: Text("Home Page".tr),
-        //   centerTitle: true,
-        //   actions: [
-        //     IconButton(
-        //       onPressed: () {
-        //         showSearch(
-        //           context: context,
-        //           delegate: SearchCustom(teacherData, coursesImages),
-        //         );
-        //       },
-        //       icon: Icon(Icons.search_outlined),
-        //     ),
-        //   ],
-        // ),
-        body:
-            teacherData.isEmpty
-                ? Center(
-                  child: CircularProgressIndicator(
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
-                  ),
-                )
-                : RefreshIndicator(
+    return Scaffold(
+      body:
+          (cacheManager.isCacheEnabled.value == false &&
+                  sharedPrefs.prefs.getBool('isConnected') == false)
+              ? Center(
+                child: Lottie.asset(
+                  ImageAssets.noDataLottie,
+                  width: 300,
+                  height: 300,
+                ),
+              )
+              : teacherData.isEmpty
+              ? Center(
+                child: CircularProgressIndicator(
                   color:
                       themeController.initialTheme == Themes.customLightTheme
                           ? Color.fromARGB(255, 40, 41, 61)
                           : Color.fromARGB(255, 210, 209, 224),
-                  backgroundColor:
+                ),
+              )
+              : RefreshIndicator(
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
+                backgroundColor:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 210, 209, 224)
+                        : Color.fromARGB(255, 46, 48, 97),
+                onRefresh: () async {
+                  await networkController.checkConnectivityManually();
+                  await getCoursesData();
+                },
+                child: Container(
+                  color:
                       themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 210, 209, 224)
-                          : Color.fromARGB(255, 46, 48, 97),
-                  onRefresh: () async {
-                    await networkController.checkConnectivityManually();
-                    await getCoursesData();
-                  },
-                  child: Container(
-                    color:
-                              themeController.initialTheme == Themes.customLightTheme
                           ? Color.fromARGB(255, 40, 41, 61)
                           : Color.fromARGB(255, 210, 209, 224),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.only(top: 30),
-                          height: 100,
-                          // color: Colors.red,
-                          child: Row(
-                            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: IconButton(
-                                  onPressed: () {
-                                    Get.to(Favorites());
-                                  },
-                                  icon: Icon(Icons.favorite, color: Colors.red),
-                                ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.only(top: 30),
+                        height: 100,
+                        // color: Colors.red,
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  Get.to(Favorites());
+                                },
+                                icon: Icon(Icons.favorite, color: Colors.red),
                               ),
-                              Expanded(
-                                child: Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                      right: Get.width / 40,
-                                    ),
-                                    child: Text(
-                                      " Teachers Course ".tr,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall!.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 23,
-                                      ),
+                            ),
+                            Expanded(
+                              child: Center(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    right: Get.width / 40,
+                                  ),
+                                  child: Text(
+                                    "Teachers Course".tr,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily:
+                                          FontController().currentFontFamily,
+                                      fontSize: 23,
                                     ),
                                   ),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: IconButton(
-                                  onPressed: () {
-                                    showSearch(
-                                      context: context,
-                                      delegate: DynamicSearch(
-                                        elements: teacherData,
-                                        elementsImages: coursesImages,
-                                        searchType: 'courses',
-                                        onItemTap: (course) {
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => CoursesLessons(
-                                                CoursesData: course,
-                                                index: teacherData.indexOf(course),
-                                                CoursesImage: coursesImages[course['id']],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  showSearch(
+                                    context: context,
+                                    delegate: DynamicSearch(
+                                      elements: teacherData,
+                                      // elementsImages: coursesImages,
+                                      searchType: 'courses',
+                                      onItemTap: (course) {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => CoursesLessons(
+                                                  CoursesData: course,
+                                                  index: teacherData.indexOf(
+                                                    course,
+                                                  ),
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.search_outlined,
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 210, 209, 224)
+                                          : Color.fromARGB(255, 40, 41, 61),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.only(left: 20, right: 20),
+                          decoration: BoxDecoration(
+                            color:
+                                themeController.initialTheme ==
+                                        Themes.customLightTheme
+                                    ? Color.fromARGB(255, 210, 209, 224)
+                                    : Color.fromARGB(255, 40, 41, 61),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(60),
+                              topRight: Radius.circular(60),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 21),
+                              Text(
+                                "Choose a course".tr,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily:
+                                      FontController().currentFontFamily,
+                                  fontStyle: FontStyle.normal,
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Expanded(
+                                child: GridView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        mainAxisSpacing: 10,
+                                        crossAxisSpacing: 10,
+                                      ),
+                                  controller: scrollController,
+                                  itemCount: teacherData.length,
+                                  itemBuilder: (context, i) {
+                                    int courseId = teacherData[i]["id"];
+                                    // Uint8List? imageBytes =
+                                    //     coursesImages[courseId];
+                                    return InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => CoursesLessons(
+                                                  CoursesData: teacherData[i],
+                                                  index: i,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: const EdgeInsets.only(
+                                          left: 1,
+                                          right: 10,
+                                        ),
+                                        // padding: const EdgeInsets.only(left: 10,right: 10),
+                                        padding: const EdgeInsets.all(10),
+                                        height: 130,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color:
+                                                themeController.initialTheme ==
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              top: 5,
+                                              left: 5,
+                                              right: 5,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  teacherData[i]["rating"] !=
+                                                          null
+                                                      ? Container(
+                                                        height: 23,
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: Color(
+                                                            0xFFCCF2E0,
+                                                          ),
+                                                          border: Border.all(
+                                                            color:
+                                                                themeController
+                                                                            .initialTheme ==
+                                                                        Themes
+                                                                            .customLightTheme
+                                                                    ? Color.fromARGB(
+                                                                      255,
+                                                                      40,
+                                                                      41,
+                                                                      61,
+                                                                    )
+                                                                    : Color.fromARGB(
+                                                                      255,
+                                                                      210,
+                                                                      209,
+                                                                      224,
+                                                                    ),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.star,
+                                                              color: Color(
+                                                                0XFFE6D827,
+                                                              ),
+                                                              size: 20,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 2,
+                                                            ),
+                                                            Text(
+                                                              // "${subscribedCourses[i]["rating"]}",
+                                                              double.parse(
+                                                                teacherData[i]["rating"]
+                                                                    .toString(),
+                                                              ).toStringAsFixed(
+                                                                1,
+                                                              ),
+                                                              style: TextStyle(
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .clip,
+                                                                fontSize: 16,
+                                                                fontFamily:
+                                                                    FontController()
+                                                                        .currentFontFamily,
+                                                                color:
+                                                                    themeController.initialTheme ==
+                                                                            Themes.customLightTheme
+                                                                        ? Color.fromARGB(
+                                                                          255,
+                                                                          210,
+                                                                          209,
+                                                                          224,
+                                                                        )
+                                                                        : Color.fromARGB(
+                                                                          255,
+                                                                          40,
+                                                                          41,
+                                                                          61,
+                                                                        ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                      : const SizedBox.shrink(),
+
+                                                  GetBuilder<
+                                                    FavoriteController
+                                                  >(
+                                                    builder: (controller) {
+                                                      final isFav =
+                                                          controller
+                                                              .isFavoriteC[teacherData[i]["id"]
+                                                              .toString()] ??
+                                                          false;
+
+                                                      return LikeButton(
+                                                        size: 30,
+                                                        isLiked: isFav,
+                                                        likeBuilder: (
+                                                          bool isLiked,
+                                                        ) {
+                                                          return Icon(
+                                                            isLiked
+                                                                ? Icons.favorite
+                                                                : Icons
+                                                                    .favorite_border_outlined,
+                                                            color: Colors.red,
+                                                            size: 30,
+                                                          );
+                                                        },
+                                                        onTap: (
+                                                          bool isLiked,
+                                                        ) async {
+                                                          controller
+                                                              .toggleFavoriteC(
+                                                                teacherData[i]["id"]
+                                                                    .toString(),
+                                                              );
+                                                          return !isLiked;
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          );
-                                        },
+                                            Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  const SizedBox(height: 34),
+                                                  teacherData[i]["image"] !=
+                                                          null
+                                                      ? CachedNetworkImage(
+                                                        imageUrl:
+                                                            "$mainIP/${teacherData[i]["image"]}",
+                                                        height: 60,
+                                                        width: 60,
+                                                      )
+                                                      : Image.asset(
+                                                        ImageAssets.subject,
+                                                      ),
+
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Text(
+                                                      "${teacherData[i]["name"]}"
+                                                          .tr,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontFamily:
+                                                            FontController()
+                                                                .currentFontFamily,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            themeController
+                                                                        .initialTheme ==
+                                                                    Themes
+                                                                        .customLightTheme
+                                                                ? Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
+                                                                ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     );
                                   },
-                                  icon: Icon(
-                                    Icons.search_outlined,
-                                    color: themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
-                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        SizedBox(height: 30),
-                        Expanded(
-                          child: Container(
-                            padding: EdgeInsets.only(left: 20, right: 20),
-                            decoration: BoxDecoration(
-                              color:
-                                  themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(60),
-                                topRight: Radius.circular(60),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                SizedBox(height: 21),
-                                Text(
-                                  "Choose a course".tr,
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.normal,
-                                    color:
-                                        themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                SizedBox(height: 20),
-                                Expanded(
-                                  child: GridView.builder(
-                                    scrollDirection: Axis.vertical,
-                                    physics: AlwaysScrollableScrollPhysics(),
-                                    gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 2,
-                                          mainAxisSpacing: 10,
-                                          crossAxisSpacing: 10,
-                                        ),
-                                    controller: scrollController,
-                                    itemCount: teacherData.length,
-                                    itemBuilder: (context, i) {
-                                      int courseId = teacherData[i]["id"];
-                                      Uint8List? imageBytes =
-                                          coursesImages[courseId];
-                                      return InkWell(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) => CoursesLessons(
-                                                    CoursesData: teacherData[i],
-                                                    index: i,CoursesImage: imageBytes,
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          margin: EdgeInsets.only(
-                                            left: 1,
-                                            right: 10,
-                                          ),
-                                          // padding: EdgeInsets.only(left: 10,right: 10),
-                                          padding: EdgeInsets.all(10),
-                                          height: 130,
-                                          width: 120,
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224)
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              15,
-                                            ),
-                                          ),
-                                          child: Stack(
-                                            children: [
-                                              Positioned(
-                                                top: 5,
-                                                left: 5,
-                                                right: 5,
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    teacherData[i]["rating"] !=
-                                                            null
-                                                        ? Container(
-                                                          height: 23,
-                                                          padding:
-                                                              EdgeInsets.symmetric(
-                                                                horizontal: 6,
-                                                              ),
-                                                          decoration: BoxDecoration(
-                                                            color: Color(
-                                                              0xFFCCF2E0,
-                                                            ),
-                                                            border: Border.all(
-                                                              color:
-                                                                  themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224)
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  10,
-                                                                ),
-                                                          ),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize.min,
-                                                            children: [
-                                                              Icon(
-                                                                Icons.star,
-                                                                color: Color(
-                                                                  0XFFE6D827,
-                                                                ),
-                                                                size: 20,
-                                                              ),
-                                                              SizedBox(width: 2),
-                                                              Text(
-                                                                // "${subscribedCourses[i]["rating"]}",
-                                                                double.parse(
-                                                                  teacherData[i]["rating"]
-                                                                      .toString(),
-                                                                ).toStringAsFixed(
-                                                                  1,
-                                                                ),
-                                                                style: TextStyle(
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .clip,
-                                                                  fontSize: 16,
-                                                                  color:
-                                                                      themeController.initialTheme ==
-                                                                              Themes.customLightTheme
-                                                                          ? Color.fromARGB(
-                                                                            255,
-                                                                            210,
-                                                                            209,
-                                                                            224,
-                                                                          )
-                                                                          : Color.fromARGB(
-                                                                            255,
-                                                                            40,
-                                                                            41,
-                                                                            61,
-                                                                          ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        )
-                                                        : SizedBox.shrink(),
-                    
-                                                    GetBuilder<
-                                                      FavoriteController
-                                                    >(
-                                                      builder: (controller) {
-                                                        final isFav =
-                                                            controller
-                                                                .isFavoriteC[teacherData[i]["id"]
-                                                                .toString()] ??
-                                                            false;
-                    
-                                                        return LikeButton(
-                                                          size: 30,
-                                                          isLiked: isFav,
-                                                          likeBuilder: (
-                                                            bool isLiked,
-                                                          ) {
-                                                            return Icon(
-                                                              isLiked
-                                                                  ? Icons.favorite
-                                                                  : Icons
-                                                                      .favorite_border_outlined,
-                                                              color: Colors.red,
-                                                              size: 30,
-                                                            );
-                                                          },
-                                                          onTap: (
-                                                            bool isLiked,
-                                                          ) async {
-                                                            controller
-                                                                .toggleFavoriteC(
-                                                                  teacherData[i]["id"]
-                                                                      .toString(),
-                                                                );
-                                                            return !isLiked;
-                                                          },
-                                                        );
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Center(
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    const SizedBox(height: 34),
-                                                    imageBytes != null
-                                                        ? Image.asset(
-                                                          ImageAssets.book,
-                                                          height: 90,
-                                                          width: 90,
-                                                        )
-                                                        : Image.asset(
-                                                          ImageAssets.subject,
-                                                        ),
-                    
-                                                    Expanded(
-                                                      flex: 1,
-                                                      child: Text(
-                                                        "${teacherData[i]["name"]}"
-                                                            .tr,
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color:
-                                                              themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224)
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
       // ),
     );
   }

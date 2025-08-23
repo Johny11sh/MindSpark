@@ -42,10 +42,7 @@ class _SignUpState extends State<SignUp> {
 
   Future<Map<String, dynamic>?> sendSignUpData() async {
     // Use configurable base URL (should be in a config file)
-    var baseUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: mainIP,
-    );
+    var baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: mainIP);
     final APIurl = '$baseUrl/api/register';
 
     try {
@@ -187,16 +184,7 @@ class _SignUpState extends State<SignUp> {
       home: Scaffold(
         body: Container(
           width: Get.width,
-          // decoration: const BoxDecoration(
-          //   gradient: LinearGradient(
-          //     colors: [
-          //       Color.fromARGB(255, 40, 41, 61),
-          //       Color.fromARGB(255, 210, 209, 224),
-          //     ],
-          //     begin: Alignment.bottomLeft,
-          //     end: Alignment.topRight,
-          //   ),
-          // ),
+
           color: Color.fromARGB(255, 210, 209, 224),
           child: ListView(
             scrollDirection: Axis.vertical,
@@ -206,503 +194,648 @@ class _SignUpState extends State<SignUp> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(padding: EdgeInsets.all(10)),
-                  Row( mainAxisAlignment: MainAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      SizedBox(width: 20,),
+                      const SizedBox(width: 20),
                       IconButton(
-                                    onPressed: () {
-                                      Get.to(()=>OnBoarding());
-                                    },
-                                    icon: Icon(
-                                      Icons.arrow_back_outlined,
-                                      size: 35,
-                                      color: Color.fromARGB(255, 40, 41, 61),
-                                    ),
-                                  ),
-                      SizedBox(width: Get.width/10,),
-                    Text("Create New Account".tr,style: const TextStyle(
-                      color: Color.fromARGB(255, 40, 41, 61),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),)
-                  ],),
-                  Padding(padding: EdgeInsets.all(10)),
+                        onPressed: () {
+                          Get.to(() => OnBoarding());
+                        },
+                        icon: Icon(
+                          Icons.arrow_back_outlined,
+                          size: 35,
+                          color: Color.fromARGB(255, 40, 41, 61),
+                        ),
+                      ),
+                      SizedBox(width: Get.width / 10),
+                      Text(
+                        "Create New Account".tr,
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 40, 41, 61),
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(padding: const EdgeInsets.all(10)),
 
                   Container(
                     width: Get.width,
                     height: Get.height - 50,
                     decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 40, 41, 61),
+                      color: Color.fromARGB(255, 40, 41, 61),
 
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(40),topRight: Radius.circular(40)),
-                    ),
-                      child: Column(
-                        children: [
-                          Padding(padding: EdgeInsets.all(20)),
-                          Center(
-                    child: Image.asset(
-                        ImageAssets.AppIconNoBackGround,
-                        width: 140,
-                        height: 140,
-                      ),
-                  ),
-                  Padding(padding: EdgeInsets.all(20)),
-                  
-                  Container(
-                    margin: const EdgeInsets.only(
-                      bottom: 20,
-                      left: 20,
-                      right: 20,
-                    ),
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 80,
-                            padding: const EdgeInsets.only(right: 20, left: 20),
-                            child: TextFormField(
-                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                              controller: userNameController,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              cursorColor: const Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
-                              obscureText: false,
-                              keyboardType: TextInputType.name,
-                              // onSaved: (val){username = val;},
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(
-                                  Icons.perm_identity,
-                                  size: 30,
-                                ),
-                                prefixIconColor: const Color.fromARGB(
-                                  255,
-                                  210,
-                                  209,
-                                  224,
-                                ),
-                                hintText: "User Name".tr,
-                                hintStyle: TextStyle(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    210,
-                                    209,
-                                    224,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                              ),
-
-                              validator: (val) {
-                                if (val!.isEmpty) {
-                                  return "Please enter A User Name".tr;
-                                } else {
-                                  if (val.length < 3) {
-                                    return "User Name must be longer than 3 characters"
-                                        .tr;
-                                  } else if (val.length > 25) {
-                                    return "User Name must be shorter than 25 characters"
-                                        .tr;
-                                  }
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Container(
-                            height: 80,
-                            padding: const EdgeInsets.only(right: 20, left: 20),
-                            child: TextFormField(
-                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                              controller: numberController,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              cursorColor: const Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
-                              obscureText: false,
-                              keyboardType: TextInputType.number,
-                              // onSaved: (val){phoneNumber = val;},
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.phone, size: 30),
-                                prefixIconColor: const Color.fromARGB(
-                                  255,
-                                  210,
-                                  209,
-                                  224,
-                                ),
-                                hintText: "Number".tr,
-                                hintStyle: TextStyle(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    210,
-                                    209,
-                                    224,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                              ),
-
-                              validator: (val) {
-                                if (val!.isEmpty) {
-                                  return "Please enter your Phone Number".tr;
-                                } else {
-                                  if (val.length < 10 || val.length > 10) {
-                                    return "Phone Number must be 10 digits".tr;
-                                  } else if (!val.startsWith('09')) {
-                                    return "Phone Number must be : 09XXXXXXXX"
-                                        .tr;
-                                  } else if (val.hashCode.isNaN) {
-                                    return "Phone Number must ONLY contain numbers"
-                                        .tr;
-                                  }
-                                  return null;
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Container(
-                            height: 80,
-                            padding: const EdgeInsets.only(right: 20, left: 20),
-                            child: TextFormField(
-                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                              controller: passwordController,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              cursorColor: const Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
-                              maxLength: 35,
-                              obscureText: TextAsAsterisks1,
-                              obscuringCharacter: '*',
-                              keyboardType: TextInputType.visiblePassword,
-                              decoration: InputDecoration(
-                                helperStyle: TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                                prefixIcon: const Icon(
-                                  Icons.lock_outline_rounded,
-                                  size: 30,
-                                ),
-                                prefixIconColor: const Color.fromARGB(
-                                  255,
-                                  210,
-                                  209,
-                                  224,
-                                ),
-                                hintText: "Password".tr,
-                                hintStyle: TextStyle(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    210,
-                                    209,
-                                    224,
-                                  ),
-                                ),
-                                suffix: IconButton(
-                                  onPressed: () {
-                                    TextAsAsterisks1 = !TextAsAsterisks1;
-                                    temp = visibilityIcon1;
-                                    visibilityIcon1 = invisibilityIcon1;
-                                    invisibilityIcon1 = temp;
-
-                                    setState(() {});
-                                  },
-                                  icon: visibilityIcon1,
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                              ),
-                              validator: (val) {
-                                if (val!.isEmpty) {
-                                  return "Please enter A Password".tr;
-                                } else {
-                                  if (val.length < 8) {
-                                    return "Password must be at least 8 characters"
-                                        .tr;
-                                  }
-                                  return null;
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Container(
-                            height: 80,
-                            padding: const EdgeInsets.only(right: 20, left: 20),
-                            child: TextFormField(
-                              style:TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                              controller: confirmPasswordController,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              cursorColor: const Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
-                              maxLength: 35,
-                              obscureText: TextAsAsterisks2,
-                              obscuringCharacter: '*',
-                              keyboardType: TextInputType.visiblePassword,
-                              decoration: InputDecoration(
-                                helperStyle: TextStyle(color: Color.fromARGB(255, 210, 209, 224)),
-                                prefixIcon: const Icon(
-                                  Icons.lock_outline_rounded,
-                                  size: 30,
-                                ),
-                                prefixIconColor: const Color.fromARGB(
-                                  255,
-                                  210,
-                                  209,
-                                  224,
-                                ),
-                                hintText: "Confirm Password".tr,
-                                hintStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 210, 209, 224),
-                                ),
-                                suffix: IconButton(
-                                  onPressed: () {
-                                    TextAsAsterisks2 = !TextAsAsterisks2;
-                                    temp = visibilityIcon2;
-                                    visibilityIcon2 = invisibilityIcon2;
-                                    invisibilityIcon2 = temp;
-
-                                    setState(() {});
-                                  },
-                                  icon: visibilityIcon2,
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                  ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    width: 2,
-                                    color: Color.fromARGB(255, 255, 23, 7),
-                                  ),
-                                ),
-                              ),
-                              validator: (val) {
-                                if (val == null || val.isEmpty) {
-                                  return "Please confirm your password".tr;
-                                }
-                                if (val != passwordController.text) {
-                                  return "Passwords do not match".tr;
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: Get.width / 1.5,
-                              height: 35,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: MaterialButton(
-                                onPressed: () async {
-                                  await networkController
-                                      .checkConnectivityManually();
-                                  isConnected = sharedPrefs.prefs.getBool(
-                                    'isConnected',
-                                  );
-                                  if (isConnected == true) {
-                                    if (formKey.currentState!.validate()) {
-                                      sendSignUpData();
-                                      await Future.delayed(
-                                        Duration(milliseconds: 1000),
-                                      );
-
-                                      Future.microtask(() {
-                                        Get.offAll(() => NavBar());
-                                      });
-                                    } else {
-                                      Get.snackbar(
-                                        "Validation Error".tr,
-                                        "Sign up failed, fill the textfields correctly"
-                                            .tr,
-                                      );
-                                    }
-                                  } else {
-                                    Get.snackbar(
-                                      "Connection error".tr,
-                                      "Connection access is needed".tr,
-                                    );
-                                  }
-                                },
-                                color: Color.fromARGB(255, 210, 209, 224),
-                                minWidth: Get.width / 1.5,
-                                height: 35,
-                                child: Text(
-                                  "Sign Up".tr,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w600,
-                                    fontStyle: FontStyle.normal,
-                                    color: Color.fromARGB(255, 40, 41, 61),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Already have an account?".tr,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color: Color.fromARGB(255, 210, 209, 224),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Get.toNamed(
-                                    "/LogIn",
-                                    // arguments:{"locale" : "${localeController.initialLang}"}
-                                  );
-                                },
-                                child: Text(
-                                  "Log In".tr,
-                                  style: const TextStyle(
-                                    color: Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w400,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: Color.fromARGB(
-                                255,
-                                254,
-                                233,
-                                204,
-                              ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(40),
+                        topRight: Radius.circular(40),
                       ),
                     ),
+                    child: Column(
+                      children: [
+                        Padding(padding: const EdgeInsets.all(20)),
+                        Center(
+                          child: Image.asset(
+                            ImageAssets.AppIconNoBackGround,
+                            width: 140,
+                            height: 140,
+                          ),
+                        ),
+                        Padding(padding: const EdgeInsets.all(20)),
+
+                        Container(
+                          margin: const EdgeInsets.only(
+                            bottom: 20,
+                            left: 20,
+                            right: 20,
+                          ),
+                          child: Form(
+                            key: formKey,
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 80,
+                                  padding: const EdgeInsets.only(
+                                    right: 20,
+                                    left: 20,
+                                  ),
+                                  child: TextFormField(
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 210, 209, 224),
+                                    ),
+                                    controller: userNameController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    cursorColor: const Color.fromARGB(
+                                      255,
+                                      254,
+                                      233,
+                                      204,
+                                    ),
+                                    obscureText: false,
+                                    keyboardType: TextInputType.name,
+                                    // onSaved: (val){username = val;},
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                        Icons.perm_identity,
+                                        size: 30,
+                                      ),
+                                      prefixIconColor: const Color.fromARGB(
+                                        255,
+                                        210,
+                                        209,
+                                        224,
+                                      ),
+                                      hintText: "User Name".tr,
+                                      hintStyle: TextStyle(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    validator: (val) {
+                                      if (val!.isEmpty) {
+                                        return "Please enter A User Name".tr;
+                                      } else {
+                                        if (val.length < 3) {
+                                          return "User Name must be longer than 3 characters"
+                                              .tr;
+                                        } else if (val.length > 25) {
+                                          return "User Name must be shorter than 25 characters"
+                                              .tr;
+                                        }
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Container(
+                                  height: 80,
+                                  padding: const EdgeInsets.only(
+                                    right: 20,
+                                    left: 20,
+                                  ),
+                                  child: TextFormField(
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 210, 209, 224),
+                                    ),
+                                    controller: numberController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    cursorColor: const Color.fromARGB(
+                                      255,
+                                      254,
+                                      233,
+                                      204,
+                                    ),
+                                    obscureText: false,
+                                    keyboardType: TextInputType.number,
+                                    // onSaved: (val){phoneNumber = val;},
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                        Icons.phone,
+                                        size: 30,
+                                      ),
+                                      prefixIconColor: const Color.fromARGB(
+                                        255,
+                                        210,
+                                        209,
+                                        224,
+                                      ),
+                                      hintText: "Number".tr,
+                                      hintStyle: TextStyle(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    validator: (val) {
+                                      if (val!.isEmpty) {
+                                        return "Please enter your Phone Number"
+                                            .tr;
+                                      } else {
+                                        if (val.length < 10 ||
+                                            val.length > 10) {
+                                          return "Phone Number must be 10 digits"
+                                              .tr;
+                                        } else if (!val.startsWith('09')) {
+                                          return "Phone Number must be : 09XXXXXXXX"
+                                              .tr;
+                                        } else if (val.hashCode.isNaN) {
+                                          return "Phone Number must ONLY contain numbers"
+                                              .tr;
+                                        }
+                                        return null;
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Container(
+                                  height: 80,
+                                  padding: const EdgeInsets.only(
+                                    right: 20,
+                                    left: 20,
+                                  ),
+                                  child: TextFormField(
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 210, 209, 224),
+                                    ),
+                                    controller: passwordController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    cursorColor: const Color.fromARGB(
+                                      255,
+                                      254,
+                                      233,
+                                      204,
+                                    ),
+                                    maxLength: 35,
+                                    obscureText: TextAsAsterisks1,
+                                    obscuringCharacter: '*',
+                                    keyboardType: TextInputType.visiblePassword,
+                                    decoration: InputDecoration(
+                                      helperStyle: TextStyle(
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.lock_outline_rounded,
+                                        size: 30,
+                                      ),
+                                      prefixIconColor: const Color.fromARGB(
+                                        255,
+                                        210,
+                                        209,
+                                        224,
+                                      ),
+                                      hintText: "Password".tr,
+                                      hintStyle: TextStyle(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      suffix: IconButton(
+                                        onPressed: () {
+                                          TextAsAsterisks1 = !TextAsAsterisks1;
+                                          temp = visibilityIcon1;
+                                          visibilityIcon1 = invisibilityIcon1;
+                                          invisibilityIcon1 = temp;
+
+                                          setState(() {});
+                                        },
+                                        icon: visibilityIcon1,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (val) {
+                                      if (val!.isEmpty) {
+                                        return "Please enter A Password".tr;
+                                      } else {
+                                        if (val.length < 8) {
+                                          return "Password must be at least 8 characters"
+                                              .tr;
+                                        }
+                                        return null;
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Container(
+                                  height: 80,
+                                  padding: const EdgeInsets.only(
+                                    right: 20,
+                                    left: 20,
+                                  ),
+                                  child: TextFormField(
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 210, 209, 224),
+                                    ),
+                                    controller: confirmPasswordController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    cursorColor: const Color.fromARGB(
+                                      255,
+                                      254,
+                                      233,
+                                      204,
+                                    ),
+                                    maxLength: 35,
+                                    obscureText: TextAsAsterisks2,
+                                    obscuringCharacter: '*',
+                                    keyboardType: TextInputType.visiblePassword,
+                                    decoration: InputDecoration(
+                                      helperStyle: TextStyle(
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.lock_outline_rounded,
+                                        size: 30,
+                                      ),
+                                      prefixIconColor: const Color.fromARGB(
+                                        255,
+                                        210,
+                                        209,
+                                        224,
+                                      ),
+                                      hintText: "Confirm Password".tr,
+                                      hintStyle: const TextStyle(
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      suffix: IconButton(
+                                        onPressed: () {
+                                          TextAsAsterisks2 = !TextAsAsterisks2;
+                                          temp = visibilityIcon2;
+                                          visibilityIcon2 = invisibilityIcon2;
+                                          invisibilityIcon2 = temp;
+
+                                          setState(() {});
+                                        },
+                                        icon: visibilityIcon2,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (val) {
+                                      if (val == null || val.isEmpty) {
+                                        return "Please confirm your password"
+                                            .tr;
+                                      }
+                                      if (val != passwordController.text) {
+                                        return "Passwords do not match".tr;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    width: Get.width / 1.5,
+                                    height: 35,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: MaterialButton(
+                                      onPressed: () async {
+                                        await networkController
+                                            .checkConnectivityManually();
+                                        isConnected = sharedPrefs.prefs.getBool(
+                                          'isConnected',
+                                        );
+                                        if (isConnected == true) {
+                                          if (formKey.currentState!
+                                              .validate()) {
+                                            sendSignUpData();
+                                            await Future.delayed(
+                                              Duration(milliseconds: 1000),
+                                            );
+
+                                            Future.microtask(() {
+                                              Get.offAll(() => NavBar());
+                                            });
+                                          } else {
+                                            Get.snackbar(
+                                              "Validation Error".tr,
+                                              "Sign up failed, fill the textfields correctly"
+                                                  .tr,
+                                            );
+                                          }
+                                        } else {
+                                          Get.snackbar(
+                                            "Connection error".tr,
+                                            "Connection access is needed".tr,
+                                          );
+                                        }
+                                      },
+                                      color: Color.fromARGB(255, 210, 209, 224),
+                                      minWidth: Get.width / 1.5,
+                                      height: 35,
+                                      child: Text(
+                                        "Sign Up".tr,
+                                        style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w600,
+                                          fontStyle: FontStyle.normal,
+                                          color: Color.fromARGB(
+                                            255,
+                                            40,
+                                            41,
+                                            61,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Already have an account?".tr,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w400,
+                                        fontStyle: FontStyle.normal,
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Get.toNamed(
+                                          "/LogIn",
+                                          // arguments:{"locale" : "${localeController.initialLang}"}
+                                        );
+                                      },
+                                      child: Text(
+                                        "Log In".tr,
+                                        style: const TextStyle(
+                                          color: Color.fromARGB(
+                                            255,
+                                            254,
+                                            233,
+                                            204,
+                                          ),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w400,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: Color.fromARGB(
+                                            255,
+                                            254,
+                                            233,
+                                            204,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                        ],
-                      )
-                  )
                 ],
               ),
             ],

@@ -6,8 +6,10 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:learning_management_system/core/classes/Timer.dart';
+import '../../controller/FontController.dart';
+import 'Timer.dart';
 import 'package:path/path.dart';
 import '../../themes/Themes.dart';
 import 'package:get/get.dart';
@@ -15,17 +17,13 @@ import '../../themes/ThemeController.dart';
 
 class PDFOpener extends StatefulWidget {
   final File PDFfile;
-   PDFOpener({super.key, required this.PDFfile});
-
- 
+  const PDFOpener({super.key, required this.PDFfile});
 
   @override
   State<PDFOpener> createState() => _PDFOpenerState();
 }
 
 class _PDFOpenerState extends State<PDFOpener> {
-
-
   late PDFViewController pdfViewController;
   int pages = 0;
   int pageIndex = 0;
@@ -34,7 +32,6 @@ class _PDFOpenerState extends State<PDFOpener> {
   bool isDragging = false;
   final ScrollController _scrollController = ScrollController();
   bool _isDisposed = false;
-
 
   static AudioPlayer? audioPlayer;
 
@@ -60,7 +57,6 @@ class _PDFOpenerState extends State<PDFOpener> {
     'Song14.mp3',
   ];
 
-
   String getRandomSong() {
     final random = Random();
     String song;
@@ -75,6 +71,8 @@ class _PDFOpenerState extends State<PDFOpener> {
       previousSongs.add(currentSong!);
     }
     currentSong = songName;
+    // final file = await DefaultCacheManager().getSingleFile('music/$songName');
+    // await audioPlayer?.setFilePath
     await audioPlayer?.setSource(AssetSource('music/$songName'));
     await audioPlayer?.resume();
     setState(() {
@@ -126,7 +124,6 @@ class _PDFOpenerState extends State<PDFOpener> {
   }
 
   Widget _buildMusicControls() {
-    
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -219,17 +216,13 @@ class _PDFOpenerState extends State<PDFOpener> {
     );
   }
 
-
-
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _preloadPDF();
     audioPlayer = AudioPlayer();
-
   }
-
 
   String _formatFileName(String name) {
     if (name.toLowerCase().endsWith('.pdf')) {
@@ -237,7 +230,6 @@ class _PDFOpenerState extends State<PDFOpener> {
     }
     return name;
   }
-
 
   Future<void> _preloadPDF() async {
     if (_isDisposed) return;
@@ -271,35 +263,40 @@ class _PDFOpenerState extends State<PDFOpener> {
   Widget build(BuildContext context) {
     final name = _formatFileName(basename(widget.PDFfile.path));
     return Scaffold(
-      floatingActionButton:Container(
-                width: 150,
-                height: 40,
-                margin: EdgeInsets.only(bottom: 10),
-                child: _buildMusicControls(),
-              ),
+      floatingActionButton: Container(
+        width: 150,
+        height: 40,
+        margin: const EdgeInsets.only(bottom: 10),
+        child: _buildMusicControls(),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      backgroundColor: themeController.initialTheme == Themes.customLightTheme
-          ? const Color.fromARGB(255, 40, 41, 61)
-          : const Color.fromARGB(255, 210, 209, 224),
+      backgroundColor:
+          themeController.initialTheme == Themes.customLightTheme
+              ? const Color.fromARGB(255, 40, 41, 61)
+              : const Color.fromARGB(255, 210, 209, 224),
       appBar: AppBar(
-        backgroundColor: themeController.initialTheme == Themes.customLightTheme
-            ? const Color.fromARGB(255, 40, 41, 61)
-            : const Color.fromARGB(255, 210, 209, 224),
+        backgroundColor:
+            themeController.initialTheme == Themes.customLightTheme
+                ? const Color.fromARGB(255, 40, 41, 61)
+                : const Color.fromARGB(255, 210, 209, 224),
         title: Text(
           name,
           style: TextStyle(
-            color: themeController.initialTheme == Themes.customLightTheme
-                ? const Color.fromARGB(255, 210, 209, 224)
-                : const Color.fromARGB(255, 40, 41, 61),
+            fontFamily: FontController().currentFontFamily,
+            color:
+                themeController.initialTheme == Themes.customLightTheme
+                    ? const Color.fromARGB(255, 210, 209, 224)
+                    : const Color.fromARGB(255, 40, 41, 61),
           ),
         ),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: themeController.initialTheme == Themes.customLightTheme
-                ? const Color.fromARGB(255, 210, 209, 224)
-                : const Color.fromARGB(255, 40, 41, 61),
+            color:
+                themeController.initialTheme == Themes.customLightTheme
+                    ? const Color.fromARGB(255, 210, 209, 224)
+                    : const Color.fromARGB(255, 40, 41, 61),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -313,19 +310,22 @@ class _PDFOpenerState extends State<PDFOpener> {
               icon: Icon(
                 Icons.chevron_left_outlined,
                 size: 26,
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? const Color.fromARGB(255, 210, 209, 224)
-                    : const Color.fromARGB(255, 40, 41, 61),
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? const Color.fromARGB(255, 210, 209, 224)
+                        : const Color.fromARGB(255, 40, 41, 61),
               ),
             ),
             if (pages > 0)
               Text(
                 '${pageIndex + 1} of $pages',
                 style: TextStyle(
+                  fontFamily: FontController().currentFontFamily,
                   fontSize: 12,
-                  color: themeController.initialTheme == Themes.customLightTheme
-                      ? const Color.fromARGB(255, 210, 209, 224)
-                      : const Color.fromARGB(255, 40, 41, 61),
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? const Color.fromARGB(255, 210, 209, 224)
+                          : const Color.fromARGB(255, 40, 41, 61),
                 ),
               ),
             IconButton(
@@ -336,25 +336,23 @@ class _PDFOpenerState extends State<PDFOpener> {
               icon: Icon(
                 Icons.chevron_right_outlined,
                 size: 26,
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? const Color.fromARGB(255, 210, 209, 224)
-                    : const Color.fromARGB(255, 40, 41, 61),
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? const Color.fromARGB(255, 210, 209, 224)
+                        : const Color.fromARGB(255, 40, 41, 61),
               ),
             ),
             IconButton(
               onPressed: () {
-                Get.dialog(
-
-                                        TimerView(),
-                                        barrierColor: Colors.transparent
-                                      );
+                Get.dialog(TimerView(), barrierColor: Colors.transparent);
               },
               icon: Icon(
                 Icons.timer,
                 size: 26,
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? const Color.fromARGB(255, 210, 209, 224)
-                    : const Color.fromARGB(255, 40, 41, 61),
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? const Color.fromARGB(255, 210, 209, 224)
+                        : const Color.fromARGB(255, 40, 41, 61),
               ),
             ),
           ],
@@ -362,58 +360,61 @@ class _PDFOpenerState extends State<PDFOpener> {
       ),
       body: Stack(
         children: [
-          PDFView(
-            filePath: widget.PDFfile.path,
-            swipeHorizontal: false,
-            pageSnap: false,
-            autoSpacing: true,
-            pageFling: false,
-            preventLinkNavigation: false,
-            onRender: (pages) {
-              if (!_isDisposed) {
-                setState(() {
-                  this.pages = pages!;
-                  isLoading = false;
-                });
-              }
-            },
-            onViewCreated: (pdfViewController) {
-              if (!_isDisposed) {
-                setState(() {
-                  this.pdfViewController = pdfViewController;
-                });
-              }
-            },
-            onPageChanged: (pageIndex, _) {
-              if (!_isDisposed) {
-                setState(() {
-                  this.pageIndex = pageIndex!;
-                });
-              }
-            },
-            onError: (error) {
-              debugPrint('Error loading PDF: $error');
-              if (!_isDisposed) {
-                Get.snackbar(
-                  'Error'.tr,
-                  'Failed to load PDF'.tr,
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-              }
-            },
-            onPageError: (page, error) {
-              debugPrint('Error loading page $page: $error');
-            },
-            enableSwipe: true,
-            fitPolicy: FitPolicy.BOTH,
-            defaultPage: 0,
+          RepaintBoundary(
+            child: PDFView(
+              filePath: widget.PDFfile.path,
+              swipeHorizontal: false,
+              pageSnap: false,
+              autoSpacing: true,
+              pageFling: false,
+              preventLinkNavigation: false,
+              onRender: (pages) {
+                if (!_isDisposed) {
+                  setState(() {
+                    this.pages = pages!;
+                    isLoading = false;
+                  });
+                }
+              },
+              onViewCreated: (pdfViewController) {
+                if (!_isDisposed) {
+                  setState(() {
+                    this.pdfViewController = pdfViewController;
+                  });
+                }
+              },
+              onPageChanged: (pageIndex, _) {
+                if (!_isDisposed) {
+                  setState(() {
+                    this.pageIndex = pageIndex!;
+                  });
+                }
+              },
+              onError: (error) {
+                debugPrint('Error loading PDF: $error');
+                if (!_isDisposed) {
+                  Get.snackbar(
+                    'Error'.tr,
+                    'Failed to load PDF'.tr,
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                }
+              },
+              onPageError: (page, error) {
+                debugPrint('Error loading page $page: $error');
+              },
+              enableSwipe: true,
+              fitPolicy: FitPolicy.BOTH,
+              defaultPage: 0,
+            ),
           ),
           if (isLoading)
             Center(
               child: CircularProgressIndicator(
-                color: themeController.initialTheme == Themes.customLightTheme
-                    ? const Color.fromARGB(255, 210, 209, 224)
-                    : const Color.fromARGB(255, 40, 41, 61),
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? const Color.fromARGB(255, 210, 209, 224)
+                        : const Color.fromARGB(255, 40, 41, 61),
               ),
             ),
           if (pages > 0)
@@ -429,19 +430,36 @@ class _PDFOpenerState extends State<PDFOpener> {
                     width: 8,
                     height: MediaQuery.of(context).size.height * 0.75,
                     decoration: BoxDecoration(
-                      color: themeController.initialTheme == Themes.customLightTheme
-                          ? const Color.fromARGB(255, 210, 209, 224).withOpacity(0.5)
-                          : const Color.fromARGB(255, 40, 41, 61).withOpacity(0.5),
+                      color:
+                          themeController.initialTheme ==
+                                  Themes.customLightTheme
+                              ? const Color.fromARGB(
+                                255,
+                                210,
+                                209,
+                                224,
+                              ).withValues(alpha: 0.5)
+                              : const Color.fromARGB(
+                                255,
+                                40,
+                                41,
+                                61,
+                              ).withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(2),
                     ),
                     child: GestureDetector(
-                      onVerticalDragStart: (_) => setState(() => isDragging = true),
-                      onVerticalDragEnd: (_) => setState(() => isDragging = false),
+                      onVerticalDragStart:
+                          (_) => setState(() => isDragging = true),
+                      onVerticalDragEnd:
+                          (_) => setState(() => isDragging = false),
                       onVerticalDragUpdate: (details) {
                         if (pages > 0) {
-                          final screenHeight = MediaQuery.of(context).size.height * 0.7;
-                          final dragPercentage = details.localPosition.dy / screenHeight;
-                          final targetPage = (dragPercentage * (pages - 1)).floor();
+                          final screenHeight =
+                              MediaQuery.of(context).size.height * 0.7;
+                          final dragPercentage =
+                              details.localPosition.dy / screenHeight;
+                          final targetPage =
+                              (dragPercentage * (pages - 1)).floor();
                           if (targetPage >= 0 && targetPage < pages) {
                             pdfViewController.setPage(targetPage);
                           }
@@ -459,19 +477,26 @@ class _PDFOpenerState extends State<PDFOpener> {
               bottom: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: themeController.initialTheme == Themes.customLightTheme
-                        ? const Color.fromARGB(255, 40, 41, 61)
-                        : const Color.fromARGB(255, 210, 209, 224),
+                    color:
+                        themeController.initialTheme == Themes.customLightTheme
+                            ? const Color.fromARGB(255, 40, 41, 61)
+                            : const Color.fromARGB(255, 210, 209, 224),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     '${pageIndex + 1}',
                     style: TextStyle(
-                      color: themeController.initialTheme == Themes.customLightTheme
-                          ? const Color.fromARGB(255, 210, 209, 224)
-                          : const Color.fromARGB(255, 40, 41, 61),
+                      fontFamily: FontController().currentFontFamily,
+                      color:
+                          themeController.initialTheme ==
+                                  Themes.customLightTheme
+                              ? const Color.fromARGB(255, 210, 209, 224)
+                              : const Color.fromARGB(255, 40, 41, 61),
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -481,7 +506,6 @@ class _PDFOpenerState extends State<PDFOpener> {
             ),
         ],
       ),
-
     );
   }
 }

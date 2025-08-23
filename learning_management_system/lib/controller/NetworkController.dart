@@ -3,19 +3,19 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../services/SharedPrefs.dart';
+import '../controller/FontController.dart';
 
 class NetworkController extends GetxController {
   final Connectivity _connectivity = Connectivity();
   SharedPrefs sharedPrefs = SharedPrefs.instance;
   bool isConnected = false;
-  bool isLoading = false; // Track loading state
+  bool isLoading = false;
 
   @override
   void onInit() {
     super.onInit();
-    _checkInitialConnectivity(); // Check connectivity only once when the app starts
+    _checkInitialConnectivity();
   }
 
   Future<void> _checkInitialConnectivity() async {
@@ -35,22 +35,28 @@ class NetworkController extends GetxController {
         Get.closeCurrentSnackbar();
       }
       Get.rawSnackbar(
-        messageText:  Text("Please connect to the internet or you will have limited features".tr),
+        messageText: Text(
+          "Please connect to the internet or you will have limited features".tr,
+          style: TextStyle(fontFamily: FontController().currentFontFamily),
+        ),
         isDismissible: true,
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 7),
-        backgroundColor: const Color.fromARGB(255,189, 189, 189),
+        backgroundColor: const Color.fromARGB(255, 189, 189, 189),
         icon: const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 35),
         margin: const EdgeInsets.all(5),
         borderRadius: 5,
-        borderColor: const Color.fromARGB(255,103, 103, 103),
+        borderColor: const Color.fromARGB(255, 103, 103, 103),
       );
     } else {
       if (Get.isSnackbarOpen) {
         Get.closeCurrentSnackbar();
       }
       Get.rawSnackbar(
-        messageText:  Text("Connected to the internet".tr),
+        messageText: Text(
+          "Connected to the internet".tr,
+          style: TextStyle(fontFamily: FontController().currentFontFamily),
+        ),
         isDismissible: true,
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 3),
@@ -63,21 +69,17 @@ class NetworkController extends GetxController {
     }
   }
 
-  // Add a method to manually check connectivity when needed
   Future<void> checkConnectivityManually() async {
-    isLoading = true; // Start loading
-    update(); 
+    isLoading = true;
+    update();
     try {
       var connectivityResult = await _connectivity.checkConnectivity();
       _updateConnectivityStatus(connectivityResult);
     } catch (e) {
       Get.snackbar("Error".tr, "Failed to check connectivity: $e".tr);
-    }
-    finally {
-      isLoading = false; // Stop loading
-      update(); // Notify listeners
+    } finally {
+      isLoading = false;
+      update();
     }
   }
 }
-
-

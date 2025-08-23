@@ -1,13 +1,14 @@
 // import 'package:cached_network_image/cached_network_image.dart';
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
-import 'package:learning_management_system/controller/FavoriteController.dart';
-import 'package:learning_management_system/core/constants/ImageAssets.dart';
-import 'package:learning_management_system/model/TFavoriteModel.dart';
-import 'package:learning_management_system/view/NavBar.dart';
+import '../controller/FavoriteController.dart';
+import '../controller/FontController.dart';
+import '../core/constants/ImageAssets.dart';
+import '../model/TFavoriteModel.dart';
+import '../view/NavBar.dart';
 import 'package:get/get.dart';
 import 'package:like_button/like_button.dart';
-
-// import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
 
 class ViewTFavoriteCard extends StatelessWidget {
@@ -19,8 +20,8 @@ class ViewTFavoriteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.put(FavoriteController());
     return Container(
-      margin: EdgeInsets.only(left: 1, right: 1, top: 2),
-      padding: EdgeInsets.all(10),
+      margin: const EdgeInsets.only(left: 1, right: 1, top: 2),
+      padding: const EdgeInsets.all(10),
       height: 120,
       width: 120,
       decoration: BoxDecoration(
@@ -38,32 +39,7 @@ class ViewTFavoriteCard extends StatelessWidget {
           Positioned(
             right: 10,
             top: 3,
-            child:
-            // InkWell(
-            //   onTap: () {
-            //     favoriteController.toggleFavorite(
-            //       teacherId.toString(),
-            //     );
-            //   },
-            //   child: GetBuilder<FavoriteController>(
-            //     builder: (controller) {
-            //       final isFav =
-            //           controller.isFavorite[teacherId
-            //               .toString()] ??
-            //           false;
-            //
-            //       return Icon(
-            //         isFav
-            //             ? Icons.favorite
-            //             : Icons
-            //                 .favorite_border_outlined,
-            //         size: 30,
-            //         color: Colors.red,
-            //       );
-            //     },
-            //   ),
-            // ),
-            GetBuilder<FavoriteController>(
+            child: GetBuilder<FavoriteController>(
               builder: (controller) {
                 final isFav =
                     controller.isFavorite[tFavoriteModel.id.toString()] ??
@@ -102,6 +78,7 @@ class ViewTFavoriteCard extends StatelessWidget {
                 Text(
                   "${tFavoriteModel.name}".tr,
                   style: TextStyle(
+                    fontFamily: FontController().currentFontFamily,
                     overflow: TextOverflow.ellipsis,
                     fontSize: 16,
                     fontWeight: FontWeight.w400,

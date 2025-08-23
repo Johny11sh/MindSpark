@@ -1,4 +1,6 @@
 // models/quiz_model.dart
+// ignore_for_file: file_names
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -27,7 +29,7 @@ import 'package:flutter/material.dart';
 //   final int correctAnswerIndex;
 //   final int quizId;
 //   final int points;
-  
+
 //   // الحقول الجديدة
 //   final String difficulty;
 //   final String? createdAt;
@@ -55,7 +57,7 @@ import 'package:flutter/material.dart';
 //         final decoded = jsonDecode(optionsData) as List<dynamic>;
 //         return decoded.map((e) => e.toString()).toList();
 //       }
-//       return ['Option 1', 'Option 2']; 
+//       return ['Option 1', 'Option 2'];
 //     } catch (e) {
 //       debugPrint("Error parsing options: $e");
 //       return ['Error loading options'];
@@ -75,16 +77,12 @@ import 'package:flutter/material.dart';
 //   );
 // }
 
-
 // }
 class QuizResponse {
   final bool success;
   final Quiz? quiz;
 
-  QuizResponse({
-    required this.success,
-    this.quiz,
-  });
+  QuizResponse({required this.success, this.quiz});
 
   factory QuizResponse.fromJson(Map<String, dynamic> json) {
     return QuizResponse(
@@ -99,19 +97,17 @@ class Quiz {
   final int lectureId;
   final List<Question> questions;
 
-  Quiz({
-    required this.id,
-    required this.lectureId,
-    required this.questions,
-  });
+  Quiz({required this.id, required this.lectureId, required this.questions});
 
   factory Quiz.fromJson(Map<String, dynamic> json) {
     return Quiz(
       id: json['id'] as int? ?? 0,
       lectureId: json['lecture_id'] as int? ?? 0,
-      questions: (json['questions'] as List<dynamic>?)
-          ?.map((q) => Question.fromJson(q as Map<String, dynamic>))
-          .toList() ?? [],
+      questions:
+          (json['questions'] as List<dynamic>?)
+              ?.map((q) => Question.fromJson(q as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 }
@@ -168,42 +164,3 @@ class Question {
     }
   }
 }
-// class Question {
-//   final int id;
-//   final String questionText;
-//   final List<String> options;
-//   final int correctAnswerIndex;
-//   final int quizId;
-//   final int points;
-
-//   Question({
-//     required this.id,
-//     required this.questionText,
-//     required this.options,
-//     required this.correctAnswerIndex,
-//    required this.quizId,
-//     this.points=1,
- 
-//   });
-
-//   factory Question.fromJson(Map<String, dynamic> json) {
-//     return Question(
-//       id: json['id'],
-//       questionText: json['questionText'],
-//       options: List<String>.from(jsonDecode(json['options'])), // تحويل JSON string إلى List
-//       correctAnswerIndex: json['correctAnswerIndex'],
-//       quizId: json['quiz_id'] as int,
-//             points: json['points'] as int? ?? 1,
-   
-//     );
-//   }
-// }
-
-
-
-
-
-
-
-
-

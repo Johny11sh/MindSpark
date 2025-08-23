@@ -1,4 +1,8 @@
+// ignore_for_file: file_names
+
 import 'dart:math';
+import 'package:get/get.dart';
+
 import '../model/AIModel.dart';
 import 'ApiService.dart';
 
@@ -30,25 +34,27 @@ class ChatService {
       messages: [],
       createdAt: DateTime.now(),
     );
-    
+
     _currentChat = newChat;
     _chatHistory.insert(0, newChat);
   }
 
   void addMessageToCurrentChat(Message message) {
-    final updatedMessages = List<Message>.from(_currentChat.messages)..add(message);
+    final updatedMessages = List<Message>.from(_currentChat.messages)
+      ..add(message);
     _currentChat = _currentChat.copyWith(messages: updatedMessages);
-    
+
     final index = _chatHistory.indexWhere((chat) => chat.id == _currentChat.id);
     if (index != -1) {
       _chatHistory[index] = _currentChat;
     }
-    
+
     // Update title when first user message is added
     if (message.isMe && _currentChat.messages.length == 1) {
-      final title = message.text.isNotEmpty && message.text.length > 30 
-          ? '${message.text.substring(0, 30)}...' 
-          : (message.text.isNotEmpty ? message.text : 'New Chat');
+      final title =
+          message.text.isNotEmpty && message.text.length > 30
+              ? '${message.text.substring(0, 30)}...'
+              : (message.text.isNotEmpty ? message.text : 'New Chat'.tr);
       _currentChat = _currentChat.copyWith(title: title);
       if (index != -1) {
         _chatHistory[index] = _currentChat;
@@ -59,14 +65,10 @@ class ChatService {
   Future<Message> getBotResponse(String userMessage) async {
     try {
       final response = await _apiService.getResponse(userMessage);
-      return Message(
-        text: response,
-        isMe: false,
-        timestamp: DateTime.now(),
-      );
+      return Message(text: response.tr, isMe: false, timestamp: DateTime.now());
     } catch (e) {
       return Message(
-        text: 'Sorry, I encountered an error: ${e.toString()}',
+        text: 'Sorry, I encountered an error: ${e.toString()}'.tr,
         isMe: false,
         timestamp: DateTime.now(),
       );
@@ -105,16 +107,26 @@ class ChatService {
 
   Map<String, dynamic> exportChatHistory() {
     return {
-      'chats': _chatHistory.map((chat) => {
-        'id': chat.id,
-        'title': chat.title,
-        'createdAt': chat.createdAt.toIso8601String(),
-        'messages': chat.messages.map((msg) => {
-          'text': msg.text,
-          'isMe': msg.isMe,
-          'timestamp': msg.timestamp.toIso8601String(),
-        }).toList(),
-      }).toList(),
+      'chats':
+          _chatHistory
+              .map(
+                (chat) => {
+                  'id': chat.id.tr,
+                  'title': chat.title.tr,
+                  'createdAt': chat.createdAt.toIso8601String().tr,
+                  'messages':
+                      chat.messages
+                          .map(
+                            (msg) => {
+                              'text': msg.text.tr,
+                              'isMe': msg.isMe,
+                              'timestamp': msg.timestamp.toIso8601String().tr,
+                            },
+                          )
+                          .toList(),
+                },
+              )
+              .toList(),
     };
   }
 
@@ -122,7 +134,10 @@ class ChatService {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     final random = Random();
     return String.fromCharCodes(
-      Iterable.generate(8, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
+      Iterable.generate(
+        8,
+        (_) => chars.codeUnitAt(random.nextInt(chars.length)),
+      ),
     );
   }
-} 
+}

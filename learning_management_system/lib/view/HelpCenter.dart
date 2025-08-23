@@ -1,11 +1,14 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:learning_management_system/core/classes/FAQ.dart';
+import '../core/classes/FAQ.dart';
 
 import '../core/classes/AboutUs.dart';
 // import '../core/classes/ChangeTheme.dart';
 import '../core/classes/ContactUs.dart';
 import '../core/classes/PrivacyPolicy.dart';
+import '../controller/FontController.dart';
 import '../themes/Themes.dart';
 import 'NavBar.dart';
 
@@ -24,7 +27,7 @@ class HelpCenter extends StatelessWidget {
           children: [
             // SizedBox(height: 50),
             Container(
-              padding: EdgeInsets.only(top: 30),
+              padding: const EdgeInsets.only(top: 30),
               height: 100,
               // color: Colors.red,
               child: Row(
@@ -56,6 +59,7 @@ class HelpCenter extends StatelessWidget {
                           style: Theme.of(
                             context,
                           ).textTheme.bodySmall!.copyWith(
+                            fontFamily: FontController().currentFontFamily,
                             color:
                                 themeController.initialTheme ==
                                         Themes.customLightTheme
@@ -89,7 +93,7 @@ class HelpCenter extends StatelessWidget {
                     const SizedBox(height: 10),
                     Expanded(
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: ListView(
                           shrinkWrap: true,
                           children: [
@@ -98,9 +102,11 @@ class HelpCenter extends StatelessWidget {
                                 Get.to(() => ContactUs());
                               },
                               child: Card(
-                                color:themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -110,15 +116,25 @@ class HelpCenter extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                       ),
                                     ),
                                     Expanded(
                                       flex: 2,
                                       child: Container(
-                                        padding: EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           top: 10,
                                           bottom: 10,
                                         ),
@@ -126,14 +142,27 @@ class HelpCenter extends StatelessWidget {
                                         child: Text(
                                           "Contact Us".tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    ),
                                           ),
                                         ),
                                       ),
@@ -145,9 +174,19 @@ class HelpCenter extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                       ),
                                     ),
                                   ],
@@ -159,9 +198,11 @@ class HelpCenter extends StatelessWidget {
                                 Get.to(() => AboutUs());
                               },
                               child: Card(
-                                color:themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -171,15 +212,25 @@ class HelpCenter extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                       ),
                                     ),
                                     Expanded(
                                       flex: 2,
                                       child: Container(
-                                        padding: EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           top: 10,
                                           bottom: 10,
                                         ),
@@ -187,14 +238,27 @@ class HelpCenter extends StatelessWidget {
                                         child: Text(
                                           "About Us".tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    ),
                                           ),
                                         ),
                                       ),
@@ -206,9 +270,19 @@ class HelpCenter extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                       ),
                                     ),
                                   ],
@@ -220,9 +294,11 @@ class HelpCenter extends StatelessWidget {
                                 Get.to(() => PrivacyPolicy());
                               },
                               child: Card(
-                                color:themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -232,15 +308,25 @@ class HelpCenter extends StatelessWidget {
                                         size: 25,
                                         color:
                                             themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                       ),
                                     ),
                                     Expanded(
                                       flex: 2,
                                       child: Container(
-                                        padding: EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           top: 10,
                                           bottom: 10,
                                         ),
@@ -248,14 +334,27 @@ class HelpCenter extends StatelessWidget {
                                         child: Text(
                                           "Privacy Policy".tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    ),
                                           ),
                                         ),
                                       ),
@@ -267,9 +366,19 @@ class HelpCenter extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                       ),
                                     ),
                                   ],
@@ -281,9 +390,11 @@ class HelpCenter extends StatelessWidget {
                                 Get.to(() => FAQ());
                               },
                               child: Card(
-                                color:themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -292,16 +403,26 @@ class HelpCenter extends StatelessWidget {
                                         Icons.question_mark,
                                         size: 25,
                                         color:
-                                           themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                            themeController.initialTheme ==
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                       ),
                                     ),
                                     Expanded(
                                       flex: 2,
                                       child: Container(
-                                        padding: EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           top: 10,
                                           bottom: 10,
                                         ),
@@ -309,14 +430,27 @@ class HelpCenter extends StatelessWidget {
                                         child: Text(
                                           "FAQ".tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.normal,
                                             color:
                                                 themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                        Themes.customLightTheme
+                                                    ? Color.fromARGB(
+                                                      255,
+                                                      210,
+                                                      209,
+                                                      224,
+                                                    )
+                                                    : Color.fromARGB(
+                                                      255,
+                                                      40,
+                                                      41,
+                                                      61,
+                                                    ),
                                           ),
                                         ),
                                       ),
@@ -328,9 +462,19 @@ class HelpCenter extends StatelessWidget {
                                         Icons.arrow_forward_ios_outlined,
                                         color:
                                             themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                       ),
                                     ),
                                   ],

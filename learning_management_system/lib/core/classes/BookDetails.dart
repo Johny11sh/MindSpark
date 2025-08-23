@@ -1,11 +1,14 @@
-// ignore_for_file: non_constant_identifier_names, unnecessary_null_comparison, file_names
+// ignore_for_file: non_constant_identifier_names, unnecessary_null_comparison, file_names, dead_code
 
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:learning_management_system/core/classes/AudioBook.dart';
+import '../../view/NavBar.dart';
+import '../../controller/FontController.dart';
+import 'AudioBook.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../locale/LocaleController.dart';
@@ -16,12 +19,12 @@ import 'PDFOpener.dart';
 
 class BookDetails extends StatefulWidget {
   final Map<String, dynamic> BookData;
-  final Uint8List? bookImage;
+  // final Uint8List? bookImage;
 
   const BookDetails({
     super.key,
-   required this.BookData,
-    required this.bookImage,
+    required this.BookData,
+    // required this.bookImage,
   });
 
   @override
@@ -37,7 +40,10 @@ class _BookDetailsState extends State<BookDetails> {
 
   void showErrorSnackbar(String message) {
     Get.rawSnackbar(
-      messageText: Text(message),
+      messageText: Text(
+        message,
+        style: TextStyle(fontFamily: FontController().currentFontFamily),
+      ),
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
       backgroundColor: Colors.red[800]!,
@@ -100,6 +106,7 @@ class _BookDetailsState extends State<BookDetails> {
                   ? "Below Average".tr
                   : "Poor".tr,
               style: TextStyle(
+                fontFamily: FontController().currentFontFamily,
                 color:
                     themeController.initialTheme == Themes.customLightTheme
                         ? Color.fromARGB(255, 40, 41, 61)
@@ -110,7 +117,7 @@ class _BookDetailsState extends State<BookDetails> {
             ),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           flex: 3,
           child: Stack(
@@ -136,7 +143,7 @@ class _BookDetailsState extends State<BookDetails> {
             ],
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           flex: 1,
           child: Align(
@@ -144,6 +151,7 @@ class _BookDetailsState extends State<BookDetails> {
             child: Text(
               count.toString(),
               style: TextStyle(
+                fontFamily: FontController().currentFontFamily,
                 color:
                     themeController.initialTheme == Themes.customLightTheme
                         ? Color.fromARGB(255, 40, 41, 61)
@@ -160,11 +168,18 @@ class _BookDetailsState extends State<BookDetails> {
 
   @override
   Widget build(BuildContext context) {
+    final ratingBreakdown = widget.BookData["rating_breakdown"] ?? {};
+    final totalReviews =
+        (int.tryParse(ratingBreakdown["5"].toString()) ?? 0) +
+        (int.tryParse(ratingBreakdown["4"].toString()) ?? 0) +
+        (int.tryParse(ratingBreakdown["3"].toString()) ?? 0) +
+        (int.tryParse(ratingBreakdown["2"].toString()) ?? 0) +
+        (int.tryParse(ratingBreakdown["1"].toString()) ?? 0);
     final ThemeController themeController = Get.find<ThemeController>();
     final LocaleController localeController = Get.find<LocaleController>();
     final featuredRatings =
         widget.BookData["FeaturedRatings"] as List<dynamic>? ?? [];
-    Uint8List? imageBytes = widget.bookImage;
+    // Uint8List? imageBytes = widget.bookImage;
 
     return MaterialApp(
       theme: themeController.initialTheme,
@@ -173,30 +188,28 @@ class _BookDetailsState extends State<BookDetails> {
       home: Scaffold(
         body:
             widget.BookData == null || widget.BookData.isEmpty
-            ? Center(
-                child: CircularProgressIndicator(
+                ? Center(
+                  child: CircularProgressIndicator(
                     color:
                         themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 40, 41, 61)
-                      : Color.fromARGB(255, 210, 209, 224),
-                ),
-              )
+                            ? Color.fromARGB(255, 40, 41, 61)
+                            : Color.fromARGB(255, 210, 209, 224),
+                  ),
+                )
                 : SingleChildScrollView(
                   physics: AlwaysScrollableScrollPhysics(),
                   child: Column(
-                children: [
-                  // Header section with layered container design
-                  Container(
+                    children: [
+                      Container(
                         color:
                             themeController.initialTheme ==
                                     Themes.customLightTheme
-                              ? Color.fromARGB(255, 40, 41, 61)
-                              : Color.fromARGB(255, 210, 209, 224),
-                          child: Column(
-                            children: [
-                            // Top header container
+                                ? Color.fromARGB(255, 40, 41, 61)
+                                : Color.fromARGB(255, 210, 209, 224),
+                        child: Column(
+                          children: [
                             Padding(
-                              padding: EdgeInsets.only(top: 40),
+                              padding: const EdgeInsets.only(top: 40),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -217,13 +230,15 @@ class _BookDetailsState extends State<BookDetails> {
                                                 209,
                                                 224,
                                               )
-                                          : Color.fromARGB(255, 40, 41, 61),
+                                              : Color.fromARGB(255, 40, 41, 61),
                                     ),
                                   ),
                                   Text(
                                     "Book Details".tr,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
+                                      fontFamily:
+                                          FontController().currentFontFamily,
                                       color:
                                           themeController.initialTheme ==
                                                   Themes.customLightTheme
@@ -233,7 +248,7 @@ class _BookDetailsState extends State<BookDetails> {
                                                 209,
                                                 224,
                                               )
-                                          : Color.fromARGB(255, 40, 41, 61),
+                                              : Color.fromARGB(255, 40, 41, 61),
                                       fontWeight: FontWeight.w500,
                                       fontSize: 20,
                                     ),
@@ -252,63 +267,54 @@ class _BookDetailsState extends State<BookDetails> {
                                                 209,
                                                 224,
                                               )
-                                          : Color.fromARGB(255, 40, 41, 61),
+                                              : Color.fromARGB(255, 40, 41, 61),
                                     ),
                                   ),
                                 ],
                               ),
-                          ),
-                            SizedBox(height: 20),
+                            ),
+                            const SizedBox(height: 20),
 
-                            // Rounded bottom container
-                        Container(
-                          width: Get.width,
-                          decoration: BoxDecoration(
+                            Container(
+                              width: Get.width,
+                              decoration: BoxDecoration(
                                 color:
                                     themeController.initialTheme ==
                                             Themes.customLightTheme
-                                ? Color.fromARGB(255, 210, 209, 224)
-                                : Color.fromARGB(255, 40, 41, 61),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(60),
-                              topRight: Radius.circular(60),
-                            ),
-                          ),
+                                        ? Color.fromARGB(255, 210, 209, 224)
+                                        : Color.fromARGB(255, 40, 41, 61),
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(60),
+                                  topRight: Radius.circular(60),
+                                ),
+                              ),
                               child: Padding(
-                                padding: EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                                    // Book Image
-                              Container(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  children: [
+                                    SizedBox(
                                       width: Get.width / 3,
                                       height: Get.width / 2.5,
                                       child:
-                                    imageBytes != null
-                                        ? Image.memory(
-                                          imageBytes,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                            return Image.asset(
-                                                    ImageAssets.book,
-                                                    fit: BoxFit.cover,
-                                            );
-                                          },
-                                        )
-                                        : Image.asset(
+                                          widget.BookData['image'] != null
+                                              ? CachedNetworkImage(
+                                                imageUrl:
+                                                    "$mainIP/${widget.BookData['image']}",
+                                                height: 60,
+                                                width: 60,
+                                              )
+                                              : Image.asset(
                                                 ImageAssets.book,
                                                 fit: BoxFit.cover,
                                               ),
-                                        ),
-                                    SizedBox(height: 20),
+                                    ),
+                                    const SizedBox(height: 20),
 
-                                    // Book Name
                                     Text(
                                       "${widget.BookData["name"]}".tr,
                                       style: TextStyle(
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                         fontSize: 22,
                                         fontWeight: FontWeight.w600,
                                         fontStyle: FontStyle.normal,
@@ -332,15 +338,17 @@ class _BookDetailsState extends State<BookDetails> {
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    SizedBox(height: 15),
+                                    const SizedBox(height: 15),
 
-                                    // Author and Publish Date
                                     Column(
                                       children: [
                                         Text(
                                           "Author: ${widget.BookData["author"]}"
                                               .tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontSize: 16,
                                             fontWeight: FontWeight.w400,
                                             fontStyle: FontStyle.normal,
@@ -362,11 +370,14 @@ class _BookDetailsState extends State<BookDetails> {
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
-                                        SizedBox(height: 5),
+                                        const SizedBox(height: 5),
                                         Text(
                                           "Publish Date: ${widget.BookData["publish date"]}"
                                               .tr,
                                           style: TextStyle(
+                                            fontFamily:
+                                                FontController()
+                                                    .currentFontFamily,
                                             fontSize: 14,
                                             fontWeight: FontWeight.w300,
                                             fontStyle: FontStyle.normal,
@@ -390,21 +401,23 @@ class _BookDetailsState extends State<BookDetails> {
                                         ),
                                       ],
                                     ),
-                                    SizedBox(height: 20),
+                                    const SizedBox(height: 20),
 
-                                    // Action Buttons
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
                                       children: [
                                         Expanded(
                                           child: Container(
-                                            margin: EdgeInsets.only(right: 8),
+                                            margin: const EdgeInsets.only(
+                                              right: 8,
+                                            ),
                                             child: ElevatedButton(
                                               onPressed: () async {
                                                 try {
                                                   final PDFurl =
-                                                      widget.BookData['pdf_file_url'];
+                                                      widget
+                                                          .BookData['pdf_file_url'];
                                                   // "http://www.pdf995.com/samples/pdf.pdf";
                                                   final file =
                                                       await loadNetwork(PDFurl);
@@ -420,25 +433,34 @@ class _BookDetailsState extends State<BookDetails> {
                                                 }
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: Color.fromARGB(255, 190, 0, 0),
-                                                foregroundColor: Colors.white,
-                                                padding: EdgeInsets.symmetric(
-                                                  vertical: 12,
+                                                backgroundColor: Color.fromARGB(
+                                                  255,
+                                                  190,
+                                                  0,
+                                                  0,
                                                 ),
+                                                foregroundColor: Colors.white,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                    ),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(10),
                                                 ),
-                                      ),
-                                      child: Row(
+                                              ),
+                                              child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
-                                        children: [
+                                                children: [
                                                   Icon(Icons.book, size: 18),
-                                                  SizedBox(width: 5),
-                                              Text(
+                                                  const SizedBox(width: 5),
+                                                  Text(
                                                     "Read Book".tr,
-                                                style: TextStyle(
+                                                    style: TextStyle(
+                                                      fontFamily:
+                                                          FontController()
+                                                              .currentFontFamily,
                                                       fontSize: 14,
                                                       fontWeight:
                                                           FontWeight.w600,
@@ -451,27 +473,31 @@ class _BookDetailsState extends State<BookDetails> {
                                         ),
                                         Expanded(
                                           child: Container(
-                                            margin: EdgeInsets.only(left: 8),
+                                            margin: const EdgeInsets.only(
+                                              left: 8,
+                                            ),
                                             child: ElevatedButton(
                                               onPressed: () {
                                                 Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) => AudioBook(
-                                                    audioBookData: widget.BookData,
-                                                    audioBookImage: imageBytes
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder:
+                                                        (context) => AudioBook(
+                                                          audioBookData:
+                                                              widget.BookData,
+                                                          // audioBookImage:
+                                                          //     imageBytes,
+                                                        ),
                                                   ),
-                                            ),
-                                          );
-                                                
+                                                );
                                               },
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.blue,
                                                 foregroundColor: Colors.white,
-                                                padding: EdgeInsets.symmetric(
-                                                  vertical: 12,
-                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                    ),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(10),
@@ -480,33 +506,35 @@ class _BookDetailsState extends State<BookDetails> {
                                               child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
-                                            children: [
+                                                children: [
                                                   Icon(
                                                     Icons.headphones,
                                                     size: 18,
                                                   ),
-                                                  SizedBox(width: 5),
-                                              Text(
+                                                  const SizedBox(width: 5),
+                                                  Text(
                                                     "Listen To Audio Book".tr,
-                                                style: TextStyle(
+                                                    style: TextStyle(
+                                                      fontFamily:
+                                                          FontController()
+                                                              .currentFontFamily,
                                                       fontSize: 14,
                                                       fontWeight:
                                                           FontWeight.w600,
-                                                ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    SizedBox(height: 25),
+                                    const SizedBox(height: 25),
 
-                                    // Info Container
                                     Container(
                                       width: Get.width,
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                         vertical: 15,
                                         horizontal: 20,
                                       ),
@@ -538,39 +566,17 @@ class _BookDetailsState extends State<BookDetails> {
                                             child: Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
-                                            children: [
-                                              Text(
+                                              children: [
+                                                Text(
                                                   "${widget.BookData["rating"]}"
                                                       .tr,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w300,
-                                                  fontStyle: FontStyle.normal,
-                                                    color:
-                                                        themeController
-                                                                    .initialTheme ==
-                                                                Themes
-                                                                    .customLightTheme
-                                                            ? Color.fromARGB(
-                                                              255,
-                                                              210,
-                                                              209,
-                                                              224,
-                                                            )
-                                                            : Color.fromARGB(
-                                                              255,
-                                                              40,
-                                                              41,
-                                                              61,
-                                                            ),
-                                                ),
-                                              ),
-                                              Text(
-                                                  "Rating".tr,
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                  fontWeight: FontWeight.w400,
-                                                  fontStyle: FontStyle.normal,
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w300,
+                                                    fontStyle: FontStyle.normal,
                                                     color:
                                                         themeController
                                                                     .initialTheme ==
@@ -589,10 +595,38 @@ class _BookDetailsState extends State<BookDetails> {
                                                               61,
                                                             ),
                                                   ),
+                                                ),
+                                                Text(
+                                                  "Rating".tr,
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    fontStyle: FontStyle.normal,
+                                                    color:
+                                                        themeController
+                                                                    .initialTheme ==
+                                                                Themes
+                                                                    .customLightTheme
+                                                            ? Color.fromARGB(
+                                                              255,
+                                                              210,
+                                                              209,
+                                                              224,
+                                                            )
+                                                            : Color.fromARGB(
+                                                              255,
+                                                              40,
+                                                              41,
+                                                              61,
+                                                            ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
 
                                           Expanded(
                                             child: Column(
@@ -603,6 +637,9 @@ class _BookDetailsState extends State<BookDetails> {
                                                   "${widget.BookData["pdf_file_pages"]}"
                                                       .tr,
                                                   style: TextStyle(
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w300,
                                                     fontStyle: FontStyle.normal,
@@ -628,6 +665,9 @@ class _BookDetailsState extends State<BookDetails> {
                                                 Text(
                                                   "Pages".tr,
                                                   style: TextStyle(
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w400,
                                                     fontStyle: FontStyle.normal,
@@ -647,9 +687,9 @@ class _BookDetailsState extends State<BookDetails> {
                                                               40,
                                                               41,
                                                               61,
+                                                            ),
                                                   ),
                                                 ),
-                                              ),
                                               ],
                                             ),
                                           ),
@@ -662,6 +702,9 @@ class _BookDetailsState extends State<BookDetails> {
                                                   "${widget.BookData["subjectName"]}"
                                                       .tr,
                                                   style: TextStyle(
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w300,
                                                     fontStyle: FontStyle.normal,
@@ -691,6 +734,9 @@ class _BookDetailsState extends State<BookDetails> {
                                                       : "(Literary)".tr,
                                                   style: TextStyle(
                                                     fontSize: 12,
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
                                                     fontWeight: FontWeight.w300,
                                                     fontStyle: FontStyle.normal,
                                                     color:
@@ -715,6 +761,9 @@ class _BookDetailsState extends State<BookDetails> {
                                                 Text(
                                                   "Subject".tr,
                                                   style: TextStyle(
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w400,
                                                     fontStyle: FontStyle.normal,
@@ -734,7 +783,10 @@ class _BookDetailsState extends State<BookDetails> {
                                                               40,
                                                               41,
                                                               61,
-                                              ),
+                                                            ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
@@ -743,25 +795,22 @@ class _BookDetailsState extends State<BookDetails> {
                                   ],
                                 ),
                               ),
-                            ],
-                                ),
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
 
                       // Reviews section
                       Container(
-                        padding: EdgeInsets.all(20),
-                              child: Column(
-                                children: [
-                                  SizedBox(height: 20),
-                                  Center(
-                                    child: Row(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 20),
+                            Center(
+                              child: Row(
                                 spacing: 10,
                                 mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
+                                children: [
                                   Column(
                                     children: [
                                       IconButton(
@@ -774,11 +823,14 @@ class _BookDetailsState extends State<BookDetails> {
                                         color: Colors.blue,
                                         iconSize: 30,
                                       ),
-                                        Text(
+                                      Text(
                                         isRated == true
                                             ? "Edit Rating".tr
                                             : "Rate This".tr,
-                                          style: TextStyle(
+                                        style: TextStyle(
+                                          fontFamily:
+                                              FontController()
+                                                  .currentFontFamily,
                                           color: Colors.blue,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w400,
@@ -786,7 +838,7 @@ class _BookDetailsState extends State<BookDetails> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(width: 10),
+                                  const SizedBox(width: 10),
 
                                   Column(
                                     children: [
@@ -798,8 +850,12 @@ class _BookDetailsState extends State<BookDetails> {
                                             size: 25,
                                           ),
                                           Text(
-                                            "${widget.BookData["rating"].toString()}".replaceRange(4, null, ''),
+                                            widget.BookData["rating"]
+                                                .toString(),
                                             style: TextStyle(
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               color:
                                                   themeController
                                                               .initialTheme ==
@@ -817,16 +873,19 @@ class _BookDetailsState extends State<BookDetails> {
                                                         209,
                                                         224,
                                                       ),
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.w700,
+                                            ),
                                           ),
                                         ],
                                       ),
 
                                       Text(
-                                        "based on (${widget.BookData["ratings_count"].toString()}) reviews",
+                                        "based on (${totalReviews.toString()}) reviews",
                                         style: TextStyle(
+                                          fontFamily:
+                                              FontController()
+                                                  .currentFontFamily,
                                           color:
                                               themeController.initialTheme ==
                                                       Themes.customLightTheme
@@ -847,64 +906,64 @@ class _BookDetailsState extends State<BookDetails> {
                                         ),
                                       ),
                                     ],
-                                        ),
-                                      ],
-                                    ),
                                   ),
-                                  SizedBox(height: 20),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
 
-                                  Column(
-                                    children: [
-                                      buildRatingBar(5),
-                                      SizedBox(height: 6),
-                                      buildRatingBar(4),
-                                      SizedBox(height: 6),
-                                      buildRatingBar(3),
-                                      SizedBox(height: 6),
-                                      buildRatingBar(2),
-                                      SizedBox(height: 6),
-                                      buildRatingBar(1),
-                                    ],
-                                  ),
-                            SizedBox(height: 15),
-                                  Container(
-                                    height: 1,
+                            Column(
+                              children: [
+                                buildRatingBar(5),
+                                const SizedBox(height: 6),
+                                buildRatingBar(4),
+                                const SizedBox(height: 6),
+                                buildRatingBar(3),
+                                const SizedBox(height: 6),
+                                buildRatingBar(2),
+                                const SizedBox(height: 6),
+                                buildRatingBar(1),
+                              ],
+                            ),
+                            const SizedBox(height: 15),
+                            Container(
+                              height: 1,
                               width: Get.width,
-                                    decoration: BoxDecoration(
+                              decoration: BoxDecoration(
                                 color:
                                     themeController.initialTheme ==
                                             Themes.customLightTheme
                                         ? Color.fromARGB(255, 40, 41, 61)
                                         : Color.fromARGB(255, 210, 209, 224),
-                                      shape: BoxShape.rectangle,
+                                shape: BoxShape.rectangle,
                                 borderRadius: BorderRadius.all(
                                   Radius.circular(60),
-                                    ),
-                                  ),
+                                ),
+                              ),
                             ),
-                            SizedBox(height: 15),
+                            const SizedBox(height: 15),
 
                             // Reviews List
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemCount: featuredRatings.length,
-                                    itemBuilder: (context, index) {
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: featuredRatings.length,
+                              itemBuilder: (context, index) {
                                 final review =
                                     featuredRatings[index]
                                         as Map<String, dynamic>? ??
                                     {};
-                                      return Container(
-                                  margin: EdgeInsets.only(bottom: 15),
-                                        child: StatefulBuilder(
-                                          builder: (context, setState) {
-                                            bool isExpanded = false;
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 15),
+                                  child: StatefulBuilder(
+                                    builder: (context, setState) {
+                                      bool isExpanded = false;
                                       final reviewText =
                                           review["review"]?.toString().tr ??
                                           'No review'.tr;
-                                            final textSpan = TextSpan(
-                                              text: reviewText,
-                                              style: TextStyle(
+                                      final textSpan = TextSpan(
+                                        text: reviewText,
+                                        style: TextStyle(
                                           color:
                                               themeController.initialTheme ==
                                                       Themes.customLightTheme
@@ -920,38 +979,41 @@ class _BookDetailsState extends State<BookDetails> {
                                                     209,
                                                     224,
                                                   ),
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w200,
-                                              ),
-                                            );
-                                            final textPainter = TextPainter(
-                                              text: textSpan,
-                                              maxLines: 3,
-                                              textDirection: TextDirection.ltr,
-                                            );
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w200,
+                                        ),
+                                      );
+                                      final textPainter = TextPainter(
+                                        text: textSpan,
+                                        maxLines: 3,
+                                        textDirection: TextDirection.ltr,
+                                      );
                                       textPainter.layout(
                                         maxWidth: Get.width - 40,
                                       );
                                       final isLong =
                                           textPainter.didExceedMaxLines;
-                                            return Column(
+                                      return Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      flex: 3,
-                                                      child: Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 3,
+                                                child: Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
-                                                        children: [
+                                                  children: [
                                                     Text(
                                                       review["user_name"]
                                                               ?.toString()
                                                               .tr ??
                                                           ''.tr,
                                                       style: TextStyle(
+                                                        fontFamily:
+                                                            FontController()
+                                                                .currentFontFamily,
                                                         color:
                                                             themeController
                                                                         .initialTheme ==
@@ -974,19 +1036,20 @@ class _BookDetailsState extends State<BookDetails> {
                                                             FontWeight.w500,
                                                       ),
                                                     ),
-                                                          Row(
-                                                            children: [
-                                                              Icon(
-                                                                Icons.star_outlined,
-                                                                color: Colors.amber,
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.star_outlined,
+                                                          color: Colors.amber,
                                                           size: 20,
                                                         ),
                                                         Text(
-                                                          "${review["rating"]
-                                                                  ?.toString()}"
-                                                                  .tr ??
-                                                              'no rating'.tr,
+                                                          "${review["rating"]?.toString()}"
+                                                              .tr,
                                                           style: TextStyle(
+                                                            fontFamily:
+                                                                FontController()
+                                                                    .currentFontFamily,
                                                             color:
                                                                 themeController
                                                                             .initialTheme ==
@@ -1009,19 +1072,22 @@ class _BookDetailsState extends State<BookDetails> {
                                                                 FontWeight.w400,
                                                           ),
                                                         ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
+                                                      ],
                                                     ),
-                                                    Expanded(
-                                                      flex: 1,
+                                                  ],
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 1,
                                                 child: Text(
                                                   review["updated_at"]
                                                           ?.toString()
                                                           .tr ??
                                                       ''.tr,
                                                   style: TextStyle(
+                                                    fontFamily:
+                                                        FontController()
+                                                            .currentFontFamily,
                                                     color:
                                                         themeController
                                                                     .initialTheme ==
@@ -1039,23 +1105,26 @@ class _BookDetailsState extends State<BookDetails> {
                                                               209,
                                                               224,
                                                             ),
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.w200,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w200,
                                                   ),
                                                   textAlign: TextAlign.end,
                                                 ),
-                                                    ),
-                                                  ],
-                                                ),
-                                          SizedBox(height: 8),
-                                                    Text(
-                                                      reviewText,
-                                                      maxLines: isExpanded ? null : 3,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            reviewText,
+                                            maxLines: isExpanded ? null : 3,
                                             overflow:
                                                 isExpanded
                                                     ? TextOverflow.visible
                                                     : TextOverflow.ellipsis,
-                                                      style: TextStyle(
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  FontController()
+                                                      .currentFontFamily,
                                               color:
                                                   themeController
                                                               .initialTheme ==
@@ -1073,12 +1142,12 @@ class _BookDetailsState extends State<BookDetails> {
                                                         209,
                                                         224,
                                                       ),
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w200,
-                                                      ),
-                                                    ),
-                                                    if (isLong && !isExpanded)
-                                                      TextButton(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w200,
+                                            ),
+                                          ),
+                                          if (isLong && !isExpanded)
+                                            TextButton(
                                               onPressed:
                                                   () => setState(
                                                     () => isExpanded = true,
@@ -1089,13 +1158,16 @@ class _BookDetailsState extends State<BookDetails> {
                                               child: Text(
                                                 'Read more...'.tr,
                                                 style: TextStyle(
+                                                  fontFamily:
+                                                      FontController()
+                                                          .currentFontFamily,
                                                   color: Colors.blue,
                                                   fontSize: 12,
                                                 ),
                                               ),
-                                                      ),
-                                                    if (isExpanded && isLong)
-                                                      TextButton(
+                                            ),
+                                          if (isExpanded && isLong)
+                                            TextButton(
                                               onPressed:
                                                   () => setState(
                                                     () => isExpanded = false,
@@ -1106,6 +1178,9 @@ class _BookDetailsState extends State<BookDetails> {
                                               child: Text(
                                                 'Show less'.tr,
                                                 style: TextStyle(
+                                                  fontFamily:
+                                                      FontController()
+                                                          .currentFontFamily,
                                                   color: Colors.blue,
                                                   fontSize: 12,
                                                 ),
@@ -1113,10 +1188,12 @@ class _BookDetailsState extends State<BookDetails> {
                                             ),
                                           if (index <
                                               featuredRatings.length - 1)
-                                                    Container(
-                                                      height: 1,
-                                              margin: EdgeInsets.only(top: 15),
-                                                      decoration: BoxDecoration(
+                                            Container(
+                                              height: 1,
+                                              margin: const EdgeInsets.only(
+                                                top: 15,
+                                              ),
+                                              decoration: BoxDecoration(
                                                 color:
                                                     themeController
                                                                 .initialTheme ==
@@ -1134,26 +1211,26 @@ class _BookDetailsState extends State<BookDetails> {
                                                           209,
                                                           224,
                                                         ),
-                                                        shape: BoxShape.rectangle,
+                                                shape: BoxShape.rectangle,
                                                 borderRadius: BorderRadius.all(
                                                   Radius.circular(60),
-                                                      ),
-                                                    ),
                                                 ),
-                                              ],
-                                            );
-                                          },
-                                        ),
+                                              ),
+                                            ),
+                                        ],
                                       );
                                     },
                                   ),
-                                  SizedBox(height: 40),
-                                ],
-                          ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 40),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-                  ),
-              ),
+                ),
       ),
     );
   }

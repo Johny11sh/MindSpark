@@ -1,6 +1,7 @@
+// ignore_for_file: file_names,non_constant_identifier_names
+
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -25,7 +26,6 @@ class QuizController extends GetxController
   var selectedAnswerIndex = Rxn<int>();
   var score = 0.obs;
   var quizCompleted = false.obs;
-  // ignore: non_constant_identifier_names
   String? quiz_id;
   String? lessonID;
   @override
@@ -63,9 +63,9 @@ class QuizController extends GetxController
             "Loaded quiz ${quiz.id} with ${quiz.questions.length} questions",
           );
         } else {
-          error.value = 'الاختبار لا يحتوي على أي أسئلة';
+          error.value = 'The quiz doesn\'t contain any questions'.tr;
           Get.snackbar(
-            'تحذير',
+            'Warning'.tr,
             error.value,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.orange,
@@ -74,21 +74,21 @@ class QuizController extends GetxController
       } else {
         error.value =
             quizResponse.quiz == null
-                ? 'لا يوجد اختبار لهذا الدرس'
-                : 'فشل تحميل الاختبار';
+                ? 'There is no quiz for this lesson'.tr
+                : 'Failed to load the quiz'.tr;
 
         Get.snackbar(
-          'خطأ',
+          'Error'.tr,
           error.value,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
         );
       }
     } catch (e) {
-      error.value = 'خطأ تقني: ${e.toString().split(':').first}';
+      error.value = 'Technical error: ${e.toString().split(':').first}';
       debugPrint("Error loading quiz: $e");
       Get.snackbar(
-        'خطأ فادح',
+        'Critical error'.tr,
         error.value,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red[800]!,
@@ -104,7 +104,6 @@ class QuizController extends GetxController
     }
   }
 
-  // ignore: non_constant_identifier_names
   Future<void> SendScore(String lessonId, List<int> answers) async {
     int quizId = lessonId as int;
     isLoading(true);
@@ -124,9 +123,9 @@ class QuizController extends GetxController
     // } else {
     //   _showWrongAnswerAnimation();
     // }
-  final currentIndex = currentQuestionIndex.value;
+    final currentIndex = currentQuestionIndex.value;
     final question = questions[currentIndex];
-    
+
     selectedAnswerIndex.value = index;
 
     // تخزين النتيجة لكل سؤال (1 لصحيح، 0 لخطأ)
@@ -138,13 +137,12 @@ class QuizController extends GetxController
       userAnswers[currentIndex] = 0; // إجابة خاطئة
       _showWrongAnswerAnimation();
     }
- 
   }
 
   void _showCorrectAnswerAnimation() {
     Get.snackbar(
-      'Correct!',
-      'Good',
+      'Correct!'.tr,
+      'Good'.tr,
       animationDuration: const Duration(milliseconds: 450),
       //  '+${questions[currentQuestionIndex.value].points} points',
       backgroundColor: Colors.green,
@@ -159,8 +157,8 @@ class QuizController extends GetxController
       animationController.reverse();
     });
     Get.snackbar(
-      'Wrong!',
-      'Try again',
+      'Wrong!'.tr,
+      'Try again'.tr,
       animationDuration: const Duration(milliseconds: 600),
       backgroundColor: Colors.red,
       colorText: Colors.white,
@@ -188,21 +186,18 @@ class QuizController extends GetxController
   }
 
   Future<void> submitResults() async {
-    
-   if (quiz_id == null) return;
+    if (quiz_id == null) return;
 
     try {
-      
       int? quizId = int.tryParse(quiz_id!);
       if (quizId == null) {
-        Get.snackbar('Error', 'Invalid Quiz ID');
+        Get.snackbar('Error'.tr, 'Invalid Quiz ID'.tr);
         return;
       }
 
-      
       await _quizService.sendScore(
         quizId,
-        userAnswers.map((a) => a ?? 0).toList() 
+        userAnswers.map((a) => a ?? 0).toList(),
       );
     } catch (e) {
       debugPrint("Error submitting results: $e");
@@ -402,9 +397,7 @@ class QuizService {
               'Content-Type': 'application/json; charset=UTF-8',
               'Accept': 'application/json',
             },
-            body: jsonEncode({
-              'answers': answers,
-            }), 
+            body: jsonEncode({'answers': answers}),
           )
           .timeout(const Duration(seconds: 15));
 
@@ -414,7 +407,6 @@ class QuizService {
       if (response.statusCode == 200) {
         debugPrint("Answers submitted successfully");
         return true;
-        
       } else if (response.statusCode == 401) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Get.offAll(() => LogIn());

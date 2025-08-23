@@ -1,28 +1,28 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../controller/NetworkController.dart';
 import '../../themes/Themes.dart';
 import '../../themes/ThemeController.dart';
+import '../../view/NavBar.dart';
+import '../../controller/FontController.dart';
 import '../constants/ImageAssets.dart';
 
 class AudioBook extends StatefulWidget {
   final Map<String, dynamic> audioBookData;
-  final Uint8List? audioBookImage;
+  // final Uint8List? audioBookImage;
 
   const AudioBook({
     super.key,
     required this.audioBookData,
-    required this.audioBookImage,
+    // required this.audioBookImage,
   });
 
   @override
@@ -66,10 +66,12 @@ class _AudioBookState extends State<AudioBook> {
       _bookId = widget.audioBookData['id']?.toString() ?? 'unknown';
       if (widget.audioBookData['audio_file_duration_seconds'] != null) {
         _totalDuration = Duration(
-          seconds: (widget.audioBookData['audio_file_duration_seconds'] as num).toInt(),
+          seconds:
+              (widget.audioBookData['audio_file_duration_seconds'] as num)
+                  .toInt(),
         );
       }
-      if (widget.audioBookImage != null) {
+      if (widget.audioBookData['image'] != null) {
         _extractDominantColor();
       }
       await _initializeSharedPreferences();
@@ -174,12 +176,22 @@ class _AudioBookState extends State<AudioBook> {
   }
 
   Future<void> _skipForward() async {
-    final newPosition = Duration(seconds: (_currentPosition.inSeconds + 10).clamp(0, _totalDuration.inSeconds));
+    final newPosition = Duration(
+      seconds: (_currentPosition.inSeconds + 10).clamp(
+        0,
+        _totalDuration.inSeconds,
+      ),
+    );
     await _seekToPosition(newPosition);
   }
 
   Future<void> _skipBackward() async {
-    final newPosition = Duration(seconds: (_currentPosition.inSeconds - 10).clamp(0, _totalDuration.inSeconds));
+    final newPosition = Duration(
+      seconds: (_currentPosition.inSeconds - 10).clamp(
+        0,
+        _totalDuration.inSeconds,
+      ),
+    );
     await _seekToPosition(newPosition);
   }
 
@@ -220,10 +232,14 @@ class _AudioBookState extends State<AudioBook> {
 
   Future<void> _extractDominantColor() async {
     try {
-      final codec = await ui.instantiateImageCodec(widget.audioBookImage!);
+      final codec = await ui.instantiateImageCodec(
+        widget.audioBookData['image']!,
+      );
       final frame = await codec.getNextFrame();
       final image = frame.image;
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final byteData = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       if (byteData == null) return;
       final bytes = byteData.buffer.asUint8List();
 
@@ -239,7 +255,12 @@ class _AudioBookState extends State<AudioBook> {
 
       if (count > 0) {
         setState(() {
-          _dominantColor = Color.fromARGB(255, (r ~/ count), (g ~/ count), (b ~/ count));
+          _dominantColor = Color.fromARGB(
+            255,
+            (r ~/ count),
+            (g ~/ count),
+            (b ~/ count),
+          );
         });
       }
     } catch (e) {
@@ -250,7 +271,10 @@ class _AudioBookState extends State<AudioBook> {
   Future<void> _saveAudioPosition() async {
     if (!_prefsInitialized || _prefs == null) return;
     try {
-      await _prefs!.setInt('audio_position_$_bookId', _currentPosition.inSeconds);
+      await _prefs!.setInt(
+        'audio_position_$_bookId',
+        _currentPosition.inSeconds,
+      );
     } catch (e) {
       debugPrint('Position save error: $e');
     }
@@ -274,7 +298,14 @@ class _AudioBookState extends State<AudioBook> {
 
   void _showSnackBar(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            style: TextStyle(fontFamily: FontController().currentFontFamily),
+          ),
+        ),
+      );
     }
   }
 
@@ -289,273 +320,300 @@ class _AudioBookState extends State<AudioBook> {
     _audioPlayer?.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-    final accentColor = themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-        : Color.fromARGB(255, 210, 209, 224);
+    final accentColor =
+        themeController.initialTheme == Themes.customLightTheme
+            ? Color.fromARGB(255, 40, 41, 61)
+            : Color.fromARGB(255, 210, 209, 224);
 
     return Scaffold(
-      backgroundColor: themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 210, 209, 224)
-                          : Color.fromARGB(255, 46, 48, 97),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: accentColor))
-          : widget.audioBookData.isEmpty
+      backgroundColor:
+          themeController.initialTheme == Themes.customLightTheme
+              ? Color.fromARGB(255, 210, 209, 224)
+              : Color.fromARGB(255, 46, 48, 97),
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator(color: accentColor))
+              : widget.audioBookData.isEmpty
               ? Center(child: CircularProgressIndicator(color: accentColor))
               : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: Icon(
-                            Icons.arrow_back_outlined,
-                            size: 35,
-                            color: accentColor,
-                          ),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          Icons.arrow_back_outlined,
+                          size: 35,
+                          color: accentColor,
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
 
-                    Center(
-                  child: Container(
-                        height: 120,
-                        width: 120,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: _dominantColor ?? accentColor.withOpacity(0.1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: widget.audioBookImage != null
-                              ? Image.memory(
-                                  widget.audioBookImage!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Image.asset(
-                                      ImageAssets.book,
-                                      fit: BoxFit.cover,
-                                    );
-                                  },
+                  Center(
+                    child: Container(
+                      height: 120,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color:
+                            _dominantColor ??
+                            accentColor.withValues(alpha: 0.1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child:
+                            widget.audioBookData['image'] != null
+                                ? CachedNetworkImage(
+                                  imageUrl:
+                                      "$mainIP/${widget.audioBookData['image']}",
+                                  height: 60,
+                                  width: 60,
                                 )
-                              : Image.asset(
+                                : Image.asset(
                                   ImageAssets.book,
                                   fit: BoxFit.cover,
                                 ),
-                        ),
                       ),
                     ),
+                  ),
 
-                    SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        "${widget.audioBookData["name"]}".tr,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: accentColor,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-
-                    SizedBox(height: 8),
-
-                    Text(
-                      "Author: ${widget.audioBookData["author"]}".tr,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      "${widget.audioBookData["name"]}".tr,
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: accentColor.withOpacity(0.8),
+                        fontFamily: FontController().currentFontFamily,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: accentColor,
                       ),
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                  ),
 
-                    SizedBox(height: 5),
+                  const SizedBox(height: 8),
 
-                    Text(
-                      "Publish Date: ${widget.audioBookData["publish date"]}".tr,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w300,
-                        color: accentColor.withOpacity(0.6),
+                  Text(
+                    "Author: ${widget.audioBookData["author"]}".tr,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: FontController().currentFontFamily,
+                      fontWeight: FontWeight.w400,
+                      color: accentColor.withValues(alpha: 0.8),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  Text(
+                    "Publish Date: ${widget.audioBookData["publish date"]}".tr,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300,
+                      fontFamily: FontController().currentFontFamily,
+                      color: accentColor.withValues(alpha: .6),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: accentColor,
+                        inactiveTrackColor: accentColor.withValues(alpha: 0.3),
+                        thumbColor: accentColor,
+                        overlayColor: accentColor.withValues(alpha: 0.2),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    SizedBox(height: 30),
-
-                    // Progress slider
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: accentColor,
-                          inactiveTrackColor: accentColor.withOpacity(0.3),
-                          thumbColor: accentColor,
-                          overlayColor: accentColor.withOpacity(0.2),
-                        ),
-                        child: Slider(
-                          value: _currentPosition.inSeconds.toDouble(),
-                          min: 0,
-                          // max: widget.audioBookData["audio_file_duration_seconds"].toDouble() > 0
-                          //     ? widget.audioBookData["audio_file_duration_seconds"].toDouble()
-                          //     : 1,
-                          max: _totalDuration.inSeconds > 0
-                              ? _totalDuration.inSeconds.toDouble()
-                              : 1,
-                          onChanged: (value) {
-                            final position = Duration(seconds: value.toInt());
-                            _seekToPosition(position);
-                          },
-                        ),
+                      child: Slider(
+                        value: _currentPosition.inSeconds.toDouble(),
+                        min: 0,
+                        // max: widget.audioBookData["audio_file_duration_seconds"].toDouble() > 0
+                        //     ? widget.audioBookData["audio_file_duration_seconds"].toDouble()
+                        //     : 1,
+                        max:
+                            _totalDuration.inSeconds > 0
+                                ? _totalDuration.inSeconds.toDouble()
+                                : 1,
+                        onChanged: (value) {
+                          final position = Duration(seconds: value.toInt());
+                          _seekToPosition(position);
+                        },
                       ),
                     ),
+                  ),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _formatDuration(_currentPosition),
-                            style: TextStyle(color: accentColor, fontSize: 14),
-                          ),
-                          Text(
-                            _formatDuration(_totalDuration),
-                            style: TextStyle(color: accentColor, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        GestureDetector(
-                          onTapDown: (_) => _startLongPressSkip(false),
-                          onTapUp: (_) => _stopLongPressSkip(),
-                          onTapCancel: () => _stopLongPressSkip(),
-                          child: IconButton(
-                            icon: Icon(Icons.replay_10),
-                            iconSize: 32,
+                        Text(
+                          _formatDuration(_currentPosition),
+                          style: TextStyle(
                             color: accentColor,
-                            onPressed: _skipBackward,
+                            fontSize: 14,
+                            fontFamily: FontController().currentFontFamily,
                           ),
                         ),
-
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
+                        Text(
+                          _formatDuration(_totalDuration),
+                          style: TextStyle(
                             color: accentColor,
-                          ),
-                          child: IconButton(
-                            icon: Icon(
-                              _isPlaying ? Icons.pause : Icons.play_arrow,
-                              color: Colors.white,
-                            ),
-                            iconSize: 40,
-                            onPressed: _playOrPauseAudio,
-                            
-                          ),
-                        ),
-
-                        GestureDetector(
-                          onTapDown: (_) => _startLongPressSkip(true),
-                          onTapUp: (_) => _stopLongPressSkip(),
-                          onTapCancel: () => _stopLongPressSkip(),
-                          child: IconButton(
-                            icon: Icon(Icons.forward_10),
-                            iconSize: 32,
-                            color: accentColor,
-                            onPressed: _skipForward,
+                            fontSize: 14,
+                            fontFamily: FontController().currentFontFamily,
                           ),
                         ),
                       ],
                     ),
-
-                    SizedBox(height: 20),
-
-                    SizedBox(
-                      child: Row(
-                        children: [
-                          Icon(Icons.volume_down, color: accentColor, size: 20),
-                          Expanded(
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                activeTrackColor: accentColor,
-                                inactiveTrackColor: accentColor.withOpacity(0.3),
-                                thumbColor: accentColor,
-                                overlayColor: accentColor.withOpacity(0.2),
-                              ),
-                              child: Slider(
-                                value: _currentVolume,
-                                min: 0,
-                                max: 1,
-                                onChanged: _changeVolume,
-                              ),
-                            ),
-                          ),
-                          Icon(Icons.volume_up, color: accentColor, size: 20),
-                          SizedBox(width: 40),
-                          Text(
-                            "Speed: ",
-                            style: TextStyle(color: accentColor, fontSize: 14),
-                          ),
-                          SizedBox(width: 10),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: accentColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: DropdownButton<double>(
-                              dropdownColor: Color.fromARGB(255, 40, 41, 61),
-                              value: _playbackSpeed,
-                              underline: SizedBox(),
-                              style: TextStyle(color: accentColor, fontSize: 14),
-                              items: _speedOptions.map((speed) {
-                                return DropdownMenuItem<double>(
-                                  value: speed,
-                                  child: Text(
-                                    ' ${speed}x',
-                                    style: TextStyle(color: accentColor.withOpacity(1)),
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  _changePlaybackSpeed(value);
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: 20),
-                  ],
                   ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTapDown: (_) => _startLongPressSkip(false),
+                        onTapUp: (_) => _stopLongPressSkip(),
+                        onTapCancel: () => _stopLongPressSkip(),
+                        child: IconButton(
+                          icon: Icon(Icons.replay_10),
+                          iconSize: 32,
+                          color: accentColor,
+                          onPressed: _skipBackward,
+                        ),
+                      ),
+
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: accentColor,
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            _isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white,
+                          ),
+                          iconSize: 40,
+                          onPressed: _playOrPauseAudio,
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTapDown: (_) => _startLongPressSkip(true),
+                        onTapUp: (_) => _stopLongPressSkip(),
+                        onTapCancel: () => _stopLongPressSkip(),
+                        child: IconButton(
+                          icon: Icon(Icons.forward_10),
+                          iconSize: 32,
+                          color: accentColor,
+                          onPressed: _skipForward,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    child: Row(
+                      children: [
+                        Icon(Icons.volume_down, color: accentColor, size: 20),
+                        Expanded(
+                          child: SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: accentColor,
+                              inactiveTrackColor: accentColor.withValues(
+                                alpha: 0.3,
+                              ),
+                              thumbColor: accentColor,
+                              overlayColor: accentColor.withValues(alpha: 0.2),
+                            ),
+                            child: Slider(
+                              value: _currentVolume,
+                              min: 0,
+                              max: 1,
+                              onChanged: _changeVolume,
+                            ),
+                          ),
+                        ),
+                        Icon(Icons.volume_up, color: accentColor, size: 20),
+                        const SizedBox(width: 40),
+                        Text(
+                          "Speed: ",
+                          style: TextStyle(
+                            color: accentColor,
+                            fontSize: 14,
+                            fontFamily: FontController().currentFontFamily,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButton<double>(
+                            dropdownColor: Color.fromARGB(255, 40, 41, 61),
+                            value: _playbackSpeed,
+                            underline: const SizedBox(),
+                            style: TextStyle(color: accentColor, fontSize: 14),
+                            items:
+                                _speedOptions.map((speed) {
+                                  return DropdownMenuItem<double>(
+                                    value: speed,
+                                    child: Text(
+                                      ' ${speed}x',
+                                      style: TextStyle(
+                                        fontFamily:
+                                            FontController().currentFontFamily,
+                                        color: accentColor.withValues(alpha: 1),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                _changePlaybackSpeed(value);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
     );
   }
 }

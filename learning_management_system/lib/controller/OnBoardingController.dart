@@ -17,13 +17,12 @@ class OnboardingController extends GetxController {
     if (currentPage > OnBoardingList.length - 1) {
       // sharedPrefs.prefs.setBool('isFirstEntry', false);
       Get.offAll(() => SignUp());
-    }
-    else{
+    } else {
       pageController.animateToPage(
-          currentPage,
-          duration: Duration(milliseconds: 900),
-          curve: Curves.easeInOut);
-
+        currentPage,
+        duration: Duration(milliseconds: 900),
+        curve: Curves.easeInOut,
+      );
     }
     update();
   }
@@ -32,12 +31,14 @@ class OnboardingController extends GetxController {
     currentPage = index;
     update();
   }
+
   onSkip(int index) {
     currentPage = index;
     pageController.animateToPage(
-          currentPage,
-          duration: Duration(milliseconds: 900),
-          curve: Curves.easeInOut);
+      currentPage,
+      duration: Duration(milliseconds: 900),
+      curve: Curves.easeInOut,
+    );
     update();
   }
 }

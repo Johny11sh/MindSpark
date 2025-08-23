@@ -1,10 +1,11 @@
+// ignore_for_file: file_names
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../locale/LocaleController.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
+import '../../controller/FontController.dart';
 import '../constants/ImageAssets.dart';
 
 class ContactUs extends StatelessWidget {
@@ -17,7 +18,7 @@ class ContactUs extends StatelessWidget {
     String? telegramUrl = "";
     String? telegramOriginUrl = "";
 
-    Future<void> _launchURL(String url) async {
+    Future<void> launchURL(String url) async {
       final Uri uri = Uri.parse(url);
       if (!await launchUrl(uri)) {
         throw Exception('Could not launch $url');
@@ -25,15 +26,17 @@ class ContactUs extends StatelessWidget {
     }
 
     final ThemeController themeController = Get.find<ThemeController>();
-    final LocaleController localeController = Get.find<LocaleController>();
+    // final LocaleController localeController = Get.find<LocaleController>();
 
     final bool isDark = themeController.initialTheme == Themes.customLightTheme;
-    final Color bgColor = isDark
-        ? const Color.fromARGB(255, 40, 41, 61)
-        : const Color.fromARGB(255, 210, 209, 224);
-    final Color fgColor = isDark
-        ? const Color.fromARGB(255, 210, 209, 224)
-        : const Color.fromARGB(255, 40, 41, 61);
+    final Color bgColor =
+        isDark
+            ? const Color.fromARGB(255, 40, 41, 61)
+            : const Color.fromARGB(255, 210, 209, 224);
+    final Color fgColor =
+        isDark
+            ? const Color.fromARGB(255, 210, 209, 224)
+            : const Color.fromARGB(255, 40, 41, 61);
 
     return Scaffold(
       body: Container(
@@ -51,10 +54,7 @@ class ContactUs extends StatelessWidget {
                       onPressed: () {
                         Get.back();
                       },
-                      icon: Icon(
-                        Icons.arrow_back,
-                        color: fgColor,
-                      ),
+                      icon: Icon(Icons.arrow_back, color: fgColor),
                     ),
                   ),
                   Expanded(
@@ -63,11 +63,14 @@ class ContactUs extends StatelessWidget {
                         padding: EdgeInsets.only(right: Get.width / 8),
                         child: Text(
                           "Contact Us".tr,
-                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                                color: fgColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 23,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall!.copyWith(
+                            fontFamily: FontController().currentFontFamily,
+                            color: fgColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 23,
+                          ),
                         ),
                       ),
                     ),
@@ -86,17 +89,21 @@ class ContactUs extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Padding(padding: EdgeInsets.all(30)),
+                    Padding(padding: const EdgeInsets.all(30)),
                     Center(
-                      child: Image.asset(ImageAssets.AppIconNoBackGround, width: 180, height: 180),
+                      child: Image.asset(
+                        ImageAssets.AppIconNoBackGround,
+                        width: 180,
+                        height: 180,
+                      ),
                     ),
-                    Padding(padding: EdgeInsets.all(20)),
+                    Padding(padding: const EdgeInsets.all(20)),
                     Container(
                       width: Get.width,
                       alignment: Alignment.center,
                       child: Card(
                         color: bgColor,
-                        margin: EdgeInsets.only(left: 20, right: 20),
+                        margin: const EdgeInsets.only(left: 20, right: 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -110,24 +117,26 @@ class ContactUs extends StatelessWidget {
                                       "Announcements:".tr,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                         color: fgColor,
                                         fontWeight: FontWeight.w500,
                                         fontSize: 16,
                                       ),
                                     ),
                                     SizedBox(width: Get.width / 10),
-                                    whatsAppOriginUrl == null
-                                        ? SizedBox()
+                                    whatsAppOriginUrl == ""
+                                        ? const SizedBox()
                                         : IconButton(
-                                            onPressed: () async {
-                                              _launchURL(whatsAppOriginUrl);
-                                            },
-                                            icon: FaIcon(
-                                              FontAwesomeIcons.whatsapp,
-                                              size: 35,
-                                              color: fgColor,
-                                            ),
+                                          onPressed: () async {
+                                            launchURL(whatsAppOriginUrl);
+                                          },
+                                          icon: FaIcon(
+                                            FontAwesomeIcons.whatsapp,
+                                            size: 35,
+                                            color: fgColor,
                                           ),
+                                        ),
                                   ],
                                 ),
                                 Row(
@@ -138,24 +147,26 @@ class ContactUs extends StatelessWidget {
                                       "Announcements:".tr,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                         color: fgColor,
                                         fontWeight: FontWeight.w500,
                                         fontSize: 16,
                                       ),
                                     ),
                                     SizedBox(width: Get.width / 10),
-                                    telegramOriginUrl == null
-                                        ? SizedBox()
+                                    telegramOriginUrl == ""
+                                        ? const SizedBox()
                                         : IconButton(
-                                            onPressed: () async {
-                                              _launchURL(telegramOriginUrl);
-                                            },
-                                            icon: Icon(
-                                              Icons.telegram_rounded,
-                                              size: 35,
-                                              color: fgColor,
-                                            ),
+                                          onPressed: () async {
+                                            launchURL(telegramOriginUrl);
+                                          },
+                                          icon: Icon(
+                                            Icons.telegram_rounded,
+                                            size: 35,
+                                            color: fgColor,
                                           ),
+                                        ),
                                   ],
                                 ),
                                 Row(
@@ -166,24 +177,26 @@ class ContactUs extends StatelessWidget {
                                       "Support team:".tr,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                         color: fgColor,
                                         fontWeight: FontWeight.w500,
                                         fontSize: 16,
                                       ),
                                     ),
                                     SizedBox(width: Get.width / 10),
-                                    whatsAppQuestionsUrl == null
-                                        ? SizedBox()
+                                    whatsAppQuestionsUrl == ""
+                                        ? const SizedBox()
                                         : IconButton(
-                                            onPressed: () async {
-                                              _launchURL(whatsAppQuestionsUrl);
-                                            },
-                                            icon: FaIcon(
-                                              FontAwesomeIcons.whatsapp,
-                                              size: 35,
-                                              color: fgColor,
-                                            ),
+                                          onPressed: () async {
+                                            launchURL(whatsAppQuestionsUrl);
+                                          },
+                                          icon: FaIcon(
+                                            FontAwesomeIcons.whatsapp,
+                                            size: 35,
+                                            color: fgColor,
                                           ),
+                                        ),
                                   ],
                                 ),
                                 Row(
@@ -194,24 +207,26 @@ class ContactUs extends StatelessWidget {
                                       "Support team:".tr,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                         color: fgColor,
                                         fontWeight: FontWeight.w500,
                                         fontSize: 16,
                                       ),
                                     ),
                                     SizedBox(width: Get.width / 10),
-                                    telegramUrl == null
-                                        ? SizedBox()
+                                    telegramUrl == ""
+                                        ? const SizedBox()
                                         : IconButton(
-                                            onPressed: () async {
-                                              _launchURL(telegramUrl);
-                                            },
-                                            icon: Icon(
-                                              Icons.telegram_rounded,
-                                              size: 35,
-                                              color: fgColor,
-                                            ),
+                                          onPressed: () async {
+                                            launchURL(telegramUrl);
+                                          },
+                                          icon: Icon(
+                                            Icons.telegram_rounded,
+                                            size: 35,
+                                            color: fgColor,
                                           ),
+                                        ),
                                   ],
                                 ),
                               ],

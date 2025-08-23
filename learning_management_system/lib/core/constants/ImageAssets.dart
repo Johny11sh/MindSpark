@@ -12,6 +12,15 @@ class ImageAssets {
   static const String OnBoarding3 = "$ImageRoute/onboarding3.png";
   static const String teacherAvatar = "$ImageRoute/teacherAvatar.png";
   static const String UserAvatar = "$ImageRoute/userAvatar.png";
+  static const String Avatar1 = "$ImageRoute/Avatar1.png";
+  static const String Avatar2 = "$ImageRoute/Avatar2.png";
+  static const String Avatar3 = "$ImageRoute/Avatar3.png";
+  static const String Avatar4 = "$ImageRoute/Avatar4.png";
+  static const String Avatar5 = "$ImageRoute/Avatar5.png";
+  static const String Avatar6 = "$ImageRoute/Avatar6.png";
+  static const String Avatar7 = "$ImageRoute/Avatar7.png";
+  static const String Avatar8 = "$ImageRoute/Avatar8.png";
+  static const String Avatar9 = "$ImageRoute/Avatar9.png";
   static const String book = "$ImageRoute/book.png";
   static const String ArabicFlag = "$ImageRoute/ArabicFlag.png";
   static const String EnglishFlag = "$ImageRoute/EnglishFlag.png";
@@ -24,7 +33,8 @@ class ImageAssets {
   static const String subject = '$ImageRoute/subject.png';
   static const String course = '$ImageRoute/course.png';
   static const String UserLightMode = '$ImageRoute/Default User Profile.png';
-  static const String UserDarkMode = '$ImageRoute/Default User Profile Dark Mode.png';
+  static const String UserDarkMode =
+      '$ImageRoute/Default User Profile Dark Mode.png';
 
   static const String lottieRoute = "assets/lottie";
   static const String loadingLottie = "$lottieRoute/loading.json";
@@ -32,5 +42,4 @@ class ImageAssets {
   static const String OnBoardingLottie1 = "$lottieRoute/studentandteacher.json";
   static const String OnBoardingLottie2 = "$lottieRoute/subject.json";
   static const String OnBoardingLottie3 = "$lottieRoute/student.json";
-
 }

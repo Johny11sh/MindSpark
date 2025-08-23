@@ -3,10 +3,13 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:like_button/like_button.dart';
+import 'package:lottie/lottie.dart';
 
 import '../controller/FavoriteController.dart';
+import '../controller/FontController.dart';
+import '../services/CacheManager.dart';
 import '../view/LogIn.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -39,7 +42,8 @@ class _TeachersState extends State<Teachers> {
   late FavoriteController favoriteController;
 
   List<Map<String, dynamic>> teachers = [];
-  Map<int, Uint8List> teachersImages = {};
+  // Map<int, Uint8List> teachersImages = {};
+  final CacheManager cacheManager = CacheManager();
 
   @override
   void initState() {
@@ -59,11 +63,15 @@ class _TeachersState extends State<Teachers> {
 
   Future<void> _loadInitialData() async {
     // Try to load from cache first
-    await _loadCachedTeachers();
+    // await _loadCachedTeachers();
 
     // Then try to fetch fresh data if online
     if (sharedPrefs.prefs.getBool('isConnected') == true) {
       await getTeachersData();
+    } else {
+      if (cacheManager.isCacheEnabled.value == true) {
+        await _loadCachedTeachers();
+      }
     }
   }
 
@@ -75,17 +83,6 @@ class _TeachersState extends State<Teachers> {
         setState(() {
           teachers = List<Map<String, dynamic>>.from(parsedList);
         });
-
-        // Load cached images
-        for (final teacher in teachers) {
-          final imageKey = 'teacher_image_${teacher['id']}';
-          final imageString = sharedPrefs.prefs.getString(imageKey);
-          if (imageString != null && mounted) {
-            setState(() {
-              teachersImages[teacher['id']] = base64Decode(imageString);
-            });
-          }
-        }
       }
     } catch (e) {
       debugPrint("Error loading cached teachers: $e");
@@ -100,17 +97,6 @@ class _TeachersState extends State<Teachers> {
       );
     } catch (e) {
       debugPrint("Error caching teachers: $e");
-    }
-  }
-
-  Future<void> _cacheTeacherImage(int teacherId, Uint8List imageBytes) async {
-    try {
-      await sharedPrefs.prefs.setString(
-        'teacher_image_$teacherId',
-        base64Encode(imageBytes),
-      );
-    } catch (e) {
-      debugPrint("Error caching teacher image: $e");
     }
   }
 
@@ -162,22 +148,10 @@ class _TeachersState extends State<Teachers> {
           setState(() {
             teachers = List<Map<String, dynamic>>.from(teachersList);
           });
-          await _cacheTeachers();
+          if (cacheManager.isCacheEnabled.value == true) {
+            await _cacheTeachers();
+          }
         }
-
-        // 6. Parallel Image Loading and caching
-        await Future.wait(
-          teachersList.map((teacher) async {
-            final teacherId = teacher['id'] as int;
-            final imageBytes = await getTeachersImage(teacher);
-            if (imageBytes != null && mounted) {
-              setState(() {
-                teachersImages[teacherId] = imageBytes;
-              });
-              await _cacheTeacherImage(teacherId, imageBytes);
-            }
-          }),
-        );
       } else if (response.statusCode == 401) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Get.offAll(() => LogIn());
@@ -207,60 +181,12 @@ class _TeachersState extends State<Teachers> {
     }
   }
 
-  Future<Uint8List?> getTeachersImage(dynamic teacher) async {
-    // First try to get from cache
-    final teacherId = teacher is Map ? teacher['id'] as int : teacher as int;
-    final cachedImage = sharedPrefs.prefs.getString('teacher_image_$teacherId');
-    if (cachedImage != null) {
-      return base64Decode(cachedImage);
-    }
-
-    // If not in cache and offline, return null
-    if (sharedPrefs.prefs.getBool('isConnected') == false) {
-      return null;
-    }
-
-    // Otherwise fetch from API
-    try {
-      final token = sharedPrefs.prefs.getString('token') ?? '';
-      if (token.isEmpty) return null;
-
-      var baseUrl = String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: mainIP,
-      );
-      final url = '$baseUrl/api/getteacherimage/$teacherId';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Authorization': "Bearer $token",
-              'Accept': 'application/octet-stream',
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return response.bodyBytes;
-      } else if (response.statusCode == 404) {
-        debugPrint("Teacher image not found for ID: $teacherId");
-        return null;
-      } else {
-        throw Exception("Image fetch failed: ${response.statusCode}");
-      }
-    } on TimeoutException {
-      debugPrint("Timeout loading image for teacher $teacherId");
-      return null;
-    } catch (e) {
-      debugPrint("Error fetching teacher image: $e");
-      return null;
-    }
-  }
-
   void showErrorSnackbar(String message) {
     Get.rawSnackbar(
-      messageText: Text(message),
+      messageText: Text(
+        message,
+        style: TextStyle(fontFamily: FontController().currentFontFamily),
+      ),
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
       backgroundColor: Colors.red[800]!,
@@ -276,7 +202,16 @@ class _TeachersState extends State<Teachers> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body:
-            teachers.isEmpty
+            (cacheManager.isCacheEnabled.value == false &&
+                    sharedPrefs.prefs.getBool('isConnected') == false)
+                ? Center(
+                  child: Lottie.asset(
+                    ImageAssets.noDataLottie,
+                    width: 300,
+                    height: 300,
+                  ),
+                )
+                : teachers.isEmpty
                 ? Center(
                   child: CircularProgressIndicator(
                     color:
@@ -300,13 +235,13 @@ class _TeachersState extends State<Teachers> {
                   },
                   child: Container(
                     color:
-                              themeController.initialTheme == Themes.customLightTheme
-                          ? Color.fromARGB(255, 40, 41, 61)
-                          : Color.fromARGB(255, 210, 209, 224),
+                        themeController.initialTheme == Themes.customLightTheme
+                            ? Color.fromARGB(255, 40, 41, 61)
+                            : Color.fromARGB(255, 210, 209, 224),
                     child: Column(
                       children: [
                         Container(
-                          padding: EdgeInsets.only(top: 30),
+                          padding: const EdgeInsets.only(top: 30),
                           height: 80,
                           // color: Colors.red,
                           child: Row(
@@ -332,11 +267,24 @@ class _TeachersState extends State<Teachers> {
                                       style: Theme.of(
                                         context,
                                       ).textTheme.bodySmall!.copyWith(
-                                        color: themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                        color:
+                                            themeController.initialTheme ==
+                                                    Themes.customLightTheme
+                                                ? Color.fromARGB(
+                                                  255,
+                                                  210,
+                                                  209,
+                                                  224,
+                                                )
+                                                : Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
                                         fontWeight: FontWeight.bold,
+                                        fontFamily:
+                                            FontController().currentFontFamily,
                                         fontSize: 23,
                                       ),
                                     ),
@@ -351,16 +299,18 @@ class _TeachersState extends State<Teachers> {
                                       context: context,
                                       delegate: DynamicSearch(
                                         elements: teachers,
-                                        elementsImages: teachersImages,
+                                        // elementsImages: teachersImages,
                                         searchType: 'teachers',
                                         onItemTap: (teacher) {
                                           Navigator.pushReplacement(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => TeacherDetails(
-                                                TeacherData: teacher,
-                                                teacherImage: teachersImages[teacher['id']],
-                                              ),
+                                              builder:
+                                                  (context) => TeacherDetails(
+                                                    TeacherData: teacher,
+                                                    // teacherImage:
+                                                    //     teachersImages[teacher['id']],
+                                                  ),
                                             ),
                                           );
                                         },
@@ -369,7 +319,8 @@ class _TeachersState extends State<Teachers> {
                                   },
                                   icon: Icon(
                                     Icons.search_outlined,
-                                    color: themeController.initialTheme ==
+                                    color:
+                                        themeController.initialTheme ==
                                                 Themes.customLightTheme
                                             ? Color.fromARGB(255, 210, 209, 224)
                                             : Color.fromARGB(255, 40, 41, 61),
@@ -379,16 +330,16 @@ class _TeachersState extends State<Teachers> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 30),
+                        const SizedBox(height: 30),
                         Expanded(
                           child: Container(
-                            padding: EdgeInsets.only(left: 20, right: 20),
+                            padding: const EdgeInsets.only(left: 20, right: 20),
                             decoration: BoxDecoration(
                               color:
                                   themeController.initialTheme ==
-                                                Themes.customLightTheme
-                                            ? Color.fromARGB(255, 210, 209, 224)
-                                            : Color.fromARGB(255, 40, 41, 61),
+                                          Themes.customLightTheme
+                                      ? Color.fromARGB(255, 210, 209, 224)
+                                      : Color.fromARGB(255, 40, 41, 61),
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(60),
                                 topRight: Radius.circular(60),
@@ -397,23 +348,30 @@ class _TeachersState extends State<Teachers> {
                             child: Column(
                               // shrinkWrap: true,
                               children: [
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 Center(
                                   child: Text(
                                     "Choose for more details".tr,
                                     style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
+                                      fontFamily:
+                                          FontController().currentFontFamily,
                                       fontStyle: FontStyle.normal,
                                       color:
                                           themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224),
+                                                  Themes.customLightTheme
+                                              ? Color.fromARGB(255, 40, 41, 61)
+                                              : Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 Expanded(
                                   child: GridView.builder(
                                     shrinkWrap: true,
@@ -427,8 +385,8 @@ class _TeachersState extends State<Teachers> {
                                     itemCount: teachers.length,
                                     itemBuilder: (context, i) {
                                       int teacherId = teachers[i]["id"];
-                                      Uint8List? imageBytes =
-                                          teachersImages[teacherId];
+                                      // Uint8List? imageBytes =
+                                      //     teachersImages[teacherId];
                                       return InkWell(
                                         onTap: () {
                                           Navigator.push(
@@ -437,28 +395,41 @@ class _TeachersState extends State<Teachers> {
                                               builder:
                                                   (context) => TeacherDetails(
                                                     TeacherData: teachers[i],
-                                                    teacherImage:
-                                                        teachersImages[teacherId],
+                                                    // teacherImage:
+                                                    //     teachersImages[teacherId],
                                                   ),
                                             ),
                                           );
                                         },
                                         child: Container(
-                                          margin: EdgeInsets.only(
+                                          margin: const EdgeInsets.only(
                                             left: 1,
                                             right: 1,
                                             top: 2,
                                           ),
-                                          padding: EdgeInsets.all(10),
+                                          padding: const EdgeInsets.all(10),
                                           height: 120,
                                           width: 120,
                                           decoration: BoxDecoration(
                                             // color: Colors.red,
                                             border: Border.all(
-                                              color: themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224)
+                                              color:
+                                                  themeController
+                                                              .initialTheme ==
+                                                          Themes
+                                                              .customLightTheme
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      ),
                                             ),
                                             borderRadius: BorderRadius.circular(
                                               15,
@@ -501,7 +472,7 @@ class _TeachersState extends State<Teachers> {
                                                             .isFavorite[teacherId
                                                             .toString()] ??
                                                         false;
-                    
+
                                                     return LikeButton(
                                                       size: 30,
                                                       isLiked: isFav,
@@ -520,9 +491,11 @@ class _TeachersState extends State<Teachers> {
                                                       onTap: (
                                                         bool isLiked,
                                                       ) async {
-                                                        controller.toggleFavorite(
-                                                          teacherId.toString(),
-                                                        );
+                                                        controller
+                                                            .toggleFavorite(
+                                                              teacherId
+                                                                  .toString(),
+                                                            );
                                                         return !isLiked;
                                                       },
                                                     );
@@ -532,33 +505,51 @@ class _TeachersState extends State<Teachers> {
                                               Center(
                                                 child: Column(
                                                   children: [
-                                                    SizedBox(height: 15),
-                                                    imageBytes != null
-                                                        ? Image.asset(
-                                                          ImageAssets
-                                                              .teacherAvatar,
-                                                          height: 100,
-                                                          width: 100,
+                                                    const SizedBox(height: 15),
+                                                    teachers[i]["image"] != null
+                                                        ? CachedNetworkImage(
+                                                          imageUrl:
+                                                              "$mainIP/${teachers[i]["image"]}",
+                                                          height: 60,
+                                                          width: 60,
                                                         )
                                                         : Image.asset(
-                                                          ImageAssets.teacherAvatar,
+                                                          ImageAssets
+                                                              .teacherAvatar,
                                                         ),
-                                                    SizedBox(height: 10),
+                                                    const SizedBox(height: 10),
                                                     Text(
-                                                      "${teachers[i]["name"]}".tr,
+                                                      "${teachers[i]["name"]}"
+                                                          .tr,
                                                       style: TextStyle(
                                                         overflow:
-                                                            TextOverflow.ellipsis,
+                                                            TextOverflow
+                                                                .ellipsis,
                                                         fontSize: 16,
+                                                        fontFamily:
+                                                            FontController()
+                                                                .currentFontFamily,
                                                         fontWeight:
                                                             FontWeight.w400,
                                                         fontStyle:
                                                             FontStyle.normal,
                                                         color:
-                                                            themeController.initialTheme ==
-                                          Themes.customLightTheme
-                                      ? Color.fromARGB(255, 40, 41, 61)
-                                      : Color.fromARGB(255, 210, 209, 224)
+                                                            themeController
+                                                                        .initialTheme ==
+                                                                    Themes
+                                                                        .customLightTheme
+                                                                ? Color.fromARGB(
+                                                                  255,
+                                                                  40,
+                                                                  41,
+                                                                  61,
+                                                                )
+                                                                : Color.fromARGB(
+                                                                  255,
+                                                                  210,
+                                                                  209,
+                                                                  224,
+                                                                ),
                                                       ),
                                                     ),
                                                   ],

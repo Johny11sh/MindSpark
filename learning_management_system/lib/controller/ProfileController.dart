@@ -5,7 +5,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:learning_management_system/view/LogIn.dart';
+import '../controller/FontController.dart';
+import '../view/LogIn.dart';
 import '../services/SharedPrefs.dart';
 import '../view/NavBar.dart';
 import 'NetworkController.dart';
@@ -75,13 +76,15 @@ class ProfileController extends GetxController {
       );
       final APIurl = '$baseUrl/api/getuser';
 
-      final response = await http.get(
-        Uri.parse(APIurl),
-        headers: {
-          'Authorization': "Bearer $token",
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse(APIurl),
+            headers: {
+              'Authorization': "Bearer $token",
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
@@ -180,11 +183,14 @@ class ProfileController extends GetxController {
 
   void showErrorSnackbar(String message) {
     Get.rawSnackbar(
-      messageText: Text(message ?? ""),
+      messageText: Text(
+        message,
+        style: TextStyle(fontFamily: FontController().currentFontFamily),
+      ),
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
       backgroundColor: Colors.red[800]!,
       icon: const Icon(Icons.error_outline, color: Colors.white),
     );
   }
-} 
+}

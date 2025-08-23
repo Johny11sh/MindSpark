@@ -1,13 +1,14 @@
 // import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:learning_management_system/view/NavBar.dart';
-import 'package:like_button/like_button.dart';
+// ignore_for_file: file_names
 
+import 'package:flutter/material.dart';
+import '../controller/FontController.dart';
+import '../view/NavBar.dart';
+import 'package:like_button/like_button.dart';
 import '../controller/FavoriteController.dart';
 import '../core/constants/ImageAssets.dart';
 import '../model/CFavoriteModel.dart';
 import 'package:get/get.dart';
-
 import '../themes/Themes.dart';
 
 class ViewCFavoriteCard extends StatelessWidget {
@@ -17,34 +18,18 @@ class ViewCFavoriteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FavoriteController favoriteController = Get.put(FavoriteController());
+    Get.put(FavoriteController());
     return Container(
-      margin: EdgeInsets.only(left: 1, right: 10),
-      padding: EdgeInsets.all(10),
+      margin: const EdgeInsets.only(left: 1, right: 10),
+      padding: const EdgeInsets.all(10),
       height: 130,
       width: 120,
       decoration: BoxDecoration(
         border: Border.all(
           color:
-          themeController
-              .initialTheme ==
-              Themes
-                  .customLightTheme
-              ?  Color.fromARGB(
-            255,
-            40,
-            41,
-            61,
-          )
-              :
-          Color.fromARGB(
-            255,
-            210,
-            209,
-            224,
-          )
-
-          ,
+              themeController.initialTheme == Themes.customLightTheme
+                  ? Color.fromARGB(255, 40, 41, 61)
+                  : Color.fromARGB(255, 210, 209, 224),
         ),
         borderRadius: BorderRadius.circular(15),
       ),
@@ -60,30 +45,15 @@ class ViewCFavoriteCard extends StatelessWidget {
                 cFavoriteModel.rating != null
                     ? Container(
                       height: 23,
-                      padding: EdgeInsets.symmetric(horizontal: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
                       decoration: BoxDecoration(
                         color: Color(0xFFCCF2E0),
                         border: Border.all(
                           color:
-                          themeController
-                              .initialTheme ==
-                              Themes
-                                  .customLightTheme
-                              ? Color.fromARGB(
-                            255,
-                            210,
-                            209,
-                            224,
-                          )
-                              :
-
-                          Color.fromARGB(
-                            255,
-                            40,
-                            41,
-                            61,
-                          )
-                          ,
+                              themeController.initialTheme ==
+                                      Themes.customLightTheme
+                                  ? Color.fromARGB(255, 210, 209, 224)
+                                  : Color.fromARGB(255, 40, 41, 61),
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -98,6 +68,7 @@ class ViewCFavoriteCard extends StatelessWidget {
                               cFavoriteModel.rating.toString(),
                             ).toStringAsFixed(1),
                             style: TextStyle(
+                              fontFamily: FontController().currentFontFamily,
                               overflow: TextOverflow.clip,
                               fontSize: 16,
                               color: Color.fromARGB(255, 40, 41, 61),
@@ -154,17 +125,14 @@ class ViewCFavoriteCard extends StatelessWidget {
                     "${cFavoriteModel.name}".tr,
                     textAlign: TextAlign.center,
                     style: TextStyle(
+                      fontFamily: FontController().currentFontFamily,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color:
                           themeController.initialTheme ==
                                   Themes.customLightTheme
-                              ?
-                          Color.fromARGB(255, 40, 41, 61)
-                              :
-                          Color.fromARGB(255, 210, 209, 224)
-
-                      ,
+                              ? Color.fromARGB(255, 40, 41, 61)
+                              : Color.fromARGB(255, 210, 209, 224),
                     ),
                   ),
                 ),

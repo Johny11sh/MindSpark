@@ -1,14 +1,18 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:learning_management_system/controller/MyInfoController.dart';
-import 'package:learning_management_system/controller/ProfileController.dart';
+// import '../controller/MyInfoController.dart';
+import '../controller/ProfileController.dart';
+import '../controller/FontController.dart';
+import '../themes/ThemeController.dart';
 
 import '../core/classes/ChangePassword.dart';
+import '../core/classes/ChangeNumber.dart';
 import '../core/classes/ChangeUsername.dart';
 import '../core/constants/ImageAssets.dart';
 import '../themes/Themes.dart';
 import 'Favorites.dart';
-import 'NavBar.dart';
 
 class MyInfo extends StatelessWidget {
   const MyInfo({super.key});
@@ -16,6 +20,7 @@ class MyInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ProfileController profileController = Get.find<ProfileController>();
+    final ThemeController themeController = Get.find<ThemeController>();
     return Scaffold(
       body: Container(
         color:
@@ -25,7 +30,7 @@ class MyInfo extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              padding: EdgeInsets.only(top: 30),
+              padding: const EdgeInsets.only(top: 30),
               height: 100,
               // color: Colors.red,
               child: Row(
@@ -53,6 +58,7 @@ class MyInfo extends StatelessWidget {
                           style: Theme.of(
                             context,
                           ).textTheme.bodySmall!.copyWith(
+                            fontFamily: FontController().currentFontFamily,
                             fontWeight: FontWeight.bold,
                             fontSize: 23,
                             color:
@@ -77,10 +83,10 @@ class MyInfo extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Expanded(
               child: Container(
-                padding: EdgeInsets.only(left: 20, right: 20),
+                padding: const EdgeInsets.only(left: 20, right: 20),
                 decoration: BoxDecoration(
                   color:
                       themeController.initialTheme == Themes.customLightTheme
@@ -120,7 +126,7 @@ class MyInfo extends StatelessWidget {
                           //                 crossAxisAlignment: CrossAxisAlignment.start,
                           //                 children: [
                           //                   Container(
-                          //                     padding: const EdgeInsets.only(
+                          //                     padding: const const EdgeInsets.only(
                           //                       top: 20,
                           //                       left: 10,
                           //                     ),
@@ -144,7 +150,7 @@ class MyInfo extends StatelessWidget {
                           //                       // Get.offAll(()=>Stores());
                           //                     },
                           //                     child: Container(
-                          //                       margin: const EdgeInsets.all(20),
+                          //                       margin: const const EdgeInsets.all(20),
                           //                       width: double.infinity,
                           //                       child: Row(
                           //                         children: [
@@ -173,7 +179,7 @@ class MyInfo extends StatelessWidget {
                           //                       // Get.offAll(()=>Stores());
                           //                     },
                           //                     child: Container(
-                          //                       margin: const EdgeInsets.all(20),
+                          //                       margin: const const EdgeInsets.all(20),
                           //                       width: double.infinity,
                           //                       child: Row(
                           //                         children: [
@@ -204,7 +210,10 @@ class MyInfo extends StatelessWidget {
                         leading: const Icon(Icons.person),
                         title: Text(
                           "User Name".tr,
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontFamily: FontController().currentFontFamily,
+                          ),
                         ),
                         trailing: InkWell(
                           onTap: () {
@@ -215,13 +224,21 @@ class MyInfo extends StatelessWidget {
                             width: 120,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.red),
+                              border: Border.all(
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
+                              ),
                             ),
                             child: Center(
                               child: Text(
                                 "Change User Name",
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontFamily:
+                                      FontController().currentFontFamily,
+                                  fontSize: 11,
                                   color:
                                       themeController.initialTheme ==
                                               Themes.customLightTheme
@@ -235,9 +252,9 @@ class MyInfo extends StatelessWidget {
                         subtitle: Row(
                           children: [
                             Text(
-                              "${profileController.profileData["userName"]}" ??
-                                  "",
+                              "${profileController.profileData["userName"]}",
                               style: TextStyle(
+                                fontFamily: FontController().currentFontFamily,
                                 fontSize: 18,
                                 color:
                                     themeController.initialTheme ==
@@ -255,13 +272,51 @@ class MyInfo extends StatelessWidget {
                         leading: const Icon(Icons.phone),
                         title: Text(
                           "Phone Number".tr,
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontFamily: FontController().currentFontFamily,
+                          ),
+                        ),
+                        trailing: InkWell(
+                          onTap: () {
+                            Get.to(() => ChangeNumber());
+                          },
+                          child: Container(
+                            height: 25,
+                            width: 120,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Change Number",
+                                style: TextStyle(
+                                  fontFamily:
+                                      FontController().currentFontFamily,
+                                  fontSize: 11,
+                                  color:
+                                      themeController.initialTheme ==
+                                              Themes.customLightTheme
+                                          ? Color.fromARGB(255, 40, 41, 61)
+                                          : Color.fromARGB(255, 210, 209, 224),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                         subtitle: Text(
                           // "${controller.profileData["number"] ?? ""}",
                           profileController.profileData["number"],
                           // "09999999999999",
                           style: TextStyle(
+                            fontFamily: FontController().currentFontFamily,
                             fontSize: 18,
                             color:
                                 themeController.initialTheme ==
@@ -277,7 +332,10 @@ class MyInfo extends StatelessWidget {
                         leading: const Icon(Icons.password),
                         title: Text(
                           "Password".tr,
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontFamily: FontController().currentFontFamily,
+                          ),
                         ),
                         trailing: InkWell(
                           onTap: () {
@@ -288,13 +346,21 @@ class MyInfo extends StatelessWidget {
                             width: 120,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.red),
+                              border: Border.all(
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? Color.fromARGB(255, 40, 41, 61)
+                                        : Color.fromARGB(255, 210, 209, 224),
+                              ),
                             ),
                             child: Center(
                               child: Text(
                                 "Change Password",
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontFamily:
+                                      FontController().currentFontFamily,
+                                  fontSize: 11,
                                   color:
                                       themeController.initialTheme ==
                                               Themes.customLightTheme
@@ -310,6 +376,7 @@ class MyInfo extends StatelessWidget {
                             Text(
                               "XXXXXXXXX",
                               style: TextStyle(
+                                fontFamily: FontController().currentFontFamily,
                                 fontSize: 18,
                                 color:
                                     themeController.initialTheme ==
@@ -327,14 +394,18 @@ class MyInfo extends StatelessWidget {
                         leading: const Icon(Icons.category_outlined),
                         title: Text(
                           "Subscriptions".tr,
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontFamily: FontController().currentFontFamily,
+                          ),
                         ),
-                        subtitle: Row(
+                        subtitle: Wrap(
                           children: [
                             Text(
                               profileController.profileData["subs"] ??
                                   "No Subscriptions",
                               style: TextStyle(
+                                fontFamily: FontController().currentFontFamily,
                                 fontSize: 18,
                                 color:
                                     themeController.initialTheme ==
@@ -352,13 +423,17 @@ class MyInfo extends StatelessWidget {
                         leading: const Icon(Icons.subject),
                         title: Text(
                           "Lectures Number".tr,
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontFamily: FontController().currentFontFamily,
+                          ),
                         ),
                         subtitle: Row(
                           children: [
                             Text(
                               "${profileController.profileData["lecturesNum"]}",
                               style: TextStyle(
+                                fontFamily: FontController().currentFontFamily,
                                 fontSize: 18,
                                 color:
                                     themeController.initialTheme ==

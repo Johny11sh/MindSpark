@@ -17,7 +17,6 @@ class ThemeController extends GetxController {
 
   void _loadSavedTheme() {
     final savedTheme = sharedPrefs.prefs.getString("theme");
-    // Default to light theme if no preference exists
 
     if (savedTheme == "light") {
       _currentTheme.value = Themes.customLightTheme;
@@ -25,11 +24,9 @@ class ThemeController extends GetxController {
       _currentTheme.value = Themes.customDarkTheme;
     }
     update();
-    // Get.forceAppUpdate();
   }
 
   void toggleTheme(String mode) {
-    // Switch to the opposite theme
     if (mode == "dark") {
       _currentTheme.value = Themes.customLightTheme;
       sharedPrefs.prefs.setString("theme", "light");
@@ -39,6 +36,5 @@ class ThemeController extends GetxController {
     }
 
     update();
-    // Get.forceAppUpdate();
   }
 }

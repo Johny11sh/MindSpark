@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, library_private_types_in_public_api
+// ignore_for_file: file_names, library_private_types_in_public_api, unrelated_type_equality_checks
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -6,10 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import '../controller/FontController.dart';
 import '../themes/Themes.dart';
 import '../themes/ThemeController.dart';
 import 'package:get/get.dart';
-import '../view/NavBar.dart';
 
 class VideoPlayer extends StatefulWidget {
   final String videoUrl;
@@ -44,7 +44,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   @override
   void initState() {
     super.initState();
-    
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _initializePlayer();
   }
@@ -65,17 +65,19 @@ class _VideoPlayerState extends State<VideoPlayer> {
       }
 
       // Use the current quality URL or default to videoUrl
-      final currentUrl = _currentQuality == 'Auto' 
-          ? widget.videoUrl 
-          : _getQualityUrl(_currentQuality);
+      final currentUrl =
+          _currentQuality == 'Auto'
+              ? widget.videoUrl
+              : _getQualityUrl(_currentQuality);
 
       // Initialize video player with buffering configuration
-      _videoPlayerController = VideoPlayerController.networkUrl(
-        Uri.parse(currentUrl!),
-        httpHeaders: const {'Accept': '*/*', 'Connection': 'keep-alive'},
-      )
-        ..setLooping(false)
-        ..setVolume(1.0);
+      _videoPlayerController =
+          VideoPlayerController.networkUrl(
+              Uri.parse(currentUrl!),
+              httpHeaders: const {'Accept': '*/*', 'Connection': 'keep-alive'},
+            )
+            ..setLooping(false)
+            ..setVolume(1.0);
 
       // Add error listener
       _videoPlayerController.addListener(() {
@@ -147,18 +149,18 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   List<OptionItem> _buildAdditionalOptions() {
     final options = <OptionItem>[];
-    
+
     // Only add quality option if we have multiple qualities available
     if (_hasMultipleQualities()) {
       options.add(
         OptionItem(
           onTap: (context) => _showQualityDialog(Get.context!),
           iconData: Icons.hd,
-          title: 'Quality (${_currentQuality})'.tr,
+          title: 'Quality ($_currentQuality)'.tr,
         ),
       );
     }
-    
+
     return options;
   }
 
@@ -172,25 +174,48 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   Future<void> _showQualityDialog(BuildContext context) async {
     final qualityOptions = <String>['Auto'];
-    if (widget.url360p != null && widget.url360p!.isNotEmpty) qualityOptions.add('360p');
-    if (widget.url720p != null && widget.url720p!.isNotEmpty) qualityOptions.add('720p');
-    if (widget.url1080p != null && widget.url1080p!.isNotEmpty) qualityOptions.add('1080p');
+    if (widget.url360p != null && widget.url360p!.isNotEmpty) {
+      qualityOptions.add('360p');
+    }
+    if (widget.url720p != null && widget.url720p!.isNotEmpty) {
+      qualityOptions.add('720p');
+    }
+    if (widget.url1080p != null && widget.url1080p!.isNotEmpty) {
+      qualityOptions.add('1080p');
+    }
 
     if (qualityOptions.length <= 1) return;
 
     final newQuality = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Select Quality'.tr),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: qualityOptions.map((quality) => ListTile(
-            title: Text(quality.tr),
-            trailing: _currentQuality == quality ? const Icon(Icons.check) : null,
-            onTap: () => Navigator.pop(context, quality),
-          )).toList(),
-        ),
-      ),
+      builder:
+          (context) => AlertDialog(
+            title: Text(
+              'Select Quality'.tr,
+              style: TextStyle(fontFamily: FontController().currentFontFamily),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  qualityOptions
+                      .map(
+                        (quality) => ListTile(
+                          title: Text(
+                            quality.tr,
+                            style: TextStyle(
+                              fontFamily: FontController().currentFontFamily,
+                            ),
+                          ),
+                          trailing:
+                              _currentQuality == quality
+                                  ? const Icon(Icons.check)
+                                  : null,
+                          onTap: () => Navigator.pop(context, quality),
+                        ),
+                      )
+                      .toList(),
+            ),
+          ),
     );
 
     if (newQuality != null && newQuality != _currentQuality) {
@@ -234,18 +259,22 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   ChewieProgressColors _getProgressColors() {
     return ChewieProgressColors(
-      playedColor: themeController.initialTheme == Themes.customLightTheme
-          ? const Color.fromARGB(255, 210, 209, 224)
-          : const Color.fromARGB(255, 40, 41, 61),
-      bufferedColor: themeController.initialTheme == Themes.customLightTheme
-          ? const Color.fromARGB(255, 40, 41, 61)
-          : const Color.fromARGB(255, 210, 209, 224),
-      handleColor: themeController.initialTheme == Themes.customLightTheme
-          ? const Color.fromARGB(255, 40, 41, 61)
-          : const Color.fromARGB(255, 210, 209, 224),
-      backgroundColor: themeController.initialTheme == Themes.customLightTheme
-          ? const Color.fromARGB(255, 40, 41, 61)
-          : const Color.fromARGB(255, 210, 209, 224),
+      playedColor:
+          themeController.initialTheme == Themes.customLightTheme
+              ? const Color.fromARGB(255, 210, 209, 224)
+              : const Color.fromARGB(255, 40, 41, 61),
+      bufferedColor:
+          themeController.initialTheme == Themes.customLightTheme
+              ? const Color.fromARGB(255, 40, 41, 61)
+              : const Color.fromARGB(255, 210, 209, 224),
+      handleColor:
+          themeController.initialTheme == Themes.customLightTheme
+              ? const Color.fromARGB(255, 40, 41, 61)
+              : const Color.fromARGB(255, 210, 209, 224),
+      backgroundColor:
+          themeController.initialTheme == Themes.customLightTheme
+              ? const Color.fromARGB(255, 40, 41, 61)
+              : const Color.fromARGB(255, 210, 209, 224),
     );
   }
 
@@ -259,12 +288,18 @@ class _VideoPlayerState extends State<VideoPlayer> {
           Text(
             errorMessage,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: FontController().currentFontFamily,
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _initializePlayer,
-            child: Text('Retry'.tr),
+            child: Text(
+              'Retry'.tr,
+              style: TextStyle(fontFamily: FontController().currentFontFamily),
+            ),
           ),
         ],
       ),
@@ -277,77 +312,123 @@ class _VideoPlayerState extends State<VideoPlayer> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _videoPlayerController.dispose();
     _chewieController?.dispose();
-    
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: themeController.initialTheme == Themes.customLightTheme
-            ? const Color.fromARGB(255, 210, 209, 224)
-            : const Color.fromARGB(255, 40, 41, 61),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Center(
-                 child: _isError
-                ? _buildErrorWidget(_errorMessage ?? 'Failed to load video'.tr)
-                : _isInitialized && _chewieController != null
-                    ? AspectRatio(
-                        aspectRatio: _videoPlayerController.value.aspectRatio,
-                        child: Chewie(controller: _chewieController!),
-                      )
-                    : const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-
-              ),
-              SizedBox(height: 20),
-              _isInitialized && _chewieController != null ? Row(
+      backgroundColor:
+          themeController.initialTheme == Themes.customLightTheme
+              ? const Color.fromARGB(255, 210, 209, 224)
+              : const Color.fromARGB(255, 40, 41, 61),
+      body: SafeArea(
+        child: Column(
           children: [
-                  IconButton(onPressed: (){
-                    isLiked = !isLiked;
-                    if(isLiked == true){
-                      isDisLiked == false;
-                      setState(() {
-                        
-                      });
-                    }
-                    setState(() {
-                      
-                    });
-
-                  }, icon: isLiked == false ? Icon(Icons.thumb_up_alt_outlined,size: 30,color: themeController.initialTheme == Themes.customLightTheme
-            ? const Color.fromARGB(255, 40, 41, 61)
-            : const Color.fromARGB(255, 210, 209, 224),)
-             : Icon(Icons.thumb_up_alt_rounded , size: 30,color: themeController.initialTheme == Themes.customLightTheme
-            ? const Color.fromARGB(255, 40, 41, 61)
-            : const Color.fromARGB(255, 210, 209, 224),)),
-                  IconButton(onPressed: (){
-                    isDisLiked = !isDisLiked;
-                    if(isDisLiked == true){
-                      isLiked == false;
-                      setState(() {
-                        
-                      });
-                    }
-                    setState(() {
-                      
-                    });
-
-                  }, icon: isDisLiked == false ? Icon(Icons.thumb_down_alt_outlined,size: 30,color: themeController.initialTheme == Themes.customLightTheme
-            ? const Color.fromARGB(255, 40, 41, 61)
-            : const Color.fromARGB(255, 210, 209, 224),) 
-            : Icon(Icons.thumb_down_alt_rounded, size: 30,color: themeController.initialTheme == Themes.customLightTheme
-            ? const Color.fromARGB(255, 40, 41, 61)
-            : const Color.fromARGB(255, 210, 209, 224),)),
-                  
-                ],
-              )
-              : SizedBox()
-            ],
-           
+            Center(
+              child:
+                  _isError
+                      ? _buildErrorWidget(
+                        _errorMessage ?? 'Failed to load video'.tr,
+                      )
+                      : _isInitialized && _chewieController != null
+                      ? AspectRatio(
+                        aspectRatio: _videoPlayerController.value.aspectRatio,
+                        child: RepaintBoundary(
+                          child: Chewie(controller: _chewieController!),
+                        ),
+                      )
+                      : const Center(child: CircularProgressIndicator()),
+            ),
+            const SizedBox(height: 20),
+            _isInitialized && _chewieController != null
+                ? Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        isLiked = !isLiked;
+                        if (isLiked == true) {
+                          isDisLiked == false;
+                          setState(() {});
+                        }
+                        setState(() {});
+                      },
+                      icon:
+                          isLiked == false
+                              ? Icon(
+                                Icons.thumb_up_alt_outlined,
+                                size: 30,
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? const Color.fromARGB(255, 40, 41, 61)
+                                        : const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                              )
+                              : Icon(
+                                Icons.thumb_up_alt_rounded,
+                                size: 30,
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? const Color.fromARGB(255, 40, 41, 61)
+                                        : const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                              ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        isDisLiked = !isDisLiked;
+                        if (isDisLiked == true) {
+                          isLiked == false;
+                          setState(() {});
+                        }
+                        setState(() {});
+                      },
+                      icon:
+                          isDisLiked == false
+                              ? Icon(
+                                Icons.thumb_down_alt_outlined,
+                                size: 30,
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? const Color.fromARGB(255, 40, 41, 61)
+                                        : const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                              )
+                              : Icon(
+                                Icons.thumb_down_alt_rounded,
+                                size: 30,
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? const Color.fromARGB(255, 40, 41, 61)
+                                        : const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                              ),
+                    ),
+                  ],
+                )
+                : const SizedBox(),
+          ],
         ),
       ),
     );
