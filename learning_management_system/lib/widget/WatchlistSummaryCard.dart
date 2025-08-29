@@ -2,60 +2,58 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controller/FontController.dart';
+import '../model/WatchlistModel.dart';
 import '../controller/WatchlistController.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
-import '../view/Watchlist.dart';
 
-class WatchlistSummaryCard extends StatefulWidget {
-  final bool showAnimation;
+class WatchlistItemCard extends StatefulWidget {
+  final WatchlistModel item;
+  final VoidCallback? onRemove;
+  final VoidCallback? onStatusChange;
+  final bool showActions;
   final EdgeInsets? margin;
-  final double? elevation;
 
-  const WatchlistSummaryCard({
+  const WatchlistItemCard({
     super.key,
-    this.showAnimation = true,
+    required this.item,
+    this.onRemove,
+    this.onStatusChange,
+    this.showActions = true,
     this.margin,
-    this.elevation,
   });
 
   @override
-  State<WatchlistSummaryCard> createState() => _WatchlistSummaryCardState();
+  State<WatchlistItemCard> createState() => _WatchlistItemCardState();
 }
 
-class _WatchlistSummaryCardState extends State<WatchlistSummaryCard>
+class _WatchlistItemCardState extends State<WatchlistItemCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
+  bool _isPressed = false;
+  bool _isHovered = false;
+  late Themes themes;
 
   @override
   void initState() {
     super.initState();
+    themes = Themes();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
 
-    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
-    );
-
-    if (widget.showAnimation) {
-      _animationController.forward();
-    } else {
-      _animationController.value = 1.0;
-    }
+    _animationController.forward();
   }
 
   @override
@@ -66,49 +64,57 @@ class _WatchlistSummaryCardState extends State<WatchlistSummaryCard>
 
   @override
   Widget build(BuildContext context) {
-    final ThemeController themeController = Get.find<ThemeController>();
-    final bool isLightTheme =
-        themeController.initialTheme == Themes.customLightTheme;
-    final Color primaryColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 40, 41, 61)
-            : const Color.fromARGB(255, 210, 209, 224);
-    final Color secondaryColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 210, 209, 224)
-            : const Color.fromARGB(255, 40, 41, 61);
+    final themeController = Get.find<ThemeController>();
 
-    final watchlistController = Get.find<WatchlistController>();
+    return Obx(() {
+      final isDark = themeController.initialTheme.brightness == Brightness.dark;
 
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(
-            opacity: _fadeAnimation.value,
-            child: Transform.translate(
-              offset: Offset(0, _slideAnimation.value),
+      return AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Opacity(
+              opacity: _fadeAnimation.value,
               child: Container(
-                margin: widget.margin ?? const EdgeInsets.all(16),
-                child: InkWell(
-                  onTap: () => _navigateToWatchlist(),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                margin:
+                widget.margin ?? const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? themes.MidnightBlue : themes.SoftCream,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _onItemTap,
+                    onTapDown: (_) => setState(() => _isPressed = true),
+                    onTapUp: (_) => setState(() => _isPressed = false),
+                    onTapCancel: () => setState(() => _isPressed = false),
+                    onHover: (hovered) => setState(() => _isHovered = hovered),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color:
+                        _isPressed
+                            ? Colors.black.withValues(alpha: 0.05)
+                            : Colors.transparent,
+                      ),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildHeader(primaryColor, secondaryColor),
-                          const SizedBox(height: 16),
-                          _buildStats(watchlistController, primaryColor),
-                          const SizedBox(height: 16),
-                          _buildActionButton(primaryColor, secondaryColor),
+                          _buildImageSection(isDark),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildContentSection(isDark)),
+                          if (widget.showActions) _buildActionsSection(isDark),
                         ],
                       ),
                     ),
@@ -116,150 +122,334 @@ class _WatchlistSummaryCardState extends State<WatchlistSummaryCard>
                 ),
               ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    });
   }
 
-  Widget _buildHeader(Color primaryColor, Color secondaryColor) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: primaryColor.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(Icons.bookmark, color: primaryColor, size: 28),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'My Watchlist',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: FontController().currentFontFamily,
-                  color: primaryColor,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Track your learning progress',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontFamily: FontController().currentFontFamily,
-                  color: primaryColor.withOpacity(0.7),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Icon(Icons.arrow_forward_ios, color: primaryColor, size: 20),
-      ],
-    );
-  }
-
-  Widget _buildStats(
-    WatchlistController watchlistController,
-    Color primaryColor,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatItem(
-            'Total Items',
-            '${watchlistController.allWatchlistItems.length}',
-            Icons.list_alt,
-            primaryColor,
-          ),
-        ),
-        Container(width: 1, height: 40, color: primaryColor.withOpacity(0.3)),
-        Expanded(
-          child: _buildStatItem(
-            'Active',
-            '${watchlistController.allWatchlistItems.where((item) => item.status == 'active').length}',
-            Icons.play_circle_outline,
-            primaryColor,
-          ),
-        ),
-        Container(width: 1, height: 40, color: primaryColor.withOpacity(0.3)),
-        Expanded(
-          child: _buildStatItem(
-            'Completed',
-            '${watchlistController.allWatchlistItems.where((item) => item.status == 'completed').length}',
-            Icons.check_circle_outline,
-            primaryColor,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatItem(
-    String label,
-    String value,
-    IconData icon,
-    Color primaryColor,
-  ) {
-    return Column(
-      children: [
-        Icon(icon, color: primaryColor, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            fontFamily: FontController().currentFontFamily,
-            color: primaryColor,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontFamily: FontController().currentFontFamily,
-            color: primaryColor.withOpacity(0.7),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton(Color primaryColor, Color secondaryColor) {
+  Widget _buildImageSection(bool isDark) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: primaryColor.withOpacity(0.3), width: 1),
+        color: isDark ? themes.DarkSlate : themes.WarmBeige,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.visibility, color: primaryColor, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            'View Full Watchlist',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              fontFamily: FontController().currentFontFamily,
-              color: primaryColor,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child:
+        widget.item.itemImage != null && widget.item.itemImage!.isNotEmpty
+            ? Image.network(
+          widget.item.itemImage!,
+          fit: BoxFit.cover,
+          errorBuilder:
+              (context, error, stackTrace) =>
+              _buildPlaceholderIcon(isDark),
+        )
+            : _buildPlaceholderIcon(isDark),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderIcon(bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? themes.DarkSlate : themes.WarmBeige,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        _getItemTypeIcon(widget.item.itemType),
+        size: 32,
+        color: isDark ? themes.LavenderGray : themes.MutedPurple,
+      ),
+    );
+  }
+
+  Widget _buildContentSection(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.item.itemTitle ?? 'Untitled',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : themes.DarkSlate,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            _buildStatusBadge(),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(
+              _getItemTypeIcon(widget.item.itemType),
+              size: 14,
+              color: isDark ? themes.LavenderGray : themes.MutedPurple,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _getItemTypeDisplayName(widget.item.itemType),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? themes.LavenderGray : themes.MutedPurple,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(
+              Icons.access_time,
+              size: 14,
+              color: isDark ? themes.LavenderGray : themes.MutedPurple,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _formatDate(widget.item.addedAt),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? themes.LavenderGray : themes.MutedPurple,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // if (widget.item.itemDescription != null &&
+        //     widget.item.itemDescription!.isNotEmpty)
+        //   Text(
+        //     widget.item.itemDescription!,
+        //     style: TextStyle(
+        //       fontSize: 12,
+        //       color: isDark ? themes.LavenderGray : themes.MutedPurple,
+        //     ),
+        //     maxLines: 2,
+        //     overflow: TextOverflow.ellipsis,
+        //   ),
+      ],
+    );
+  }
+
+  Widget _buildActionsSection(bool isDark) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        if (widget.showActions)
+          IconButton(
+            onPressed: _onRemove,
+            icon: Icon(
+              Icons.delete_outline,
+              size: 20,
+              color: isDark ? themes.DeepCoral : themes.DeepCoral,
+            ),
+            tooltip: 'Remove from watchlist',
+          ),
+        _buildStatusDropdown(isDark),
+      ],
+    );
+  }
+
+  Widget _buildStatusBadge() {
+    Color badgeColor;
+    String statusText;
+
+    switch (widget.item.status) {
+      case 'completed':
+        badgeColor = themes.DarkEmerald;
+        statusText = 'Completed';
+        break;
+      case 'dropped':
+        badgeColor = themes.DeepCoral;
+        statusText = 'Dropped';
+        break;
+      default:
+        badgeColor = themes.MutedPurple;
+        statusText = 'Active';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        statusText,
+        style: TextStyle(
+          color: badgeColor,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusDropdown(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? themes.DarkSlate : themes.SoftCream,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? themes.LavenderGray : themes.MutedPurple,
+        ),
+      ),
+      child: DropdownButton<String>(
+        value: widget.item.status ?? 'active',
+        underline: const SizedBox(),
+        icon: Icon(
+          Icons.arrow_drop_down,
+          size: 20,
+          color: isDark ? Colors.white : themes.MutedPurple,
+        ),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: isDark ? Colors.white : themes.DarkSlate,
+        ),
+        dropdownColor: isDark ? themes.MidnightBlue : themes.SoftCream,
+        items: [
+          DropdownMenuItem(
+            value: 'active',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.play_circle_outline,
+                  size: 16,
+                  color: themes.MutedPurple,
+                ),
+                const SizedBox(width: 8),
+                const Text('Active'),
+              ],
+            ),
+          ),
+          DropdownMenuItem(
+            value: 'completed',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 16,
+                  color: themes.DarkEmerald,
+                ),
+                const SizedBox(width: 8),
+                const Text('Completed'),
+              ],
+            ),
+          ),
+          DropdownMenuItem(
+            value: 'dropped',
+            child: Row(
+              children: [
+                Icon(Icons.cancel_outlined, size: 16, color: themes.DeepCoral),
+                const SizedBox(width: 8),
+                const Text('Dropped'),
+              ],
             ),
           ),
         ],
+        onChanged: (String? newValue) {
+          if (newValue != null && newValue != widget.item.status) {
+            _onStatusChanged(newValue);
+          }
+        },
       ),
     );
   }
 
-  void _navigateToWatchlist() {
-    Get.to(() => const Watchlist());
+  IconData _getItemTypeIcon(String? itemType) {
+    switch (itemType) {
+      case 'course':
+        return Icons.school;
+      case 'lecture':
+        return Icons.video_library;
+      case 'book':
+        return Icons.book;
+      case 'teacher':
+        return Icons.person;
+      default:
+        return Icons.star;
+    }
+  }
+
+  String _getItemTypeDisplayName(String? itemType) {
+    switch (itemType) {
+      case 'course':
+        return 'Course';
+      case 'lecture':
+        return 'Lecture';
+      case 'book':
+        return 'Book';
+      case 'teacher':
+        return 'Teacher';
+      default:
+        return 'Item';
+    }
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Unknown date';
+
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  void _onItemTap() {
+    switch (widget.item.itemType) {
+      case 'course':
+        Get.toNamed('/course/${widget.item.itemId}');
+        break;
+      case 'lecture':
+        Get.toNamed('/lecture/${widget.item.itemId}');
+        break;
+      case 'book':
+        Get.toNamed('/book/${widget.item.itemId}');
+        break;
+      default:
+        Get.snackbar(
+          'Coming Soon',
+          'This feature is not yet available',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+    }
+  }
+
+  void _onRemove() {
+    final watchlistController = Get.find<WatchlistController>();
+    watchlistController.removeFromWatchlist(widget.item.id!);
+
+    if (widget.onRemove != null) {
+      widget.onRemove!();
+    }
+  }
+
+  void _onStatusChanged(String newStatus) async {
+    final watchlistController = Get.find<WatchlistController>();
+    await watchlistController.updateItemStatus(widget.item.id!, newStatus);
+
+    if (widget.onStatusChange != null) {
+      widget.onStatusChange!();
+    }
+  }
+
+  void _playAnimation() {
+    _animationController.reset();
+    _animationController.forward();
   }
 }

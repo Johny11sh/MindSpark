@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:get/get.dart';
 import '../controller/WatchlistController.dart';
-import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
 
 class WatchlistButton extends StatefulWidget {
@@ -38,10 +37,12 @@ class _WatchlistButtonState extends State<WatchlistButton>
   late Animation<double> _rotationAnimation;
   late Animation<double> _bounceAnimation;
   bool _isPressed = false;
+  late Themes themes;
 
   @override
   void initState() {
     super.initState();
+    themes = Themes();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
@@ -69,28 +70,12 @@ class _WatchlistButtonState extends State<WatchlistButton>
   @override
   Widget build(BuildContext context) {
     final watchlistController = Get.find<WatchlistController>();
-    final ThemeController themeController = Get.find<ThemeController>();
-    final bool isLightTheme =
-        themeController.initialTheme == Themes.customLightTheme;
-    final Color primaryColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 40, 41, 61)
-            : const Color.fromARGB(255, 210, 209, 224);
-    final Color secondaryColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 210, 209, 224)
-            : const Color.fromARGB(255, 40, 41, 61);
 
     return Obx(() {
       final isInWatchlist = watchlistController.isInWatchlist(
         widget.itemId,
         widget.itemType,
       );
-
-      final buttonColor =
-          isInWatchlist
-              ? (widget.activeColor ?? primaryColor)
-              : (widget.color ?? primaryColor.withOpacity(0.5));
 
       return GestureDetector(
         onTapDown: (_) {
@@ -120,16 +105,18 @@ class _WatchlistButtonState extends State<WatchlistButton>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color:
-                        _isPressed
-                            ? buttonColor.withOpacity(0.2)
-                            : Colors.transparent,
+                    _isPressed
+                        ? (isInWatchlist
+                        ? themes.SoftViolet.withOpacity(0.2)
+                        : themes.LavenderGray.withOpacity(0.2))
+                        : Colors.transparent,
                   ),
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     transitionBuilder: (
-                      Widget child,
-                      Animation<double> animation,
-                    ) {
+                        Widget child,
+                        Animation<double> animation,
+                        ) {
                       return ScaleTransition(
                         scale: animation,
                         child: FadeTransition(opacity: animation, child: child),
@@ -139,7 +126,10 @@ class _WatchlistButtonState extends State<WatchlistButton>
                       isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
                       key: ValueKey(isInWatchlist),
                       size: widget.size,
-                      color: buttonColor,
+                      color:
+                      isInWatchlist
+                          ? (widget.activeColor ?? themes.SoftViolet)
+                          : (widget.color ?? themes.LavenderGray),
                     ),
                   ),
                 ),
@@ -193,13 +183,13 @@ class _WatchlistButtonState extends State<WatchlistButton>
         '${widget.itemTitle} has been ${isInWatchlist ? 'added to' : 'removed from'} your watchlist',
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 2),
-        backgroundColor: isInWatchlist ? Colors.green[100] : Colors.orange[100],
-        colorText: isInWatchlist ? Colors.green[800] : Colors.orange[800],
+        backgroundColor: isInWatchlist ? themes.MutedGreen : themes.SoftPink,
+        colorText: isInWatchlist ? themes.DarkEmerald : themes.DeepCoral,
         borderRadius: 12,
         margin: const EdgeInsets.all(16),
         icon: Icon(
           isInWatchlist ? Icons.check_circle : Icons.remove_circle,
-          color: isInWatchlist ? Colors.green[800] : Colors.orange[800],
+          color: isInWatchlist ? themes.DarkEmerald : themes.DeepCoral,
         ),
       );
     });

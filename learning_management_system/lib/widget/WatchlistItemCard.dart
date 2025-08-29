@@ -2,58 +2,59 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:intl/intl.dart';
-import '../controller/FontController.dart';
-import '../model/WatchlistModel.dart';
+import 'package:lottie/lottie.dart';
+import '../controller/WatchlistController.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
 import '../core/constants/ImageAssets.dart';
+import '../view/Watchlist.dart';
 
-class WatchlistItemCard extends StatefulWidget {
-  final WatchlistModel item;
-  final VoidCallback? onTap;
-  final VoidCallback? onRemove;
-  final Function(String)? onStatusChanged;
-  final bool showActions;
+class WatchlistSummaryCard extends StatefulWidget {
+  final bool showAnimation;
+  final EdgeInsets? margin;
+  final double? elevation;
 
-  const WatchlistItemCard({
+  const WatchlistSummaryCard({
     super.key,
-    required this.item,
-    this.onTap,
-    this.onRemove,
-    this.onStatusChanged,
-    this.showActions = true,
+    this.showAnimation = true,
+    this.margin,
+    this.elevation,
   });
 
   @override
-  State<WatchlistItemCard> createState() => _WatchlistItemCardState();
+  State<WatchlistSummaryCard> createState() => _WatchlistSummaryCardState();
 }
 
-class _WatchlistItemCardState extends State<WatchlistItemCard>
+class _WatchlistSummaryCardState extends State<WatchlistSummaryCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
-  bool _isDeleting = false;
+  bool _isPressed = false;
+  late Themes themes;
 
   @override
   void initState() {
     super.initState();
+    themes = Themes();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
 
-    _animationController.forward();
+    if (widget.showAnimation) {
+      _animationController.forward();
+    } else {
+      _animationController.value = 1.0;
+    }
   }
 
   @override
@@ -64,424 +65,270 @@ class _WatchlistItemCardState extends State<WatchlistItemCard>
 
   @override
   Widget build(BuildContext context) {
-    final ThemeController themeController = Get.find<ThemeController>();
-    final bool isLightTheme =
-        themeController.initialTheme == Themes.customLightTheme;
-    final Color primaryColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 40, 41, 61)
-            : const Color.fromARGB(255, 210, 209, 224);
-    final Color secondaryColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 210, 209, 224)
-            : const Color.fromARGB(255, 40, 41, 61);
+    final themeController = Get.find<ThemeController>();
 
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(
-            opacity: _fadeAnimation.value,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _isDeleting ? null : widget.onTap,
-                  borderRadius: BorderRadius.circular(16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildImageSection(primaryColor),
-                        const SizedBox(height: 12),
-                        _buildContentSection(primaryColor),
-                        if (widget.showActions)
-                          _buildActionsSection(primaryColor, secondaryColor),
-                      ],
+    return Obx(() {
+      final isDark = themeController.initialTheme.brightness == Brightness.dark;
+
+      return AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Opacity(
+              opacity: _fadeAnimation.value,
+              child: Container(
+                margin: widget.margin ?? const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors:
+                    isDark
+                        ? [themes.MidnightBlue, themes.DarkViolet]
+                        : [themes.SoftCream, themes.SoftBlue],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: widget.elevation ?? 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTapDown: (_) => setState(() => _isPressed = true),
+                    onTapUp: (_) => setState(() => _isPressed = false),
+                    onTapCancel: () => setState(() => _isPressed = false),
+                    onTap: _navigateToWatchlist,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color:
+                        _isPressed
+                            ? Colors.black.withValues(alpha: 0.05)
+                            : Colors.transparent,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildTitleSection(isDark),
+                              _buildIconSection(isDark),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _buildStatsSection(isDark),
+                          const SizedBox(height: 8),
+                          _buildProgressBar(isDark),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    });
   }
 
-  Widget _buildImageSection(Color primaryColor) {
-    return Container(
-      height: 140,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: primaryColor.withOpacity(0.1),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            widget.item.itemImage != null && widget.item.itemImage!.isNotEmpty
-                ? CachedNetworkImage(
-                  imageUrl: widget.item.itemImage!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  placeholder:
-                      (context, url) => Container(
-                        color: primaryColor.withOpacity(0.1),
-                        child: Icon(
-                          _getItemTypeIcon(),
-                          size: 50,
-                          color: primaryColor.withOpacity(0.5),
-                        ),
-                      ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        color: primaryColor.withOpacity(0.1),
-                        child: Icon(
-                          _getItemTypeIcon(),
-                          size: 50,
-                          color: primaryColor.withOpacity(0.5),
-                        ),
-                      ),
-                )
-                : Container(
-                  color: primaryColor.withOpacity(0.1),
-                  child: Icon(
-                    _getItemTypeIcon(),
-                    size: 50,
-                    color: primaryColor.withOpacity(0.5),
-                  ),
-                ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _getItemTypeDisplayName(),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: FontController().currentFontFamily,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContentSection(Color primaryColor) {
+  Widget _buildTitleSection(bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                widget.item.itemTitle ?? 'Untitled',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: FontController().currentFontFamily,
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
-                  height: 1.2,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            _buildStatusBadge(primaryColor),
-          ],
+        Text(
+          'My Watchlist',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : themes.DarkSlate,
+          ),
         ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(
-              Icons.access_time,
-              size: 14,
-              color: primaryColor.withOpacity(0.7),
+        const SizedBox(height: 4),
+        Obx(() {
+          final watchlistController = Get.find<WatchlistController>();
+          return Text(
+            '${watchlistController.allWatchlistItems.length} items saved',
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? themes.LavenderGray : themes.MutedPurple,
             ),
-            const SizedBox(width: 4),
-            Text(
-              _formatDate(),
-              style: TextStyle(
-                fontSize: 12,
-                color: primaryColor.withOpacity(0.7),
-                fontFamily: FontController().currentFontFamily,
-              ),
-            ),
-          ],
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildIconSection(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color:
+        isDark
+            ? themes.MutedPurple.withValues(alpha: 0.3)
+            : themes.MutedPurple.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        Icons.bookmark,
+        size: 24,
+        color: isDark ? Colors.white : themes.MutedPurple,
+      ),
+    );
+  }
+
+  Widget _buildStatsSection(bool isDark) {
+    return Obx(() {
+      final watchlistController = Get.find<WatchlistController>();
+      final items = watchlistController.allWatchlistItems;
+
+      final courses = items.where((item) => item.itemType == 'course').length;
+      final lectures = items.where((item) => item.itemType == 'lecture').length;
+      final books = items.where((item) => item.itemType == 'book').length;
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatItem(
+            icon: Icons.school,
+            count: courses,
+            label: 'Courses',
+            color: isDark ? themes.SoftViolet : themes.MutedPurple,
+          ),
+          _buildStatItem(
+            icon: Icons.video_library,
+            count: lectures,
+            label: 'Lectures',
+            color: isDark ? themes.SoftViolet : themes.MutedPurple,
+          ),
+          _buildStatItem(
+            icon: Icons.book,
+            count: books,
+            label: 'Books',
+            color: isDark ? themes.SoftViolet : themes.MutedPurple,
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildStatItem({
+    required IconData icon,
+    required int count,
+    required String label,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          count.toString(),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(fontSize: 10, color: color.withValues(alpha: 0.8)),
         ),
       ],
     );
   }
 
-  Widget _buildActionsSection(Color primaryColor, Color secondaryColor) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Row(
+  Widget _buildProgressBar(bool isDark) {
+    return Obx(() {
+      final watchlistController = Get.find<WatchlistController>();
+      final items = watchlistController.allWatchlistItems;
+
+      if (items.isEmpty) {
+        return Container(
+          height: 6,
+          decoration: BoxDecoration(
+            color: isDark ? themes.DarkSlate : themes.WarmBeige,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        );
+      }
+
+      final completed =
+          items.where((item) => item.status == 'completed').length;
+      final progress = items.isEmpty ? 0.0 : completed / items.length;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: _buildStatusDropdown(primaryColor, secondaryColor)),
-          const SizedBox(width: 8),
-          _buildDeleteButton(primaryColor),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge(Color primaryColor) {
-    Color badgeColor;
-    String statusText;
-
-    switch (widget.item.status) {
-      case 'completed':
-        badgeColor = Colors.green;
-        statusText = 'Completed';
-        break;
-      case 'dropped':
-        badgeColor = Colors.red;
-        statusText = 'Dropped';
-        break;
-      default:
-        badgeColor = primaryColor;
-        statusText = 'Active';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: badgeColor.withOpacity(0.3)),
-      ),
-      child: Text(
-        statusText,
-        style: TextStyle(
-          color: badgeColor,
-          fontFamily: FontController().currentFontFamily,
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusDropdown(Color primaryColor, Color secondaryColor) {
-    if (widget.onStatusChanged == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: primaryColor.withOpacity(0.3)),
-      ),
-      child: DropdownButton<String>(
-        value: widget.item.status ?? 'active',
-        underline: const SizedBox(),
-        icon: Icon(Icons.arrow_drop_down, size: 20, color: primaryColor),
-        style: TextStyle(fontSize: 12, color: primaryColor),
-        dropdownColor: secondaryColor,
-        items: [
-          DropdownMenuItem(
-            value: 'active',
-            child: Text(
-              'Active',
-              style: TextStyle(fontFamily: FontController().currentFontFamily),
-            ),
-          ),
-          DropdownMenuItem(
-            value: 'completed',
-            child: Text(
-              'Completed',
-              style: TextStyle(fontFamily: FontController().currentFontFamily),
-            ),
-          ),
-          DropdownMenuItem(
-            value: 'dropped',
-            child: Text(
-              'Dropped',
-              style: TextStyle(fontFamily: FontController().currentFontFamily),
-            ),
-          ),
-        ],
-        onChanged: (String? newValue) {
-          if (newValue != null && widget.onStatusChanged != null) {
-            widget.onStatusChanged!(newValue);
-          }
-        },
-      ),
-    );
-  }
-
-  Widget _buildDeleteButton(Color primaryColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
-      ),
-      child: IconButton(
-        onPressed: _isDeleting ? null : _showRemoveDialog,
-        icon:
-            _isDeleting
-                ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                  ),
-                )
-                : Icon(Icons.delete_outline, color: Colors.red, size: 20),
-        tooltip: _isDeleting ? 'Removing...' : 'Remove from watchlist',
-        padding: const EdgeInsets.all(8),
-        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-      ),
-    );
-  }
-
-  IconData _getItemTypeIcon() {
-    switch (widget.item.itemType) {
-      case 'course':
-        return Icons.school;
-      case 'lecture':
-        return Icons.video_library;
-      case 'book':
-        return Icons.book;
-      case 'teacher':
-        return Icons.person;
-      default:
-        return Icons.star;
-    }
-  }
-
-  String _getItemTypeDisplayName() {
-    switch (widget.item.itemType) {
-      case 'course':
-        return 'Course';
-      case 'lecture':
-        return 'Lecture';
-      case 'book':
-        return 'Book';
-      case 'teacher':
-        return 'Teacher';
-      default:
-        return 'Item';
-    }
-  }
-
-  String _formatDate() {
-    if (widget.item.addedAt == null) return 'Unknown date';
-
-    final now = DateTime.now();
-    final difference = now.difference(widget.item.addedAt!);
-
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return DateFormat('MMM dd, yyyy').format(widget.item.addedAt!);
-    }
-  }
-
-  void _showRemoveDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.delete_outline, color: Colors.red[600], size: 24),
-              const SizedBox(width: 8),
               Text(
-                'Remove from Watchlist',
+                'Progress',
                 style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
+                  fontSize: 12,
+                  color: isDark ? themes.LavenderGray : themes.MutedPurple,
+                ),
+              ),
+              Text(
+                '${(progress * 100).toStringAsFixed(0)}%',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : themes.MutedPurple,
                 ),
               ),
             ],
           ),
-          content: Text(
-            'Are you sure you want to remove "${widget.item.itemTitle}" from your watchlist?',
-            style: TextStyle(fontFamily: FontController().currentFontFamily),
+          const SizedBox(height: 4),
+          Container(
+            height: 6,
+            decoration: BoxDecoration(
+              color: isDark ? themes.DarkSlate : themes.WarmBeige,
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: Stack(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  width: MediaQuery.of(context).size.width * progress,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [themes.MutedPurple, themes.SoftViolet],
+                    ),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _handleRemove();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[600],
-                foregroundColor: Colors.white,
-              ),
-              child: Text(
-                'Remove',
-                style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+        ],
+      );
+    });
   }
 
-  Future<void> _handleRemove() async {
-    if (widget.onRemove == null) return;
+  void _navigateToWatchlist() {
+    Get.to(() => const Watchlist(), transition: Transition.fadeIn);
+  }
 
-    setState(() {
-      _isDeleting = true;
-    });
-
-    try {
-      widget.onRemove!();
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to remove item from watchlist',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
-      );
-    } finally {
-      setState(() {
-        _isDeleting = false;
-      });
-    }
+  void _playAnimation() {
+    _animationController.reset();
+    _animationController.forward();
   }
 }

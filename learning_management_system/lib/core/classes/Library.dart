@@ -229,7 +229,7 @@ class _LibraryState extends State<Library> {
           showErrorSnackbar("Session expired. Please log in again.");
         });
       } else {
-        print("StatusCode             not        200");
+        print("StatusCode             not        200 ${response.statusCode}");
 
         if (recommendedBooks.isEmpty ||
             topRatedBooks.isEmpty ||

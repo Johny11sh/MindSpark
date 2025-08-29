@@ -337,7 +337,7 @@ class _RatedCoursesState extends State<RatedCourses> {
                             MaterialPageRoute(
                               builder: (context) => CoursesLessons(
                                 CoursesData: topRatedCourses[index],
-                                index: index, CoursesImage: null,
+                                index: index,
                               ),
                             ),
                           );

@@ -1,10 +1,13 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:learning_management_system/controller/FontController.dart';
 
 import 'controller/NetworkController.dart';
 import 'core/classes/ChangePassword.dart';
 import 'core/classes/ChangeUsername.dart';
+import 'firebase_options.dart';
 import 'locale/LocaleController.dart';
 import 'locale/Locale.dart';
 import 'themes/ThemeController.dart';
@@ -17,20 +20,34 @@ import 'package:get/get.dart';
 import '../controller/ProfileController.dart';
 import 'view/Profile.dart';
 import 'view/SignUp.dart';
+import 'NotificationService.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await NotificationService.init();
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   await SharedPrefs.instance.Init();
   final SharedPrefs sharedPrefs = SharedPrefs.instance;
   final isLoggedIn = sharedPrefs.prefs.getBool('isLoggedIn') ?? false;
+
   Get.lazyPut(() => LocaleController());
   Get.lazyPut(() => ThemeController());
   Get.lazyPut(() => FontController());
   Get.put(NetworkController(), permanent: true);
   Get.put(ProfileController(), permanent: true);
+
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
-
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
   const MyApp({super.key, required this.isLoggedIn});

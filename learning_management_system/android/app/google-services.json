@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "477533106982",
+    "project_id": "mindspark-d0445",
+    "storage_bucket": "mindspark-d0445.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477533106982:android:dde89e99a330d99e12c7e7",
+        "android_client_info": {
+          "package_name": "com.example.learning_management_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBj_OVLLK42obTiEThpkC0CyLgJlhl9Y3M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

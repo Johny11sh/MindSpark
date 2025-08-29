@@ -6,8 +6,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import '../../services/SharedPrefs.dart';
 import '../../view/NavBar.dart';
 import '../../controller/FontController.dart';
+import '../../view/OnBoarding.dart';
+import '../function/CustomRatingDialog.dart';
 import 'AudioBook.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -37,6 +40,41 @@ class _BookDetailsState extends State<BookDetails> {
   String fileName = "";
   String filePath = "";
   bool isRated = false;
+  late String token;
+  late SharedPrefs sharedPrefs;
+  late int userRating;
+  late int  userId;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sharedPrefs = SharedPrefs.instance;
+    token = sharedPrefs.prefs.getString("token")!;
+    userId = sharedPrefs.prefs.getInt("user_id")!;
+    userRating = 1;
+    // print("FeaturedRatings :${widget.BookData["FeaturedRatings"]}");
+    print("$userId");
+    checkIfRatedLocally();
+  }
+
+  void checkIfRatedLocally() {
+
+    final ratings = widget.BookData["ratings"] as List<dynamic>? ?? [];
+
+    final userReview = ratings.firstWhere(
+          (review) => review["user_id"] == userId,
+      orElse: () => null,
+    );
+
+    if (userReview != null) {
+      setState(() {
+        isRated = true;
+        userRating = userReview["rating"];
+      });
+    }
+  }
+
 
   void showErrorSnackbar(String message) {
     Get.rawSnackbar(
@@ -813,8 +851,20 @@ class _BookDetailsState extends State<BookDetails> {
                                 children: [
                                   Column(
                                     children: [
-                                      IconButton(
-                                        onPressed: () {},
+                                      IconButton(     onPressed: () async {
+                                        showRatingDailog(
+                                          context,
+                                          widget.BookData["id"],
+                                          token,
+                                          "$mainIP/api/rateresource/${widget.BookData["id"]}",
+                                              () {
+                                            setState(() {
+                                              isRated = true;
+                                            });
+                                          },
+                                          userRating + 0.0,
+                                        );
+                                      },
                                         icon: Icon(
                                           isRated == true
                                               ? Icons.star_outlined

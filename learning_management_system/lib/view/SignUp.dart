@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import '../controller/NetworkController.dart';
 import '../core/constants/ImageAssets.dart';
@@ -85,7 +86,21 @@ class _SignUpState extends State<SignUp> {
           }
 
           await sharedPrefs.prefs.setString('token', responseBody['token']);
+          await sharedPrefs.prefs.setInt('user_id', responseBody["user"]["id"]);
           await sharedPrefs.prefs.setBool('isLoggedIn', true);
+
+          String? fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) {
+            await http.post(
+              Uri.parse("$baseUrl/api/set-token"),
+              headers: {
+                "Authorization": "Bearer ${responseBody['token']}",
+                "Content-Type": "application/json",
+              },
+              body: jsonEncode({"fcm_token": fcmToken}),
+            );
+            print(" Sent FCM token to backend: $fcmToken");
+          }
 
           return responseBody;
 

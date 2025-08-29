@@ -334,7 +334,7 @@ class _TopRatedBooksState extends State<TopRatedBooks> {
                             MaterialPageRoute(
                               builder: (context) => BookDetails(
                                 BookData: topRatedBooks[index],
-                                bookImage: topRatedBooksImages[bookId],
+                                // bookImage: topRatedBooksImages[bookId],
                               ),
                             ),
                           );

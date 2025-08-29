@@ -9,6 +9,22 @@ class Themes {
   Color LavenderGray = const Color.fromARGB(255, 153, 151, 188);
   Color SoftViolet = const Color.fromARGB(255, 210, 209, 224);
   Color PalePeach = const Color.fromARGB(255, 254, 233, 204);
+  Color DarkTeal = Color.fromARGB(255, 32, 34, 80);
+  Color DeepIndigo = Color.fromARGB(255, 55, 48, 107);
+  Color RichBurgundy = Color.fromARGB(255, 120, 40, 80);
+  Color DarkEmerald = Color.fromARGB(255, 25, 80, 60);
+  Color DeepCoral = Color.fromARGB(255, 180, 60, 80);
+  Color MidnightBlue = Color.fromARGB(255, 20, 30, 60);
+  Color DarkViolet = Color.fromARGB(255, 70, 40, 90);
+  Color DeepRust = Color.fromARGB(255, 100, 50, 40);
+
+  // New softer colors
+  Color SoftCream = Color.fromARGB(255, 252, 248, 240);
+  Color WarmBeige = Color.fromARGB(255, 245, 242, 235);
+  Color GentleGray = Color.fromARGB(255, 240, 238, 235);
+  Color SoftBlue = Color.fromARGB(255, 235, 240, 250);
+  Color MutedGreen = Color.fromARGB(255, 230, 245, 235);
+  Color SoftPink = Color.fromARGB(255, 250, 235, 240);
 
   static ThemeData customDarkTheme = ThemeData().copyWith(
     scaffoldBackgroundColor: const Color.fromARGB(255, 40, 41, 61),

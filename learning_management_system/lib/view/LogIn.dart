@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -86,10 +87,25 @@ class _LogInState extends State<LogIn> {
         final String token = responseBody['token'];
 
         await sharedPrefs.prefs.setString('token', token);
+        await sharedPrefs.prefs.setInt('user_id', responseBody["user"]["id"]);
         await sharedPrefs.prefs.setBool('isLoggedIn', true);
 
         final savedToken = sharedPrefs.prefs.getString('token');
         print("Saved Token: $savedToken\n"); // Fixed print statement
+
+
+        String? fcmToken = await FirebaseMessaging.instance.getToken();
+        if (fcmToken != null) {
+          await http.post(
+            Uri.parse("$baseUrl/api/set-token"),
+            headers: {
+              "Authorization": "Bearer $token",
+              "Content-Type": "application/json",
+            },
+            body: jsonEncode({"fcm_token": fcmToken}),
+          );
+          print("✅ Sent FCM token to backend: $fcmToken");
+        }
 
         return responseBody;
       } else if (response.statusCode == 401) {
