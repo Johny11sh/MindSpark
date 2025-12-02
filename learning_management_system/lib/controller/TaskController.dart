@@ -1,11 +1,11 @@
-// ignore_for_file: file_names, unrelated_type_equality_checks, non_constant_identifier_names
+// ignore_for_file: file_names, unrelated_type_equality_checks, non_constant_identifier_names, duplicate_ignore
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import '../controller/FontController.dart';
+import '../core/constants/FontGlobals.dart';
 import '../core/function/SnackBarFun.dart';
 import '../view/LogIn.dart';
 import '../view/NavBar.dart';
@@ -396,7 +396,6 @@ class ApiService {
 
       if (response.statusCode == 200) {
         debugPrint("Task $taskId status updated successfully");
-        // يمكنك إضافة أي تحديثات للواجهة هنا إذا لزم الأمر
       } else if (response.statusCode == 401) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Get.offAll(() => LogIn());
@@ -467,7 +466,7 @@ class ApiService {
         Get.rawSnackbar(
           messageText: Text(
             "Task moved to trash",
-            style: TextStyle(fontFamily: FontController().currentFontFamily),
+            style: TextStyle(fontFamily: globalFontFamily),
           ),
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
@@ -617,7 +616,7 @@ class ApiService {
       debugPrint("Response body: ${response.body}");
 
       if (response.statusCode == 200) {
-        debugPrint("Task $taskId deleted permanently");
+        debugPrint("Task $taskId deleted permanently ${response.body}");
         return true;
       } else if (response.statusCode == 401) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -772,11 +771,10 @@ class ApiService {
 
       if (response.statusCode == 200) {
         debugPrint("Task $taskId restored successfully");
-        // عرض إشعار نجاح
         Get.rawSnackbar(
           messageText: Text(
             "Task restored successfully",
-            style: TextStyle(fontFamily: FontController().currentFontFamily),
+            style: TextStyle(fontFamily: globalFontFamily),
           ),
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),

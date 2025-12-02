@@ -484,6 +484,50 @@ class Locale implements Translations {
       "Choose Avatar": "Choose Avatar",
       "Tap an avatar below to select": "Tap an avatar below to select",
       "Confirm Selection": "Confirm Selection",
+      "Tasks Manager": "Tasks Manager",
+      "Fonts": "Fonts",
+      "Cache Data": "Cache Data",
+      "Setting Changed": "Setting Changed",
+      "Data will be cached.": "Data will be cached.",
+      "Caching disabled. All cached data has been cleared.":
+          "Caching disabled. All cached data has been cleared.",
+      "Caching data will increase memory usage, but will allow you to study offline and enjoy all available features.":
+          "Caching data will increase memory usage, but will allow you to study offline and enjoy all available features.",
+      "When caching is disabled you can only use the application in online mode.":
+          "When caching is disabled you can only use the application in online mode.",
+      "Spanish": "Spanish",
+      "French": "French",
+      // Watchlist UI strings
+      "My Watchlist": "My Watchlist",
+      "items saved": "items saved",
+      "Lectures": "Lectures",
+      "Progress": "Progress",
+      "Remove from watchlist": "Remove from watchlist",
+      "Active": "Active",
+      "Dropped": "Dropped",
+      "Lecture": "Lecture",
+      "Book": "Book",
+      "Item": "Item",
+      "Unknown date": "Unknown date",
+      "Today": "Today",
+      "Yesterday": "Yesterday",
+      "days ago": "days ago",
+      "Coming Soon": "Coming Soon",
+      "This feature is not yet available": "This feature is not yet available",
+      "Added to Watchlist": "Added to Watchlist",
+      "Removed from Watchlist": "Removed from Watchlist",
+      "has been added to your watchlist": "has been added to your watchlist",
+      "has been removed from your watchlist":
+          "has been removed from your watchlist",
+      // core/classes UI strings
+      "MindSpark is an educational platform that delivers high-quality video and PDF courses delivered by well-trusted teachers to save time, cost, and effort.":
+          "MindSpark is an educational platform that delivers high-quality video and PDF courses delivered by well-trusted teachers to save time, cost, and effort.",
+      "You can either leave a review on that course, or one of its lectures. You can also send a message directly to the teacher of that subject using any of their social media links to ensure your voice is heard.":
+          "You can either leave a review on that course, or one of its lectures. You can also send a message directly to the teacher of that subject using any of their social media links to ensure your voice is heard.",
+      "Token empty, redirecting to login": "Token empty, redirecting to login",
+      "Failed to load recommended books": "Failed to load recommended books",
+      "Failed to load audio.": "Failed to load audio.",
+      "Playback error.": "Playback error.",
     },
 
     "Ar": {
@@ -1322,6 +1366,7 @@ class Locale implements Translations {
     },
     "Es": {
       "Sign Up": "Registrarse",
+
       "Log In": "Iniciar Sesión",
       "Already have an account?": "¿Ya tienes una cuenta?",
       "User Name": "Nombre de Usuario",

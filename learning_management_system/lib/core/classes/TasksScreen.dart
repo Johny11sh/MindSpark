@@ -1,13 +1,14 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../controller/TaskController.dart';
 import '../../locale/LocaleController.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
-import '../../controller/FontController.dart';
+import '../constants/FontGlobals.dart';
 
 class TasksScreen extends StatelessWidget {
   TasksScreen({super.key});
@@ -28,129 +29,151 @@ class TasksScreen extends StatelessWidget {
             ? const Color.fromARGB(255, 210, 209, 224)
             : const Color.fromARGB(255, 40, 41, 61);
 
-    return Scaffold(
-      body: Container(
-        color: primaryColor,
-        child: Column(
-          children: [
-            Row(
-              spacing: 10,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back_rounded, color: secondaryColor),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                SizedBox(
-                  // padding: const EdgeInsets.only(top: 25),
-                  height: 100,
-                  child: Center(
-                    child: Text(
-                      "Tasks Manager".tr,
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        fontFamily: FontController().currentFontFamily,
-                        color: secondaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 23,
-                      ),
+    return WillPopScope(
+      onWillPop: () async {
+        return true;
+      },
+      child: Scaffold(
+        body: Container(
+          color: primaryColor,
+          child: Column(
+            children: [
+              Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_back_rounded, color: secondaryColor),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  SizedBox(
+                    // padding: const EdgeInsets.only(top: 25),
+                    height: 100,
+                    child: Center(
+                      child: Text(
+                            "Tasks Manager".tr,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall!.copyWith(
+                              fontFamily: globalFontFamily,
+                              color: secondaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize:
+                                  globalFontSizeChange <= 17
+                                      ? (globalFontSizeChange / 5) + 23
+                                      : 23 - (globalFontSizeChange / 5),
+                            ),
+                          )
+                          .animate(onPlay: (controller) => controller.loop())
+                          .shimmer(
+                            delay: Duration(seconds: 4),
+                            duration: 800.ms,
+                            color:
+                                themeController.initialTheme ==
+                                        Themes.customLightTheme
+                                    ? Colors.grey.shade700
+                                    : Colors.white54,
+                          ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 25),
-              ],
-            ),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: secondaryColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                    topRight: Radius.circular(60),
+                  const SizedBox(width: 25),
+                ],
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: secondaryColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(60),
+                      topRight: Radius.circular(60),
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Obx(() {
-                      if (taskController.isLoading.value) {
-                        return Expanded(
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: primaryColor,
-                            ),
-                          ),
-                        );
-                      }
-
-                      if (taskController.errorMessage.isNotEmpty) {
-                        return Expanded(
-                          child: Center(
-                            child: Text(
-                              'حدث خطأ: ${taskController.errorMessage.value}',
-                              style: TextStyle(
+                  child: Column(
+                    children: [
+                      Obx(() {
+                        if (taskController.isLoading.value) {
+                          return Expanded(
+                            child: Center(
+                              child: CircularProgressIndicator(
                                 color: primaryColor,
-                                fontFamily: FontController().currentFontFamily,
                               ),
                             ),
-                          ),
-                        );
-                      }
+                          );
+                        }
 
-                      switch (taskController.currentIndex.value) {
-                        case 0:
-                          return const Expanded(child: TaskListScreen());
-                        case 1:
-                          return const Expanded(child: CompletedTasksScreen());
-                        case 2:
-                          return const Expanded(child: TrashScreen());
-                        default:
-                          return const Expanded(child: TaskListScreen());
-                      }
-                    }),
-                  ],
+                        if (taskController.errorMessage.isNotEmpty) {
+                          return Expanded(
+                            child: Center(
+                              child: Text(
+                                'حدث خطأ: ${taskController.errorMessage.value}',
+                                style: TextStyle(
+                                  color: primaryColor,
+                                  fontFamily: globalFontFamily,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        switch (taskController.currentIndex.value) {
+                          case 0:
+                            return const Expanded(child: TaskListScreen());
+                          case 1:
+                            return const Expanded(
+                              child: CompletedTasksScreen(),
+                            );
+                          case 2:
+                            return const Expanded(child: TrashScreen());
+                          default:
+                            return const Expanded(child: TaskListScreen());
+                        }
+                      }),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: Obx(() {
-        final bool isLightTheme =
-            themeController.initialTheme == Themes.customLightTheme;
-        final Color primaryColor =
-            isLightTheme
-                ? const Color.fromARGB(255, 40, 41, 61)
-                : const Color.fromARGB(255, 210, 209, 224);
-        final Color secondaryColor =
-            isLightTheme
-                ? const Color.fromARGB(255, 210, 209, 224)
-                : const Color.fromARGB(255, 40, 41, 61);
+        bottomNavigationBar: Obx(() {
+          final bool isLightTheme =
+              themeController.initialTheme == Themes.customLightTheme;
+          final Color primaryColor =
+              isLightTheme
+                  ? const Color.fromARGB(255, 40, 41, 61)
+                  : const Color.fromARGB(255, 210, 209, 224);
+          final Color secondaryColor =
+              isLightTheme
+                  ? const Color.fromARGB(255, 210, 209, 224)
+                  : const Color.fromARGB(255, 40, 41, 61);
 
-        return BottomNavigationBar(
-          currentIndex: taskController.currentIndex.value,
-          onTap: (index) => taskController.currentIndex.value = index,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.list_alt, color: secondaryColor),
-              label: "Tasks".tr,
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.check_circle, color: secondaryColor),
-              label: "Completed".tr,
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.delete, color: secondaryColor),
-              label: "Deleted".tr,
-            ),
-          ],
+          return BottomNavigationBar(
+            currentIndex: taskController.currentIndex.value,
+            onTap: (index) => taskController.currentIndex.value = index,
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.list_alt, color: secondaryColor),
+                label: "Tasks".tr,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.check_circle, color: secondaryColor),
+                label: "Completed".tr,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.delete, color: secondaryColor),
+                label: "Deleted".tr,
+              ),
+            ],
+            backgroundColor: primaryColor,
+            selectedItemColor: secondaryColor,
+            unselectedItemColor: secondaryColor.withOpacity(0.7),
+          );
+        }),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showAddTaskDialog(),
           backgroundColor: primaryColor,
-          selectedItemColor: secondaryColor,
-          unselectedItemColor: secondaryColor.withOpacity(0.7),
-        );
-      }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddTaskDialog(),
-        backgroundColor: primaryColor,
-        child: Icon(Icons.add, color: secondaryColor),
+          child: Icon(Icons.add, color: secondaryColor),
+        ),
       ),
     );
   }
@@ -186,8 +209,11 @@ class TasksScreen extends StatelessWidget {
               Text(
                 "Add New Task".tr,
                 style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
-                  fontSize: 20,
+                  fontFamily: globalFontFamily,
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 20
+                          : 20 - (globalFontSizeChange / 5),
                   fontWeight: FontWeight.bold,
                   color: primaryColor,
                 ),
@@ -235,7 +261,7 @@ class TasksScreen extends StatelessWidget {
                     "Due Date".tr,
                     style: TextStyle(
                       color: primaryColor,
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                   subtitle: Text(
@@ -244,7 +270,7 @@ class TasksScreen extends StatelessWidget {
                         : DateFormat.yMd().add_jm().format(dueDate.value!),
                     style: TextStyle(
                       color: primaryColor.withOpacity(0.7),
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                   onTap: () async {
@@ -284,7 +310,7 @@ class TasksScreen extends StatelessWidget {
                     "Expected Duration(hours):".tr,
                     style: TextStyle(
                       color: primaryColor,
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                   subtitle: Slider(
@@ -309,7 +335,7 @@ class TasksScreen extends StatelessWidget {
                       "Cancel".tr,
                       style: TextStyle(
                         color: primaryColor,
-                        fontFamily: FontController().currentFontFamily,
+                        fontFamily: globalFontFamily,
                       ),
                     ),
                   ),
@@ -335,9 +361,7 @@ class TasksScreen extends StatelessWidget {
                     },
                     child: Text(
                       "Add".tr,
-                      style: TextStyle(
-                        fontFamily: FontController().currentFontFamily,
-                      ),
+                      style: TextStyle(fontFamily: globalFontFamily),
                     ),
                   ),
                 ],
@@ -369,10 +393,7 @@ class TaskListScreen extends StatelessWidget {
         return Center(
           child: Text(
             "There is no Current task".tr,
-            style: TextStyle(
-              color: primaryColor,
-              fontFamily: FontController().currentFontFamily,
-            ),
+            style: TextStyle(color: primaryColor, fontFamily: globalFontFamily),
           ),
         );
       }
@@ -404,10 +425,10 @@ class TaskCard extends StatelessWidget {
         isLightTheme
             ? const Color.fromARGB(255, 40, 41, 61)
             : const Color.fromARGB(255, 210, 209, 224);
-    final Color secondaryColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 210, 209, 224)
-            : const Color.fromARGB(255, 40, 41, 61);
+    // final Color secondaryColor =
+    //     isLightTheme
+    //         ? const Color.fromARGB(255, 210, 209, 224)
+    //         : const Color.fromARGB(255, 40, 41, 61);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -434,8 +455,11 @@ class TaskCard extends StatelessWidget {
                   child: Text(
                     task.title,
                     style: TextStyle(
-                      fontFamily: FontController().currentFontFamily,
-                      fontSize: 18,
+                      fontFamily: globalFontFamily,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 18
+                              : 18 - (globalFontSizeChange / 5),
                       fontWeight: FontWeight.bold,
                       color: primaryColor,
                     ),
@@ -457,7 +481,7 @@ class TaskCard extends StatelessWidget {
               task.description,
               style: TextStyle(
                 color: primaryColor.withOpacity(0.7),
-                fontFamily: FontController().currentFontFamily,
+                fontFamily: globalFontFamily,
               ),
             ),
             const SizedBox(height: 16),
@@ -468,9 +492,12 @@ class TaskCard extends StatelessWidget {
                 Text(
                   '${"Creation Date".tr}: ${DateFormat.yMd().format(task.createdAt)}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize:
+                        globalFontSizeChange <= 17
+                            ? (globalFontSizeChange / 5) + 12
+                            : 12 - (globalFontSizeChange / 5),
                     color: primaryColor,
-                    fontFamily: FontController().currentFontFamily,
+                    fontFamily: globalFontFamily,
                   ),
                 ),
               ],
@@ -484,9 +511,12 @@ class TaskCard extends StatelessWidget {
                   Text(
                     '${"Delivery Date".tr}: ${DateFormat.yMd().add_jm().format(task.dueDate!)}',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 12
+                              : 12 - (globalFontSizeChange / 5),
                       color: primaryColor,
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                 ],
@@ -499,9 +529,12 @@ class TaskCard extends StatelessWidget {
                 Text(
                   '${"Expected Duration".tr}: ${task.estimatedHours} ${"hour".tr}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize:
+                        globalFontSizeChange <= 17
+                            ? (globalFontSizeChange / 5) + 12
+                            : 12 - (globalFontSizeChange / 5),
                     color: primaryColor,
-                    fontFamily: FontController().currentFontFamily,
+                    fontFamily: globalFontFamily,
                   ),
                 ),
               ],
@@ -541,10 +574,7 @@ class CompletedTasksScreen extends StatelessWidget {
         return Center(
           child: Text(
             'There is no Task Complete'.tr,
-            style: TextStyle(
-              color: primaryColor,
-              fontFamily: FontController().currentFontFamily,
-            ),
+            style: TextStyle(color: primaryColor, fontFamily: globalFontFamily),
           ),
         );
       }
@@ -565,14 +595,14 @@ class CompletedTasksScreen extends StatelessWidget {
                 task.title,
                 style: TextStyle(
                   color: primaryColor,
-                  fontFamily: FontController().currentFontFamily,
+                  fontFamily: globalFontFamily,
                 ),
               ),
               subtitle: Text(
                 task.description,
                 style: TextStyle(
                   color: primaryColor.withOpacity(0.7),
-                  fontFamily: FontController().currentFontFamily,
+                  fontFamily: globalFontFamily,
                 ),
               ),
               trailing: IconButton(
@@ -606,10 +636,7 @@ class TrashScreen extends StatelessWidget {
         return Center(
           child: Text(
             'Recycle Bin is Empty'.tr,
-            style: TextStyle(
-              color: primaryColor,
-              fontFamily: FontController().currentFontFamily,
-            ),
+            style: TextStyle(color: primaryColor, fontFamily: globalFontFamily),
           ),
         );
       }
@@ -635,7 +662,7 @@ class TrashScreen extends StatelessWidget {
                 task.title,
                 style: TextStyle(
                   color: primaryColor,
-                  fontFamily: FontController().currentFontFamily,
+                  fontFamily: globalFontFamily,
                 ),
               ),
               subtitle: Column(
@@ -645,21 +672,21 @@ class TrashScreen extends StatelessWidget {
                     '${"Will be permanently deleted after".tr} $daysLeft ${"days".tr}',
                     style: TextStyle(
                       color: primaryColor.withOpacity(0.7),
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                   Text(
                     '${"Creation Date".tr}: ${DateFormat.yMd().format(task.createdAt)}',
                     style: TextStyle(
                       color: primaryColor.withOpacity(0.7),
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                   Text(
                     task.description,
                     style: TextStyle(
                       color: primaryColor.withOpacity(0.7),
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                 ],

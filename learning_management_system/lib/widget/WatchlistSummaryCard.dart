@@ -33,7 +33,6 @@ class _WatchlistItemCardState extends State<WatchlistItemCard>
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
   bool _isPressed = false;
-  bool _isHovered = false;
   late Themes themes;
 
   @override
@@ -78,7 +77,7 @@ class _WatchlistItemCardState extends State<WatchlistItemCard>
               opacity: _fadeAnimation.value,
               child: Container(
                 margin:
-                widget.margin ?? const EdgeInsets.symmetric(vertical: 8),
+                    widget.margin ?? const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: isDark ? themes.MidnightBlue : themes.SoftCream,
                   borderRadius: BorderRadius.circular(16),
@@ -97,16 +96,15 @@ class _WatchlistItemCardState extends State<WatchlistItemCard>
                     onTapDown: (_) => setState(() => _isPressed = true),
                     onTapUp: (_) => setState(() => _isPressed = false),
                     onTapCancel: () => setState(() => _isPressed = false),
-                    onHover: (hovered) => setState(() => _isHovered = hovered),
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         color:
-                        _isPressed
-                            ? Colors.black.withValues(alpha: 0.05)
-                            : Colors.transparent,
+                            _isPressed
+                                ? Colors.black.withValues(alpha: 0.05)
+                                : Colors.transparent,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,15 +137,15 @@ class _WatchlistItemCardState extends State<WatchlistItemCard>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child:
-        widget.item.itemImage != null && widget.item.itemImage!.isNotEmpty
-            ? Image.network(
-          widget.item.itemImage!,
-          fit: BoxFit.cover,
-          errorBuilder:
-              (context, error, stackTrace) =>
-              _buildPlaceholderIcon(isDark),
-        )
-            : _buildPlaceholderIcon(isDark),
+            widget.item.itemImage != null && widget.item.itemImage!.isNotEmpty
+                ? Image.network(
+                  widget.item.itemImage!,
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (context, error, stackTrace) =>
+                          _buildPlaceholderIcon(isDark),
+                )
+                : _buildPlaceholderIcon(isDark),
       ),
     );
   }
@@ -421,6 +419,9 @@ class _WatchlistItemCardState extends State<WatchlistItemCard>
       case 'book':
         Get.toNamed('/book/${widget.item.itemId}');
         break;
+      case 'resource':
+        Get.toNamed('/resource/${widget.item.itemId}');
+        break;
       default:
         Get.snackbar(
           'Coming Soon',
@@ -446,10 +447,5 @@ class _WatchlistItemCardState extends State<WatchlistItemCard>
     if (widget.onStatusChange != null) {
       widget.onStatusChange!();
     }
-  }
-
-  void _playAnimation() {
-    _animationController.reset();
-    _animationController.forward();
   }
 }

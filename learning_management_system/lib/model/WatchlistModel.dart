@@ -29,9 +29,10 @@ class WatchlistModel {
       itemType: json['item_type']?.toString(),
       itemTitle: json['item_title']?.toString(),
       itemImage: json['item_image']?.toString(),
-      addedAt: json['added_at'] != null 
-          ? DateTime.tryParse(json['added_at'].toString()) 
-          : null,
+      addedAt:
+          json['added_at'] != null
+              ? DateTime.tryParse(json['added_at'].toString())
+              : null,
       status: json['status']?.toString() ?? 'active',
     );
   }
@@ -85,8 +86,8 @@ class WatchlistModel {
         other.itemType == itemType;
   }
 
-  @override
-  int get hashCode {
-    return id.hashCode ^ itemId.hashCode ^ itemType.hashCode;
-  }
+  // @override
+  // int get hashCode {
+  //   return id.hashCode ^ itemId.hashCode ^ itemType.hashCode;
+  // }
 }

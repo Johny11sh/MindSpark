@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/SharedPrefs.dart';
+import '../core/constants/FontGlobals.dart';
 
 class FontController extends GetxController {
   final SharedPrefs sharedPrefs = SharedPrefs.instance;
@@ -15,20 +16,23 @@ class FontController extends GetxController {
       Platform.isAndroid
           ? 'Roboto'.obs
           : Platform.isIOS
-          ? 'Montserrat'.obs
-          : 'Montserrat'.obs;
+          ? 'San Francisco'.obs
+          : 'Tajawal'.obs;
 
   // Correct font family names that Flutter can use
   final List<String> availableFonts = [
-    'Montserrat',
+    'Tajawal',
     'Roboto',
+    'San Francisco',
     'Amiri',
     'Cairo',
     'Changa',
-    'Harmattan',
     'Lalezar',
     'Merriweather',
-    'Tajawal',
+    'Almendra',
+    'Calligraffitti',
+    'Pangolin',
+    'Mental Mania',
   ];
 
   @override
@@ -43,23 +47,27 @@ class FontController extends GetxController {
       final savedFontDelta = sharedPrefs.prefs.getDouble('fontDelta');
       if (savedFontDelta != null) {
         fontSizeDelta.value = savedFontDelta.clamp(-6.0, 6.0);
+        globalFontSizeChange = savedFontDelta.clamp(-6.0, 6.0);
       }
 
       // Load font family
       final savedFontFamily = sharedPrefs.prefs.getString('fontFamily');
       if (savedFontFamily != null && availableFonts.contains(savedFontFamily)) {
         fontFamily.value = savedFontFamily;
+        globalFontFamily = savedFontFamily;
       }
     } catch (e) {
       debugPrint("Error loading font settings: $e");
       // Use defaults
       fontSizeDelta.value = 0.0;
+      globalFontSizeChange = 0.0;
       fontFamily.value =
           Platform.isAndroid
               ? 'Roboto'
               : Platform.isIOS
-              ? 'Montserrat'
-              : 'Montserrat';
+              ? 'San Francisco'
+              : 'Tajawal';
+      globalFontFamily = fontFamily.value;
     }
   }
 
@@ -68,7 +76,13 @@ class FontController extends GetxController {
     try {
       final clamped = newDelta.clamp(-6.0, 6.0);
       fontSizeDelta.value = clamped;
+      globalFontSizeChange = clamped;
       sharedPrefs.prefs.setDouble('fontDelta', clamped);
+      debugPrint("📏 Font size updated to: $clamped");
+      debugPrint("📏 Global font family is now: $globalFontFamily");
+      debugPrint("📏 Global font size change is: $globalFontSizeChange");
+      // Force update to trigger UI rebuild
+      update();
     } catch (e) {
       debugPrint("Error saving font size: $e");
     }
@@ -79,8 +93,13 @@ class FontController extends GetxController {
     try {
       if (availableFonts.contains(newFamily)) {
         fontFamily.value = newFamily;
+        globalFontFamily = newFamily;
         sharedPrefs.prefs.setString('fontFamily', newFamily);
-        debugPrint("Font family updated to: $newFamily");
+        debugPrint("🔤 Font family updated to: $newFamily");
+        debugPrint("🔤 Global font family is now: $globalFontFamily");
+        debugPrint("🔤 Global font size change is: $globalFontSizeChange");
+        // Force update to trigger UI rebuild
+        update();
       }
     } catch (e) {
       debugPrint("Error saving font family: $e");

@@ -239,7 +239,7 @@ class _RecommendedCoursesState extends State<RecommendedCourses> {
                         return SizedBox(height: 30);
                       }
 
-                      int courseId = recommendedCourses[index]["id"];
+                      // int courseId = recommendedCourses[index]["id"];
                       // Uint8List? imageBytes =
                       //     recommendedCoursesImages[courseId];
 

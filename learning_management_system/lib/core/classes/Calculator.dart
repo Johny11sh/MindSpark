@@ -1,7 +1,8 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:math_expressions/math_expressions.dart';
-
-import '../../controller/FontController.dart';
+import '../constants/FontGlobals.dart';
 
 class Calculator extends StatefulWidget {
   const Calculator({super.key});
@@ -118,8 +119,11 @@ class _CalculatorPopupState extends State<Calculator> {
                       child: Text(
                         _input,
                         style: TextStyle(
-                          fontSize: 20,
-                          fontFamily: FontController().currentFontFamily,
+                          fontSize:
+                              globalFontSizeChange <= 17
+                                  ? (globalFontSizeChange / 5) + 20
+                                  : 20 - (globalFontSizeChange / 5),
+                          fontFamily: globalFontFamily,
                         ),
                       ),
                     ),
@@ -128,8 +132,11 @@ class _CalculatorPopupState extends State<Calculator> {
                   Text(
                     _output,
                     style: TextStyle(
-                      fontSize: 28,
-                      fontFamily: FontController().currentFontFamily,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 28
+                              : 28 - (globalFontSizeChange / 5),
+                      fontFamily: globalFontFamily,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
                     ),
@@ -178,8 +185,11 @@ class _CalculatorPopupState extends State<Calculator> {
                       Text(
                         _showScientific ? 'Hide functions' : 'Show functions',
                         style: TextStyle(
-                          fontFamily: FontController().currentFontFamily,
-                          fontSize: 14,
+                          fontFamily: globalFontFamily,
+                          fontSize:
+                              globalFontSizeChange <= 17
+                                  ? (globalFontSizeChange / 5) + 14
+                                  : 14 - (globalFontSizeChange / 5),
                           color: Colors.blue,
                         ),
                       ),
@@ -242,8 +252,11 @@ class _CalculatorPopupState extends State<Calculator> {
           child: Text(
             text,
             style: TextStyle(
-              fontSize: 18,
-              fontFamily: FontController().currentFontFamily,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 18
+                      : 18 - (globalFontSizeChange / 5),
+              fontFamily: globalFontFamily,
               fontWeight: FontWeight.bold,
               color:
                   buttonColor.computeLuminance() > 0.5
@@ -257,7 +270,6 @@ class _CalculatorPopupState extends State<Calculator> {
   }
 }
 
-// طريقة الاستخدام من أي مكان في التطبيق:
 /*
 showDialog(
   context: context,

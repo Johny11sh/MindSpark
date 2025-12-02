@@ -6,6 +6,7 @@ import '../controller/OnBoardingController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../core/constants/FontGlobals.dart';
 import '../core/constants/ImageAssets.dart';
 import '../model/OnBoardingModel.dart';
 import '../locale/LocaleController.dart';
@@ -116,7 +117,10 @@ class OnBoarding extends StatelessWidget {
                               style: TextStyle(
                                 color: Color.fromARGB(255, 210, 209, 224),
                                 fontWeight: FontWeight.w600,
-                                fontSize: 20,
+                                fontSize:
+                                    globalFontSizeChange <= 17
+                                        ? (globalFontSizeChange / 5) + 20
+                                        : 20 - (globalFontSizeChange / 5),
                               ),
                             ),
                           ),
@@ -136,7 +140,10 @@ class OnBoarding extends StatelessWidget {
                               style: TextStyle(
                                 color: Color.fromARGB(255, 210, 209, 224),
                                 fontWeight: FontWeight.w400,
-                                fontSize: 16,
+                                fontSize:
+                                    globalFontSizeChange <= 17
+                                        ? (globalFontSizeChange / 5) + 16
+                                        : 16 - (globalFontSizeChange / 5),
                               ),
                             ),
                           ),
@@ -198,7 +205,10 @@ class OnBoarding extends StatelessWidget {
                             style: TextStyle(
                               color: const Color.fromARGB(255, 40, 41, 61),
                               fontWeight: FontWeight.w600,
-                              fontSize: 20,
+                              fontSize:
+                                  globalFontSizeChange <= 17
+                                      ? (globalFontSizeChange / 5) + 20
+                                      : 20 - (globalFontSizeChange / 5),
                             ),
                           ),
                         ),

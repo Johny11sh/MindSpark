@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -15,7 +16,7 @@ import 'package:learning_management_system/view/OnBoarding.dart';
 import 'package:open_file/open_file.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
-import '../../controller/FontController.dart';
+import '../constants/FontGlobals.dart';
 
 class PdfResource {
   final int id;
@@ -25,7 +26,7 @@ class PdfResource {
   final String thumbnailUrl;
   final String category;
   final int pages;
-  final String author;
+  // final String author;
   final DateTime date;
 
   PdfResource({
@@ -36,7 +37,7 @@ class PdfResource {
     required this.thumbnailUrl,
     required this.category,
     required this.pages,
-    required this.author,
+    // required this.author,
     required this.date,
   });
 
@@ -49,7 +50,7 @@ class PdfResource {
       thumbnailUrl: json['thumbnailUrl'] ?? '',
       category: json['category'] ?? 'All',
       pages: json['pages'] ?? 0,
-      author: json['author'] ?? 'unknown',
+      // author: json['author'] ?? 'unknown',
       date: DateTime.parse(json['date'] ?? DateTime.now().toIso8601String()),
     );
   }
@@ -212,8 +213,9 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
       final matchesSearch =
           searchText.isEmpty ||
           pdf.title.toLowerCase().contains(searchText) ||
-          pdf.description.toLowerCase().contains(searchText) ||
-          pdf.author.toLowerCase().contains(searchText);
+          pdf.description.toLowerCase().contains(searchText);
+      // ||
+      // pdf.author.toLowerCase().contains(searchText);
       return matchesCategory && matchesSearch;
     }).toList();
   }
@@ -224,7 +226,7 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
         SnackBar(
           content: Text(
             'Loading file: ${pdf.title}',
-            style: TextStyle(fontFamily: FontController().currentFontFamily),
+            style: TextStyle(fontFamily: globalFontFamily),
           ),
           duration: const Duration(seconds: 2),
           backgroundColor:
@@ -242,7 +244,7 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
           SnackBar(
             content: Text(
               'Failed to open file: ${result.message}',
-              style: TextStyle(fontFamily: FontController().currentFontFamily),
+              style: TextStyle(fontFamily: globalFontFamily),
             ),
             backgroundColor: Colors.red,
           ),
@@ -254,7 +256,7 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
         SnackBar(
           content: Text(
             'Error: $e',
-            style: TextStyle(fontFamily: FontController().currentFontFamily),
+            style: TextStyle(fontFamily: globalFontFamily),
           ),
           backgroundColor: Colors.red,
         ),
@@ -319,14 +321,29 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
                     padding: const EdgeInsets.only(top: 35),
                     height: 100,
                     child: Text(
-                      "Previous Exams Library",
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        fontFamily: FontController().currentFontFamily,
-                        color: secondaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 23,
-                      ),
-                    ),
+                          "Previous Exams Library",
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall!.copyWith(
+                            fontFamily: globalFontFamily,
+                            color: secondaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                globalFontSizeChange <= 17
+                                    ? (globalFontSizeChange / 5) + 23
+                                    : 23 - (globalFontSizeChange / 5),
+                          ),
+                        )
+                        .animate(onPlay: (controller) => controller.loop())
+                        .shimmer(
+                          delay: Duration(seconds: 4),
+                          duration: 800.ms,
+                          color:
+                              themeController.initialTheme ==
+                                      Themes.customLightTheme
+                                  ? Colors.grey.shade700
+                                  : Colors.white54,
+                        ),
                   ),
                   IconButton(
                     icon: Icon(Icons.refresh, color: secondaryColor),
@@ -401,12 +418,12 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
                                 label: Text(
                                   categories[index],
                                   style: TextStyle(
-                                    fontFamily:
-                                        FontController().currentFontFamily,
+                                    fontFamily: globalFontFamily,
                                     color:
-                                        _selectedCategory == categories[index]
-                                            ? secondaryColor
-                                            : primaryColor,
+                                        // _selectedCategory == categories[index]
+                                        //     ?
+                                        secondaryColor,
+                                    // : primaryColor,
                                   ),
                                 ),
                                 selected:
@@ -470,9 +487,12 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
             Text(
               _errorMessage!,
               style: TextStyle(
-                fontSize: 18,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 18
+                        : 18 - (globalFontSizeChange / 5),
                 color: Colors.red,
-                fontFamily: FontController().currentFontFamily,
+                fontFamily: globalFontFamily,
               ),
               textAlign: TextAlign.center,
             ),
@@ -492,9 +512,7 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
               ),
               child: Text(
                 'Retry',
-                style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
-                ),
+                style: TextStyle(fontFamily: globalFontFamily),
               ),
             ),
           ],
@@ -516,8 +534,11 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
             Text(
               'No files found',
               style: TextStyle(
-                fontFamily: FontController().currentFontFamily,
-                fontSize: 18,
+                fontFamily: globalFontFamily,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 18
+                        : 18 - (globalFontSizeChange / 5),
                 color: primaryColor,
                 fontWeight: FontWeight.bold,
               ),
@@ -526,8 +547,11 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
             Text(
               'Try different search terms or category',
               style: TextStyle(
-                fontFamily: FontController().currentFontFamily,
-                fontSize: 14,
+                fontFamily: globalFontFamily,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 14
+                        : 14 - (globalFontSizeChange / 5),
                 color: primaryColor.withOpacity(0.7),
               ),
             ),
@@ -567,8 +591,11 @@ class _PdfLibraryScreenState extends State<PdfLibraryScreen>
           Text(
             'Loading PDF files...',
             style: TextStyle(
-              fontFamily: FontController().currentFontFamily,
-              fontSize: 16,
+              fontFamily: globalFontFamily,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 16
+                      : 16 - (globalFontSizeChange / 5),
               fontWeight: FontWeight.bold,
               color: primaryColor,
             ),
@@ -633,7 +660,7 @@ class PdfCard extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: CachedNetworkImage(
-                        imageUrl: pdf.thumbnailUrl,
+                        imageUrl: "$mainIP/${pdf.thumbnailUrl}",
                         fit: BoxFit.cover,
                         placeholder:
                             (context, url) => Container(
@@ -668,7 +695,7 @@ class PdfCard extends StatelessWidget {
                           context,
                         ).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          fontFamily: FontController().currentFontFamily,
+                          fontFamily: globalFontFamily,
                           color: primaryColor,
                         ),
                         maxLines: 1,
@@ -678,7 +705,7 @@ class PdfCard extends StatelessWidget {
                       Text(
                         pdf.description,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: FontController().currentFontFamily,
+                          fontFamily: globalFontFamily,
                           color: primaryColor.withOpacity(0.7),
                         ),
                         maxLines: 2,
@@ -699,11 +726,11 @@ class PdfCard extends StatelessWidget {
                             text: '${pdf.pages} pages',
                             primaryColor: primaryColor,
                           ),
-                          _buildInfoChip(
-                            icon: Icons.person,
-                            text: pdf.author,
-                            primaryColor: primaryColor,
-                          ),
+                          // _buildInfoChip(
+                          //   icon: Icons.person,
+                          //   text: pdf.author,
+                          //   primaryColor: primaryColor,
+                          // ),
                           _buildInfoChip(
                             icon: Icons.calendar_today,
                             text: '${pdf.date.year}',
@@ -741,8 +768,11 @@ class PdfCard extends StatelessWidget {
           Text(
             text,
             style: TextStyle(
-              fontFamily: FontController().currentFontFamily,
-              fontSize: 12,
+              fontFamily: globalFontFamily,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 12
+                      : 12 - (globalFontSizeChange / 5),
               color: primaryColor.withOpacity(0.8),
             ),
           ),
@@ -778,7 +808,13 @@ class PdfSearchDelegate extends SearchDelegate {
         iconTheme: IconThemeData(color: secondaryColor),
       ),
       textTheme: Theme.of(context).textTheme.copyWith(
-        titleLarge: TextStyle(color: secondaryColor, fontSize: 18),
+        titleLarge: TextStyle(
+          color: secondaryColor,
+          fontSize:
+              globalFontSizeChange <= 17
+                  ? (globalFontSizeChange / 5) + 18
+                  : 18 - (globalFontSizeChange / 5),
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         hintStyle: TextStyle(color: secondaryColor.withOpacity(0.7)),
@@ -847,8 +883,9 @@ class PdfSearchDelegate extends SearchDelegate {
               final queryLower = query.toLowerCase();
               return pdf.title.toLowerCase().contains(queryLower) ||
                   pdf.description.toLowerCase().contains(queryLower) ||
-                  pdf.category.toLowerCase().contains(queryLower) ||
-                  pdf.author.toLowerCase().contains(queryLower);
+                  pdf.category.toLowerCase().contains(queryLower);
+              // ||
+              // pdf.author.toLowerCase().contains(queryLower);
             }).toList();
 
     if (results.isEmpty) {
@@ -856,8 +893,11 @@ class PdfSearchDelegate extends SearchDelegate {
         child: Text(
           'لم يتم العثور على نتائج',
           style: TextStyle(
-            fontSize: 18,
-            fontFamily: FontController().currentFontFamily,
+            fontSize:
+                globalFontSizeChange <= 17
+                    ? (globalFontSizeChange / 5) + 18
+                    : 18 - (globalFontSizeChange / 5),
+            fontFamily: globalFontFamily,
             color: primaryColor.withOpacity(0.7),
           ),
         ),
@@ -871,24 +911,18 @@ class PdfSearchDelegate extends SearchDelegate {
           leading: Icon(Icons.picture_as_pdf, color: primaryColor),
           title: Text(
             results[index].title,
-            style: TextStyle(
-              color: primaryColor,
-              fontFamily: FontController().currentFontFamily,
-            ),
+            style: TextStyle(color: primaryColor, fontFamily: globalFontFamily),
           ),
           subtitle: Text(
             results[index].description,
             style: TextStyle(
               color: primaryColor.withOpacity(0.7),
-              fontFamily: FontController().currentFontFamily,
+              fontFamily: globalFontFamily,
             ),
           ),
           trailing: Text(
             results[index].category,
-            style: TextStyle(
-              color: primaryColor,
-              fontFamily: FontController().currentFontFamily,
-            ),
+            style: TextStyle(color: primaryColor, fontFamily: globalFontFamily),
           ),
           onTap: () {
             close(context, null);

@@ -16,16 +16,19 @@ class WatchlistController extends GetxController {
   // Observable lists
   final RxList<WatchlistModel> watchlistLectures = <WatchlistModel>[].obs;
   final RxList<WatchlistModel> watchlistCourses = <WatchlistModel>[].obs;
+  final RxList<WatchlistModel> watchlistResources = <WatchlistModel>[].obs;
   final RxList<WatchlistModel> allWatchlistItems = <WatchlistModel>[].obs;
 
   // Loading states
   final RxBool isLoadingLectures = false.obs;
   final RxBool isLoadingCourses = false.obs;
+  final RxBool isLoadingResources = false.obs;
   final RxBool isLoadingAll = false.obs;
 
   // Error states
   final RxString lecturesError = ''.obs;
   final RxString coursesError = ''.obs;
+  final RxString resourcesError = ''.obs;
   final RxString generalError = ''.obs;
 
   // Search and filter
@@ -73,7 +76,11 @@ class WatchlistController extends GetxController {
     try {
       isLoadingAll.value = true;
       generalError.value = '';
-      await Future.wait([_loadWatchlistLectures(), _loadWatchlistCourses()]);
+      await Future.wait([
+        _loadWatchlistLectures(),
+        _loadWatchlistCourses(),
+        _loadWatchlistResources(),
+      ]);
       _combineAndFilterItems();
     } catch (e) {
       generalError.value = e.toString();
@@ -108,10 +115,24 @@ class WatchlistController extends GetxController {
     }
   }
 
+  Future<void> _loadWatchlistResources() async {
+    try {
+      isLoadingResources.value = true;
+      resourcesError.value = '';
+      final resources = await _watchlistService.getWatchlistResources();
+      watchlistResources.value = resources;
+    } catch (e) {
+      resourcesError.value = e.toString();
+    } finally {
+      isLoadingResources.value = false;
+    }
+  }
+
   void _combineAndFilterItems() {
     final allItems = <WatchlistModel>[];
     allItems.addAll(watchlistLectures);
     allItems.addAll(watchlistCourses);
+    allItems.addAll(watchlistResources);
 
     // Exclude PDF-like items from the combined list
     allItems.retainWhere((item) {
@@ -212,20 +233,20 @@ class WatchlistController extends GetxController {
     }
   }
 
-    Future<void> toggleCourseWatchlist(
+  Future<void> toggleCourseWatchlist(
     String courseId,
     String courseTitle,
     String courseImage,
   ) async {
     try {
       print('Attempting to toggle course watchlist: $courseId');
-      
+
       // Check if item is already in watchlist
       final existingIndex = watchlistCourses.indexWhere(
         (item) => item.itemId == courseId,
       );
       final isCurrentlyInWatchlist = existingIndex >= 0;
-      
+
       // Optimistically update UI first
       if (isCurrentlyInWatchlist) {
         print('Removing course from watchlist: $courseId');
@@ -245,11 +266,11 @@ class WatchlistController extends GetxController {
         watchlistCourses.add(newItem);
       }
       _combineAndFilterItems();
-      
+
       // Make API call
       final success = await _watchlistService.toggleWatchlistCourse(courseId);
       print('Toggle course result: $success');
-      
+
       if (!success) {
         // Revert the change if API call failed
         if (isCurrentlyInWatchlist) {
@@ -284,44 +305,46 @@ class WatchlistController extends GetxController {
     }
   }
 
-  Future<void> toggleBookWatchlist(
-    String bookId,
-    String bookTitle,
-    String bookImage,
+  Future<void> toggleResourceWatchlist(
+    String resourceId,
+    String resourceTitle,
+    String resourceImage,
   ) async {
     try {
-      print('Attempting to toggle book watchlist: $bookId');
-      
+      print('Attempting to toggle resource (book) watchlist: $resourceId');
+
       // Check if item is already in watchlist
       final existingIndex = watchlistCourses.indexWhere(
-        (item) => item.itemId == bookId,
+        (item) => item.itemId == resourceId,
       );
       final isCurrentlyInWatchlist = existingIndex >= 0;
-      
+
       // Optimistically update UI first
       if (isCurrentlyInWatchlist) {
-        print('Removing book from watchlist: $bookId');
+        print('Removing resource from watchlist: $resourceId');
         watchlistCourses.removeAt(existingIndex);
       } else {
-        print('Adding book to watchlist: $bookId');
+        print('Adding resource to watchlist: $resourceId');
         final newItem = WatchlistModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           userId: await _getCurrentUserId(),
-          itemId: bookId,
-          itemType: 'book',
-          itemTitle: bookTitle,
-          itemImage: bookImage,
+          itemId: resourceId,
+          itemType: 'book', // Treat resources as books
+          itemTitle: resourceTitle,
+          itemImage: resourceImage,
           addedAt: DateTime.now(),
           status: 'active',
         );
         watchlistCourses.add(newItem);
       }
       _combineAndFilterItems();
-      
-      // For now, we'll use the course API since there might not be a book-specific endpoint
-      final success = await _watchlistService.toggleWatchlistCourse(bookId);
-      print('Toggle book result: $success');
-      
+
+      // Use the resource API endpoint
+      final success = await _watchlistService.toggleWatchlistResource(
+        resourceId,
+      );
+      print('Toggle resource result: $success');
+
       if (!success) {
         // Revert the change if API call failed
         if (isCurrentlyInWatchlist) {
@@ -329,10 +352,10 @@ class WatchlistController extends GetxController {
           final newItem = WatchlistModel(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             userId: await _getCurrentUserId(),
-            itemId: bookId,
-            itemType: 'book',
-            itemTitle: bookTitle,
-            itemImage: bookImage,
+            itemId: resourceId,
+            itemType: 'book', // Treat resources as books
+            itemTitle: resourceTitle,
+            itemImage: resourceImage,
             addedAt: DateTime.now(),
             status: 'active',
           );
@@ -340,18 +363,18 @@ class WatchlistController extends GetxController {
         } else {
           // Remove if we added it
           final newIndex = watchlistCourses.indexWhere(
-            (item) => item.itemId == bookId,
+            (item) => item.itemId == resourceId,
           );
           if (newIndex >= 0) {
             watchlistCourses.removeAt(newIndex);
           }
         }
         _combineAndFilterItems();
-        print('Failed to toggle book watchlist: API returned false');
+        print('Failed to toggle resource watchlist: API returned false');
         generalError.value = 'Failed to update watchlist. Please try again.';
       }
     } catch (e) {
-      print('Error toggling book watchlist: $e');
+      print('Error toggling resource watchlist: $e');
       generalError.value = e.toString();
     }
   }
@@ -359,18 +382,18 @@ class WatchlistController extends GetxController {
   Future<void> updateItemStatus(String itemId, String newStatus) async {
     try {
       print('Updating item status: $itemId to $newStatus');
-      
+
       // Update locally first for immediate UI feedback
       _updateItemStatusInLists(itemId, newStatus);
       _combineAndFilterItems();
       _saveToCache();
-      
+
       // Try to update on backend
       final success = await _watchlistService.updateWatchlistItemStatus(
         itemId,
         newStatus,
       );
-      
+
       if (!success) {
         print('Failed to update status on backend');
         Get.snackbar(
@@ -398,6 +421,7 @@ class WatchlistController extends GetxController {
       print('Removing item from watchlist: $itemId');
 
       // Remove from local lists first for immediate UI feedback
+
       watchlistLectures.removeWhere((item) => item.id == itemId);
       watchlistCourses.removeWhere((item) => item.id == itemId);
       allWatchlistItems.removeWhere((item) => item.id == itemId);
@@ -448,6 +472,7 @@ class WatchlistController extends GetxController {
     } catch (_) {}
     watchlistLectures.clear();
     watchlistCourses.clear();
+    watchlistResources.clear();
     allWatchlistItems.clear();
     _saveToCache();
   }
@@ -467,6 +492,13 @@ class WatchlistController extends GetxController {
       watchlistCourses[courseIndex] = watchlistCourses[courseIndex].copyWith(
         status: newStatus,
       );
+    }
+    final resourceIndex = watchlistResources.indexWhere(
+      (item) => item.id == itemId,
+    );
+    if (resourceIndex >= 0) {
+      watchlistResources[resourceIndex] = watchlistResources[resourceIndex]
+          .copyWith(status: newStatus);
     }
   }
 
@@ -524,7 +556,9 @@ class WatchlistController extends GetxController {
   bool isInWatchlist(String itemId, String itemType) {
     if (itemType == 'lecture') {
       return watchlistLectures.any((item) => item.itemId == itemId);
-    } else if (itemType == 'course' || itemType == 'book') {
+    } else if (itemType == 'course' ||
+        itemType == 'book' ||
+        itemType == 'resource') {
       return watchlistCourses.any((item) => item.itemId == itemId);
     }
     return false;
@@ -537,6 +571,7 @@ class WatchlistController extends GetxController {
   void clearErrors() {
     lecturesError.value = '';
     coursesError.value = '';
+    resourcesError.value = '';
     generalError.value = '';
   }
 

@@ -91,6 +91,35 @@ class WatchlistService {
     }
   }
 
+  // Get user's watchlist resources
+  Future<List<WatchlistModel>> getWatchlistResources() async {
+    try {
+      final headers = await _getAuthHeadersWithToken();
+      final response = await http
+          .get(Uri.parse('$_baseUrl/getwatchlistresources'), headers: headers)
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = jsonDecode(response.body);
+        return jsonData.map((json) => WatchlistModel.fromJson(json)).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Please login again');
+      } else if (response.statusCode == 404) {
+        return []; // No watchlist items found
+      } else {
+        throw Exception(
+          'Failed to load watchlist resources: ${response.statusCode}',
+        );
+      }
+    } on http.ClientException {
+      throw Exception(
+        'Connection error. Please check your internet connection.',
+      );
+    } catch (e) {
+      throw Exception('An unexpected error occurred: ${e.toString()}');
+    }
+  }
+
   // Toggle lecture in watchlist
   Future<bool> toggleWatchlistLecture(String lectureId) async {
     try {
@@ -140,6 +169,36 @@ class WatchlistService {
       } else {
         throw Exception(
           'Failed to toggle course watchlist: ${response.statusCode}',
+        );
+      }
+    } on http.ClientException {
+      throw Exception(
+        'Connection error. Please check your internet connection.',
+      );
+    } catch (e) {
+      throw Exception('An unexpected error occurred: ${e.toString()}');
+    }
+  }
+
+  // Toggle resource in watchlist
+  Future<bool> toggleWatchlistResource(String resourceId) async {
+    try {
+      final headers = await _getAuthHeadersWithToken();
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/togglewatchlistresource/$resourceId'),
+            headers: headers,
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = jsonDecode(response.body);
+        return jsonData['success'] ?? false;
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Please login again');
+      } else {
+        throw Exception(
+          'Failed to toggle resource watchlist: ${response.statusCode}',
         );
       }
     } on http.ClientException {

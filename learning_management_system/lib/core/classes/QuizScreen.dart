@@ -8,8 +8,8 @@ import '../classes/Quiz.dart';
 import 'package:lottie/lottie.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
-import '../../controller/FontController.dart';
 import 'Calculator.dart';
+import '../constants/FontGlobals.dart';
 
 class QuizScreen extends StatefulWidget {
   final String lessonId;
@@ -60,10 +60,13 @@ class _QuizScreen extends State<QuizScreen> {
                 child: Text(
                   'Quiz',
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    fontFamily: FontController().currentFontFamily,
+                    fontFamily: globalFontFamily,
                     color: secondaryColor,
                     fontWeight: FontWeight.bold,
-                    fontSize: 23,
+                    fontSize:
+                        globalFontSizeChange <= 17
+                            ? (globalFontSizeChange / 5) + 23
+                            : 23 - (globalFontSizeChange / 5),
                   ),
                 ),
               ),
@@ -97,7 +100,7 @@ class _QuizScreen extends State<QuizScreen> {
                           'No Questions Available',
                           style: TextStyle(
                             color: primaryColor,
-                            fontFamily: FontController().currentFontFamily,
+                            fontFamily: globalFontFamily,
                           ),
                         ),
                       );
@@ -125,6 +128,19 @@ class _QuizScreen extends State<QuizScreen> {
       padding: const EdgeInsets.all(30.0),
       child: Column(
         children: [
+          Text(
+            question.difficulty,
+            style: TextStyle(
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 20
+                      : 20 - (globalFontSizeChange / 5),
+              color: primaryColor,
+              fontFamily: globalFontFamily,
+            ),
+          ),
+          const SizedBox(height: 20),
+
           LinearProgressIndicator(
             value:
                 (_quizController.currentQuestionIndex.value + 1) /
@@ -143,9 +159,12 @@ class _QuizScreen extends State<QuizScreen> {
               child: Text(
                 question.questionText,
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 20
+                          : 20 - (globalFontSizeChange / 5),
                   color: primaryColor,
-                  fontFamily: FontController().currentFontFamily,
+                  fontFamily: globalFontFamily,
                 ),
               ),
             ),
@@ -179,9 +198,12 @@ class _QuizScreen extends State<QuizScreen> {
         Text(
           '${_quizController.currentQuestionIndex.value + 1} from (${_quizController.questions.length})',
           style: TextStyle(
-            fontSize: 16,
+            fontSize:
+                globalFontSizeChange <= 17
+                    ? (globalFontSizeChange / 5) + 16
+                    : 16 - (globalFontSizeChange / 5),
             color: primaryColor,
-            fontFamily: FontController().currentFontFamily,
+            fontFamily: globalFontFamily,
           ),
         ),
         const SizedBox(height: 35),
@@ -218,7 +240,7 @@ class _QuizScreen extends State<QuizScreen> {
                     'Confirm',
                     style: TextStyle(
                       color: secondaryColor,
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -261,7 +283,7 @@ class _QuizScreen extends State<QuizScreen> {
                     "Next",
                     style: TextStyle(
                       color: secondaryColor,
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -272,7 +294,6 @@ class _QuizScreen extends State<QuizScreen> {
           ],
         ),
 
-        // زر التالي أو الإنهاء
         const Padding(padding: EdgeInsets.only(bottom: 100)),
       ],
     );
@@ -330,9 +351,12 @@ class _QuizScreen extends State<QuizScreen> {
           child: Text(
             question.options[index],
             style: TextStyle(
-              fontSize: 18,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 18
+                      : 18 - (globalFontSizeChange / 5),
               color: secondaryColor,
-              fontFamily: FontController().currentFontFamily,
+              fontFamily: globalFontFamily,
             ),
           ),
         ),
@@ -349,10 +373,7 @@ class _QuizScreen extends State<QuizScreen> {
           const SizedBox(height: 20),
           Text(
             'Loading quiz...',
-            style: TextStyle(
-              color: primaryColor,
-              fontFamily: FontController().currentFontFamily,
-            ),
+            style: TextStyle(color: primaryColor, fontFamily: globalFontFamily),
           ),
         ],
       ),
@@ -370,9 +391,12 @@ class _QuizScreen extends State<QuizScreen> {
             _quizController.error.value,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 16,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 16
+                      : 16 - (globalFontSizeChange / 5),
               color: primaryColor,
-              fontFamily: FontController().currentFontFamily,
+              fontFamily: globalFontFamily,
             ),
           ),
 
@@ -391,7 +415,7 @@ class _QuizScreen extends State<QuizScreen> {
               'Retry',
               style: TextStyle(
                 color: primaryColor,
-                fontFamily: FontController().currentFontFamily,
+                fontFamily: globalFontFamily,
               ),
             ),
             style: ElevatedButton.styleFrom(
@@ -459,252 +483,307 @@ class _ResultsScreenState extends State<ResultsScreen>
 
     final correctAnswers = _quizController.score.value;
     final totalQuestions = _quizController.questions.length;
+
     final percentage = (correctAnswers / totalQuestions) * 100;
     final isPassed = percentage >= 50;
 
-    return Scaffold(
-      body: Container(
-        color: primaryColor,
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.topCenter,
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirectionality: BlastDirectionality.explosive,
-                shouldLoop: true,
-                colors: const [
-                  Colors.green,
-                  Colors.blue,
-                  Colors.pink,
-                  Colors.orange,
-                  Colors.purple,
-                ],
-              ),
-            ),
-
-            // محتوى النتائج
-            Column(
+    return WillPopScope(
+      onWillPop: () async {
+        return true;
+      },
+      child: Obx(() {
+        final Map<String, dynamic> results = Map<String, dynamic>.from(
+          _quizController.quizResultsList.value ?? <String, dynamic>{},
+        );
+        final addedSparks = results['sparks_added'] ?? 0;
+        final totalUserSparks = results['total_sparks'] ?? 0;
+        final isSparkyAdded = results['sparky_added'] ?? false;
+        final totalUserSparkies = results['total_sparkies'] ?? 0;
+        return Scaffold(
+          body: Container(
+            color: primaryColor,
+            child: Stack(
               children: [
-                Container(
-                  padding: const EdgeInsets.only(top: 25),
-                  height: 100,
-                  child: Center(
-                    child: Text(
-                      "Quiz Results",
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        fontFamily: FontController().currentFontFamily,
-                        color: secondaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 23,
-                      ),
-                    ),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: ConfettiWidget(
+                    confettiController: _confettiController,
+                    blastDirectionality: BlastDirectionality.explosive,
+                    shouldLoop: true,
+                    colors: const [
+                      Colors.green,
+                      Colors.blue,
+                      Colors.pink,
+                      Colors.orange,
+                      Colors.purple,
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: secondaryColor,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(60),
-                        topRight: Radius.circular(60),
-                      ),
-                    ),
-                    child: Center(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // الرسم المتحرك حسب النتيجة
-                              ScaleTransition(
-                                scale: _scaleAnimation,
-                                child: Lottie.asset(
-                                  isPassed
-                                      ? 'assets/lottie/success.json'
-                                      : 'assets/lottie/TryAgain.json',
-                                  width: 180,
-                                  height: 180,
-                                ),
-                              ),
 
-                              Text(
-                                isPassed ? 'Done Successfully' : 'Better Luck',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontFamily:
-                                      FontController().currentFontFamily,
-                                  fontWeight: FontWeight.bold,
-                                  color: primaryColor,
-                                ),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // بطاقة النتائج
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    children: [
-                                      // شريط التقدم الدائري
-                                      SizedBox(
-                                        width: 180,
-                                        height: 180,
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            CircularProgressIndicator(
-                                              value: percentage / 100,
-                                              strokeWidth: 10,
-                                              strokeAlign: 15,
-                                              backgroundColor: primaryColor
-                                                  .withOpacity(0.2),
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                    isPassed
-                                                        ? Colors.green
-                                                        : Colors.orange,
-                                                  ),
-                                            ),
-                                            Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  '${percentage.toStringAsFixed(1)}%',
-                                                  style: TextStyle(
-                                                    fontSize: 28,
-                                                    fontFamily:
-                                                        FontController()
-                                                            .currentFontFamily,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: primaryColor,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 20),
-
-                                      // تفاصيل النتائج
-                                      _buildResultDetail(
-                                        'The correct Answers',
-                                        '$correctAnswers',
-                                        Icons.check_circle,
-                                        Colors.green,
-                                        primaryColor,
-                                      ),
-                                      _buildResultDetail(
-                                        "The Wrong Answers",
-                                        '${totalQuestions - correctAnswers}',
-                                        Icons.cancel,
-                                        Colors.red,
-                                        primaryColor,
-                                      ),
-                                      _buildResultDetail(
-                                        "All Questions",
-                                        '$totalQuestions',
-                                        Icons.help_outline,
-                                        Colors.blue,
-                                        primaryColor,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // أزرار التحكم
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (!isPassed)
-                                    ElevatedButton.icon(
-                                      onPressed: () {
-                                        _quizController.resetQuiz();
-                                        Get.back();
-                                      },
-                                      icon: Icon(
-                                        Icons.refresh,
-                                        color: secondaryColor,
-                                      ),
-                                      label: Text(
-                                        'Try Again',
-                                        style: TextStyle(
-                                          color: secondaryColor,
-                                          fontFamily:
-                                              FontController()
-                                                  .currentFontFamily,
-                                        ),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: primaryColor,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 12,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  const SizedBox(width: 20),
-
-                                  ElevatedButton.icon(
-                                    onPressed: () {
-                                      Get.until((route) => route.isFirst);
-                                      _quizController.nextQuestion();
-                                      _quizController.resetQuiz();
-                                    },
-                                    icon: Icon(
-                                      Icons.close,
-                                      color: secondaryColor,
-                                    ),
-                                    label: Text(
-                                      'Back',
-                                      style: TextStyle(
-                                        color: secondaryColor,
-                                        fontFamily:
-                                            FontController().currentFontFamily,
-                                      ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: primaryColor,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.only(top: 25),
+                      height: 100,
+                      child: Center(
+                        child: Text(
+                          "Quiz Results",
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall!.copyWith(
+                            fontFamily: globalFontFamily,
+                            color: secondaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                globalFontSizeChange <= 17
+                                    ? (globalFontSizeChange / 5) + 23
+                                    : 23 - (globalFontSizeChange / 5),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: secondaryColor,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(60),
+                            topRight: Radius.circular(60),
+                          ),
+                        ),
+                        child: Center(
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  ScaleTransition(
+                                    scale: _scaleAnimation,
+                                    child: Lottie.asset(
+                                      isPassed
+                                          ? 'assets/lottie/success.json'
+                                          : 'assets/lottie/TryAgain.json',
+                                      width: 180,
+                                      height: 180,
+                                    ),
+                                  ),
+
+                                  Text(
+                                    isPassed
+                                        ? 'Done Successfully'
+                                        : 'Better Luck',
+                                    style: TextStyle(
+                                      fontSize:
+                                          globalFontSizeChange <= 17
+                                              ? (globalFontSizeChange / 5) + 28
+                                              : 28 - (globalFontSizeChange / 5),
+                                      fontFamily: globalFontFamily,
+                                      fontWeight: FontWeight.bold,
+                                      color: primaryColor,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: primaryColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(18),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Column(
+                                        children: [
+                                          SizedBox(
+                                            width: 180,
+                                            height: 180,
+                                            child: Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                CircularProgressIndicator(
+                                                  value: percentage / 100,
+                                                  strokeWidth: 10,
+                                                  strokeAlign: 15,
+                                                  backgroundColor: primaryColor
+                                                      .withOpacity(0.2),
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(
+                                                        isPassed
+                                                            ? Colors.green
+                                                            : Colors.orange,
+                                                      ),
+                                                ),
+                                                Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      '${percentage.toStringAsFixed(1)}%',
+                                                      style: TextStyle(
+                                                        fontSize:
+                                                            globalFontSizeChange >=
+                                                                    17
+                                                                ? (globalFontSizeChange /
+                                                                        5) +
+                                                                    28
+                                                                : 28 -
+                                                                    (globalFontSizeChange /
+                                                                        5),
+                                                        fontFamily:
+                                                            globalFontFamily,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: primaryColor,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 20),
+
+                                          _buildResultDetail(
+                                            'The correct Answers',
+                                            '$correctAnswers',
+                                            Icons.check_circle,
+                                            Colors.green,
+                                            primaryColor,
+                                          ),
+                                          _buildResultDetail(
+                                            "The Wrong Answers",
+                                            '${totalQuestions - correctAnswers}',
+                                            Icons.cancel,
+                                            Colors.red,
+                                            primaryColor,
+                                          ),
+                                          _buildResultDetail(
+                                            "All Questions",
+                                            '$totalQuestions',
+                                            Icons.help_outline,
+                                            Colors.blue,
+                                            primaryColor,
+                                          ),
+                                          _buildResultDetail(
+                                            "Sparks earned",
+                                            '$addedSparks',
+                                            Icons.electric_bolt_rounded,
+                                            Colors.orange,
+                                            primaryColor,
+                                          ),
+                                          _buildResultDetail(
+                                            "Your total Sparks",
+                                            '$totalUserSparks',
+                                            Icons.electric_bolt_rounded,
+                                            Colors.orange,
+                                            primaryColor,
+                                          ),
+                                          _buildResultDetail(
+                                            "Sparkies earned",
+                                            (isSparkyAdded == true) ? '1' : '0',
+                                            Icons.lightbulb_circle_outlined,
+                                            Colors.amber,
+                                            primaryColor,
+                                          ),
+                                          _buildResultDetail(
+                                            "Your Sparkies",
+                                            '$totalUserSparkies',
+                                            Icons.lightbulb,
+                                            Colors.amber,
+                                            primaryColor,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (!isPassed)
+                                        ElevatedButton.icon(
+                                          onPressed: () {
+                                            _quizController.resetQuiz();
+                                            Get.back();
+                                          },
+                                          icon: Icon(
+                                            Icons.refresh,
+                                            color: secondaryColor,
+                                          ),
+                                          label: Text(
+                                            'Try Again',
+                                            style: TextStyle(
+                                              color: secondaryColor,
+                                              fontFamily: globalFontFamily,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: primaryColor,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 20,
+                                              vertical: 12,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      const SizedBox(width: 20),
+
+                                      ElevatedButton.icon(
+                                        onPressed: () {
+                                          Get.until((route) => route.isFirst);
+                                          _quizController.nextQuestion();
+                                          _quizController.resetQuiz();
+                                        },
+                                        icon: Icon(
+                                          Icons.close,
+                                          color: secondaryColor,
+                                        ),
+                                        label: Text(
+                                          'Back',
+                                          style: TextStyle(
+                                            color: secondaryColor,
+                                            fontFamily: globalFontFamily,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: primaryColor,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 12,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 30),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }),
     );
   }
 
@@ -724,19 +803,25 @@ class _ResultsScreenState extends State<ResultsScreen>
           Text(
             title,
             style: TextStyle(
-              fontSize: 16,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 16
+                      : 16 - (globalFontSizeChange / 5),
               color: textColor,
-              fontFamily: FontController().currentFontFamily,
+              fontFamily: globalFontFamily,
             ),
           ),
           const Spacer(),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 18
+                      : 18 - (globalFontSizeChange / 5),
               fontWeight: FontWeight.bold,
               color: textColor,
-              fontFamily: FontController().currentFontFamily,
+              fontFamily: globalFontFamily,
             ),
           ),
         ],

@@ -35,7 +35,6 @@ class _WatchlistButtonState extends State<WatchlistButton>
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _rotationAnimation;
-  late Animation<double> _bounceAnimation;
   bool _isPressed = false;
   late Themes themes;
 
@@ -54,10 +53,6 @@ class _WatchlistButtonState extends State<WatchlistButton>
 
     _rotationAnimation = Tween<double>(begin: 0.0, end: 0.8).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-
-    _bounceAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.bounceOut),
     );
   }
 
@@ -105,18 +100,18 @@ class _WatchlistButtonState extends State<WatchlistButton>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color:
-                    _isPressed
-                        ? (isInWatchlist
-                        ? themes.SoftViolet.withOpacity(0.2)
-                        : themes.LavenderGray.withOpacity(0.2))
-                        : Colors.transparent,
+                        _isPressed
+                            ? (isInWatchlist
+                                ? themes.SoftViolet.withOpacity(0.2)
+                                : themes.LavenderGray.withOpacity(0.2))
+                            : Colors.transparent,
                   ),
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     transitionBuilder: (
-                        Widget child,
-                        Animation<double> animation,
-                        ) {
+                      Widget child,
+                      Animation<double> animation,
+                    ) {
                       return ScaleTransition(
                         scale: animation,
                         child: FadeTransition(opacity: animation, child: child),
@@ -127,9 +122,9 @@ class _WatchlistButtonState extends State<WatchlistButton>
                       key: ValueKey(isInWatchlist),
                       size: widget.size,
                       color:
-                      isInWatchlist
-                          ? (widget.activeColor ?? themes.SoftViolet)
-                          : (widget.color ?? themes.LavenderGray),
+                          isInWatchlist
+                              ? (widget.activeColor ?? themes.SoftViolet)
+                              : (widget.color ?? themes.LavenderGray),
                     ),
                   ),
                 ),
@@ -163,8 +158,8 @@ class _WatchlistButtonState extends State<WatchlistButton>
         widget.itemTitle,
         widget.itemImage,
       );
-    } else if (widget.itemType == 'book') {
-      watchlistController.toggleBookWatchlist(
+    } else if (widget.itemType == 'book' || widget.itemType == 'resource') {
+      watchlistController.toggleResourceWatchlist(
         widget.itemId,
         widget.itemTitle,
         widget.itemImage,

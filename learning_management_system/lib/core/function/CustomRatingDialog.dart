@@ -4,11 +4,18 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import '../../controller/FontController.dart';
 import '../constants/ImageAssets.dart';
 import 'package:rating_dialog/rating_dialog.dart';
 import '../../themes/Themes.dart';
 import '../../view/NavBar.dart';
+import '../constants/FontGlobals.dart';
+
+List<Map<String, dynamic>> newRatingData = [];
+Map<String, dynamic> newRatingsBreakingDown = {};
+double userRating = 0;
+String? newRating;
+String? userReview;
+bool isCreated = true;
 
 void showRatingDailog(
   BuildContext context,
@@ -29,9 +36,12 @@ void showRatingDailog(
             'Rating Dialog'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 25,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 25
+                      : 25 - (globalFontSizeChange / 5),
               fontWeight: FontWeight.bold,
-              fontFamily: FontController().currentFontFamily,
+              fontFamily: globalFontFamily,
             ),
           ),
           // encourage your user to leave a high rating?
@@ -40,8 +50,11 @@ void showRatingDailog(
                 .tr,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 15,
-              fontFamily: FontController().currentFontFamily,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 15
+                      : 15 - (globalFontSizeChange / 5),
+              fontFamily: globalFontFamily,
             ),
           ),
           // your app's logo?
@@ -53,7 +66,10 @@ void showRatingDailog(
                     ? Color.fromARGB(255, 40, 41, 61)
                     : Color.fromARGB(255, 210, 209, 224),
 
-            fontSize: 17,
+            fontSize:
+                globalFontSizeChange <= 17
+                    ? (globalFontSizeChange / 5) + 17
+                    : 17 - (globalFontSizeChange / 5),
           ),
 
           commentHint: 'Enter Your Rating'.tr,
@@ -94,10 +110,34 @@ submitRating(
   if (response.statusCode == 200) {
     var responseBody = json.decode(response.body);
     print(responseBody);
+
+    final List<dynamic> newRatingDataList =
+        responseBody is List
+            ? responseBody
+            : (responseBody['featuredRatings'] ?? [responseBody]);
+    newRatingData = List<Map<String, dynamic>>.from(newRatingDataList);
+    newRatingsBreakingDown = responseBody['rating_breakdown'] ?? {};
+    isCreated = responseBody['created'];
+    userReview = comment.toString();
+    userRating = rating.toDouble();
+    newRating =
+        (responseBody['courseRating'] != null)
+            ? responseBody['courseRating'].toString()
+            : (responseBody['resourceRating'] != null)
+            ? responseBody['resourceRating'].toString()
+            : (responseBody['teacherRating'] != null)
+            ? responseBody['teacherRating'].toString()
+            : responseBody['lectureRating'].toString();
+    print(newRatingData);
+    print(newRatingsBreakingDown);
+    print(newRating);
+    print(userRating);
+    print(userReview);
+    print(isCreated);
+    Get.snackbar("Success".tr, "Rating submitted successfully".tr);
+
     onRated();
   } else {
-    var responseBody = json.decode(response.body);
-    print(responseBody);
     print("fail");
     Get.snackbar("Error".tr, "Failed to submit rating".tr);
   }

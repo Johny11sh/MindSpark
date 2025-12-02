@@ -106,12 +106,10 @@ class PomodoroController extends GetxController {
 
     print("Timer completed: ${currentPhase.value}");
 
-    // تشغيل الصوت إذا لم يكن مكتوماً
     if (!isMuted.value) {
       _playAlarmSound();
     }
 
-    // تحديد المرحلة التالية
     if (currentPhase.value == 'Work') {
       currentPhase.value = 'Short Break';
       minutes.value = shortBreak.value;
@@ -124,7 +122,6 @@ class PomodoroController extends GetxController {
     progress.value = 0;
     print("New phase: ${currentPhase.value}");
 
-    // إظهار البوب أب عند انتهاء المؤقت
     // showTimerPopup.value = true;
     Get.dialog(const TimerView());
   }
@@ -138,8 +135,10 @@ class PomodoroController extends GetxController {
       }
 
       await audioPlayer!.stop();
-      await audioPlayer!.play(AssetSource('assets/music/Alarm.mp3'));
+      await audioPlayer!.play(AssetSource('music/Alarm.mp3'));
       print("Sound played successfully");
+      // Duration(seconds: 20);
+      // await audioPlayer!.stop();
     } catch (e) {
       print('Error playing sound: $e');
     }
@@ -154,7 +153,6 @@ class PomodoroController extends GetxController {
   void toggleMute() {
     isMuted.value = !isMuted.value;
     if (isMuted.value) {
-      // إيقاف الصوت فوراً عند التكتم
       audioPlayer!.stop();
     }
     print("Mute toggled: ${isMuted.value}");

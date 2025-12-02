@@ -1,9 +1,11 @@
 // import 'package:cached_network_image/cached_network_image.dart';
 // ignore_for_file: file_names
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../controller/FavoriteController.dart';
-import '../controller/FontController.dart';
+import '../core/constants/FontGlobals.dart';
 import '../core/constants/ImageAssets.dart';
 import '../model/TFavoriteModel.dart';
 import '../view/NavBar.dart';
@@ -50,10 +52,25 @@ class ViewTFavoriteCard extends StatelessWidget {
                   isLiked: isFav,
                   likeBuilder: (bool isLiked) {
                     return Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border_outlined,
-                      color: Colors.red,
-                      size: 30,
-                    );
+                          isLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border_outlined,
+                          color: Colors.red,
+                          size: 30,
+                        )
+                        .animate(
+                          onPlay: (controller) {
+                            if (isLiked) {
+                              controller.repeat(reverse: true);
+                            }
+                          },
+                        )
+                        .scaleXY(
+                          begin: isLiked ? 1.2 : 1,
+                          end: isLiked ? 0.9 : 1,
+                          duration: 800.ms,
+                          curve: Curves.easeInOut,
+                        );
                   },
                   onTap: (bool isLiked) async {
                     controller.toggleFavorite(tFavoriteModel.id.toString());
@@ -68,25 +85,33 @@ class ViewTFavoriteCard extends StatelessWidget {
               children: [
                 SizedBox(height: 15),
                 tFavoriteModel.image != null
-                    ? Image.asset(
-                      ImageAssets.teacherAvatar,
-                      height: 100,
-                      width: 100,
+                    ? CachedNetworkImage(
+                      imageUrl: "$mainIP/${tFavoriteModel.image}",
+                      height: 60,
+                      width: 60,
                     )
-                    : Image.asset(ImageAssets.teacherAvatar),
+                    : Image.asset(ImageAssets.teacher),
                 SizedBox(height: 10),
-                Text(
-                  "${tFavoriteModel.name}".tr,
-                  style: TextStyle(
-                    fontFamily: FontController().currentFontFamily,
-                    overflow: TextOverflow.ellipsis,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    color:
-                        themeController.initialTheme == Themes.customLightTheme
-                            ? Color.fromARGB(255, 40, 41, 61)
-                            : Color.fromARGB(255, 210, 209, 224),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    "${tFavoriteModel.name}".tr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: globalFontFamily,
+                      // overflow: TextOverflow.ellipsis,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 16
+                              : 16 - (globalFontSizeChange / 5),
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal,
+                      color:
+                          themeController.initialTheme ==
+                                  Themes.customLightTheme
+                              ? Color.fromARGB(255, 40, 41, 61)
+                              : Color.fromARGB(255, 210, 209, 224),
+                    ),
                   ),
                 ),
               ],

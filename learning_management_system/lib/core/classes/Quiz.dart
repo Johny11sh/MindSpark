@@ -1,83 +1,9 @@
-// models/quiz_model.dart
 // ignore_for_file: file_names
 
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-// class QuizResponse {
-//   final bool success;
-//   final List<Question> quiz;
-
-//   QuizResponse({
-//     required this.success,
-//     required this.quiz,
-//   });
-
-//   factory QuizResponse.fromJson(Map<String, dynamic> json) {
-//     return QuizResponse(
-//       success: json['success'],
-//       quiz: List<Question>.from(
-//         json['quiz'].map((x) => Question.fromJson(x))),
-//     );
-//   }
-// }
-// class Question {
-//   final int id;
-//   final String questionText;
-//   final List<String> options;
-//   final int correctAnswerIndex;
-//   final int quizId;
-//   final int points;
-
-//   // الحقول الجديدة
-//   final String difficulty;
-//   final String? createdAt;
-//   final String? updatedAt;
-
-//   Question({
-//     required this.id,
-//     required this.questionText,
-//     required this.options,
-//     required this.correctAnswerIndex,
-//     required this.quizId,
-//     required this.points,
-//     this.difficulty = 'MEDIUM',
-//     this.createdAt,
-//     this.updatedAt,
-//   });
-
-// factory Question.fromJson(Map<String, dynamic> json) {
-//   // معالجة حقل options بشكل أكثر أماناً
-//   List<String> parseOptions(dynamic optionsData) {
-//     try {
-//       if (optionsData is List) {
-//         return List<String>.from(optionsData);
-//       } else if (optionsData is String) {
-//         final decoded = jsonDecode(optionsData) as List<dynamic>;
-//         return decoded.map((e) => e.toString()).toList();
-//       }
-//       return ['Option 1', 'Option 2'];
-//     } catch (e) {
-//       debugPrint("Error parsing options: $e");
-//       return ['Error loading options'];
-//     }
-//   }
-
-//   return Question(
-//     id: json['id'] as int,
-//     questionText: json['questionText'] as String,
-//     options: parseOptions(json['options']),
-//     correctAnswerIndex: json['correctAnswerIndex'] as int,
-//     quizId: json['quiz_id'] as int,
-//     points: (json['points'] ?? 1) as int,
-//     difficulty: json['difficulty'] as String? ?? 'MEDIUM',
-//     createdAt: json['created_at'] as String?,
-//     updatedAt: json['updated_at'] as String?,
-//   );
-// }
-
-// }
 class QuizResponse {
   final bool success;
   final Quiz? quiz;

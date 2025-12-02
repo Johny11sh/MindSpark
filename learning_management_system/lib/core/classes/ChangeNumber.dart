@@ -1,4 +1,4 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, non_constant_identifier_names
 
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -7,14 +7,13 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../../controller/NetworkController.dart';
 import '../../controller/ProfileController.dart';
-import '../../locale/LocaleController.dart';
+import '../../services/SharedPrefs.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
 import '../../view/LogIn.dart';
 import '../../view/NavBar.dart';
-import '../../view/Profile.dart';
-import '../../controller/FontController.dart';
 import '../constants/ImageAssets.dart';
+import '../constants/FontGlobals.dart';
 
 class ChangeNumber extends StatefulWidget {
   const ChangeNumber({super.key});
@@ -29,7 +28,6 @@ class _ChangeNumberState extends State<ChangeNumber> {
     final NetworkController networkController = Get.find<NetworkController>();
     final ProfileController profileController = Get.find<ProfileController>();
     final ThemeController themeController = Get.find<ThemeController>();
-    final LocaleController localeController = Get.find<LocaleController>();
     final TextEditingController oldNumberController = TextEditingController();
     final TextEditingController numberController = TextEditingController();
 
@@ -52,7 +50,7 @@ class _ChangeNumberState extends State<ChangeNumber> {
       Get.rawSnackbar(
         messageText: Text(
           message,
-          style: TextStyle(fontFamily: FontController().currentFontFamily),
+          style: TextStyle(fontFamily: globalFontFamily),
         ),
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 3),
@@ -65,7 +63,7 @@ class _ChangeNumberState extends State<ChangeNumber> {
       Get.rawSnackbar(
         messageText: Text(
           message,
-          style: TextStyle(fontFamily: FontController().currentFontFamily),
+          style: TextStyle(fontFamily: globalFontFamily),
         ),
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 3),
@@ -100,7 +98,12 @@ class _ChangeNumberState extends State<ChangeNumber> {
                 'Authorization': 'Bearer $token',
                 'Accept': 'application/json',
               },
-              body: jsonEncode({'number': numberController.text.trim()}),
+              body: jsonEncode({
+                'number': numberController.text.trim().replaceFirst(
+                  RegExp(r'0'),
+                  '',
+                ),
+              }),
             )
             .timeout(const Duration(seconds: 15));
 
@@ -159,210 +162,46 @@ class _ChangeNumberState extends State<ChangeNumber> {
       return null;
     }
 
-    return Scaffold(
-      body: Container(
-        color: bgColor,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 30),
-              height: 100,
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: IconButton(
-                      onPressed: () {
-                        Get.back();
-                      },
-                      icon: Icon(Icons.arrow_back, color: fgColor),
-                    ),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(right: Get.width / 8),
-                        child: Text(
-                          "Change Number".tr,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall!.copyWith(
-                            fontFamily: FontController().currentFontFamily,
-                            color: fgColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 23,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: fgColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                    topRight: Radius.circular(60),
-                  ),
-                ),
-                child: Column(
+    return WillPopScope(
+      onWillPop: () async {
+        return true;
+      },
+      child: Scaffold(
+        body: Container(
+          color: bgColor,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.only(top: 30),
+                height: 100,
+                child: Row(
                   children: [
-                    Padding(padding: const EdgeInsets.all(30)),
-                    Center(
-                      child: Image.asset(
-                        ImageAssets.AppLogo,
-                        width: 180,
-                        height: 180,
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: IconButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        icon: Icon(Icons.arrow_back, color: fgColor),
                       ),
                     ),
-                    Padding(padding: const EdgeInsets.all(20)),
-                    Container(
-                      width: Get.width,
-                      alignment: Alignment.center,
-                      child: Card(
-                        color: bgColor,
-                        margin: const EdgeInsets.only(left: 20, right: 20),
-                        child: Form(
-                          key: formKey,
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 30),
-                              Container(
-                                height: 80,
-                                padding: const EdgeInsets.only(
-                                  right: 20,
-                                  left: 20,
-                                ),
-                                child: TextFormField(
-                                  style: TextStyle(color: fgColor),
-                                  controller: numberController,
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                  cursorColor: fgColor,
-                                  obscureText: false,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    prefixIcon: const Icon(
-                                      Icons.phone,
-                                      size: 30,
-                                    ),
-                                    prefixIconColor: fgColor,
-                                    hintText: "New Number".tr,
-                                    hintStyle: TextStyle(color: fgColor),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: BorderSide(
-                                        width: 2,
-                                        color: fgColor,
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: BorderSide(color: fgColor),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: const BorderSide(
-                                        color: Color.fromARGB(255, 255, 23, 7),
-                                      ),
-                                    ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: const BorderSide(
-                                        width: 2,
-                                        color: Color.fromARGB(255, 255, 23, 7),
-                                      ),
-                                    ),
-                                  ),
-                                  validator: (val) {
-                                    if (val!.isEmpty) {
-                                      return "Please enter your Phone Number"
-                                          .tr;
-                                    } else {
-                                      if (val.length < 10 || val.length > 10) {
-                                        return "Phone Number must be 10 digits"
-                                            .tr;
-                                      } else if (!val.startsWith('09')) {
-                                        return "Phone Number must be : 09XXXXXXXX"
-                                            .tr;
-                                      } else if (val.hashCode.isNaN) {
-                                        return "Phone Number must ONLY contain numbers"
-                                            .tr;
-                                      }
-                                      return null;
-                                    }
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 30),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  width: Get.width / 2.5,
-                                  height: 35,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: MaterialButton(
-                                    onPressed: () async {
-                                      await networkController
-                                          .checkConnectivityManually();
-                                      isConnected = profileController
-                                          .sharedPrefs
-                                          .prefs
-                                          .getBool('isConnected');
-                                      if (isConnected == true) {
-                                        if (formKey.currentState!.validate()) {
-                                          changeNumberData();
-                                          success = profileController
-                                              .sharedPrefs
-                                              .prefs
-                                              .getString('success');
-
-                                          if (success == "true") {
-                                            Future.microtask(() {
-                                              setState(() {
-                                                Get.offAll(() => Profile());
-                                              });
-                                            });
-                                          } else {
-                                            Get.snackbar(
-                                              "Number changing failed".tr,
-                                              "This Number is already taken".tr,
-                                            );
-                                          }
-                                        }
-                                      } else {
-                                        Get.snackbar(
-                                          "Connection error".tr,
-                                          "Connection access is needed".tr,
-                                        );
-                                      }
-                                    },
-                                    color: bgColor,
-                                    minWidth: Get.width / 2.5,
-                                    height: 35,
-                                    elevation: 5,
-                                    child: Text(
-                                      "Confirm".tr,
-                                      style: TextStyle(
-                                        fontFamily:
-                                            FontController().currentFontFamily,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w400,
-                                        fontStyle: FontStyle.normal,
-                                        color: fgColor,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 30),
-                            ],
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(right: Get.width / 8),
+                          child: Text(
+                            "Change Number".tr,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall!.copyWith(
+                              fontFamily: globalFontFamily,
+                              color: fgColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize:
+                                  globalFontSizeChange <= 17
+                                      ? (globalFontSizeChange / 5) + 23
+                                      : 23 - (globalFontSizeChange / 5),
+                            ),
                           ),
                         ),
                       ),
@@ -370,8 +209,306 @@ class _ChangeNumberState extends State<ChangeNumber> {
                   ],
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: fgColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(60),
+                      topRight: Radius.circular(60),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(padding: const EdgeInsets.all(30)),
+                      Center(
+                        child: SizedBox(
+                          height: 150,
+                          width: 150,
+                          child: ClipOval(
+                            child: Image.asset(
+                              SharedPrefs.instance.prefs.getString(
+                                    "CurrentAvatar",
+                                  ) ??
+                                  ImageAssets.AppIcon,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 50,
+                                    color: Colors.grey[600],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(padding: const EdgeInsets.all(20)),
+                      Container(
+                        width: Get.width,
+                        alignment: Alignment.center,
+                        child: Card(
+                          color: bgColor,
+                          margin: const EdgeInsets.only(left: 20, right: 20),
+                          child: Form(
+                            key: formKey,
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 30),
+
+                                Container(
+                                  height: 80,
+                                  padding: const EdgeInsets.only(
+                                    right: 20,
+                                    left: 20,
+                                  ),
+                                  child: TextFormField(
+                                    style: TextStyle(color: fgColor),
+                                    controller: oldNumberController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    cursorColor: fgColor,
+                                    obscureText: false,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                        Icons.phone,
+                                        size: 30,
+                                      ),
+                                      prefixIconColor: fgColor,
+                                      hintText: "Old Number".tr,
+                                      hintStyle: TextStyle(color: fgColor),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: BorderSide(
+                                          width: 2,
+                                          color: fgColor,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: BorderSide(color: fgColor),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (val) {
+                                      if (val!.isEmpty) {
+                                        return "Please enter your Phone Number"
+                                            .tr;
+                                      } else {
+                                        if (val.length < 10 ||
+                                            val.length > 10) {
+                                          return "Phone Number must be 10 digits"
+                                              .tr;
+                                        } else if (!val.startsWith('09')) {
+                                          return "Phone Number must be : 09XXXXXXXX"
+                                              .tr;
+                                        } else if (val.hashCode.isNaN) {
+                                          return "Phone Number must ONLY contain numbers"
+                                              .tr;
+                                        }
+                                        if (val !=
+                                            "0${profileController.profileData["number"]}") {
+                                          return "Old number must match your last used number"
+                                              .tr;
+                                        }
+                                        return null;
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Container(
+                                  height: 80,
+                                  padding: const EdgeInsets.only(
+                                    right: 20,
+                                    left: 20,
+                                  ),
+                                  child: TextFormField(
+                                    style: TextStyle(color: fgColor),
+                                    controller: numberController,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    cursorColor: fgColor,
+                                    obscureText: false,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                        Icons.phone,
+                                        size: 30,
+                                      ),
+                                      prefixIconColor: fgColor,
+                                      hintText: "New Number".tr,
+                                      hintStyle: TextStyle(color: fgColor),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: BorderSide(
+                                          width: 2,
+                                          color: fgColor,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: BorderSide(color: fgColor),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                          width: 2,
+                                          color: Color.fromARGB(
+                                            255,
+                                            255,
+                                            23,
+                                            7,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (val) {
+                                      if (val!.isEmpty) {
+                                        return "Please enter your Phone Number"
+                                            .tr;
+                                      } else {
+                                        if (val.length < 10 ||
+                                            val.length > 10) {
+                                          return "Phone Number must be 10 digits"
+                                              .tr;
+                                        } else if (!val.startsWith('09')) {
+                                          return "Phone Number must be : 09XXXXXXXX"
+                                              .tr;
+                                        } else if (val.hashCode.isNaN) {
+                                          return "Phone Number must ONLY contain numbers"
+                                              .tr;
+                                        }
+                                        if (val == oldNumberController.text) {
+                                          return "Old and New numbers can not match!"
+                                              .tr;
+                                        }
+                                        return null;
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 30),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    width: Get.width / 2.5,
+                                    height: 35,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: MaterialButton(
+                                      onPressed: () async {
+                                        await networkController
+                                            .checkConnectivityManually();
+                                        isConnected = profileController
+                                            .sharedPrefs
+                                            .prefs
+                                            .getBool('isConnected');
+                                        if (isConnected == true) {
+                                          if (formKey.currentState!
+                                              .validate()) {
+                                            changeNumberData();
+                                            Get.forceAppUpdate();
+                                            success = profileController
+                                                .sharedPrefs
+                                                .prefs
+                                                .getString('success');
+
+                                            if (success == "true") {
+                                              Future.microtask(() {
+                                                setState(() {
+                                                  Get.offAll(() => NavBar());
+                                                });
+                                              });
+                                            } else if (success == "false") {
+                                              Get.snackbar(
+                                                "Number changing failed".tr,
+                                                "This Number is already taken"
+                                                    .tr,
+                                              );
+                                            }
+                                          }
+                                        } else {
+                                          Get.snackbar(
+                                            "Connection error".tr,
+                                            "Connection access is needed".tr,
+                                          );
+                                        }
+                                      },
+                                      color: fgColor,
+                                      minWidth: Get.width / 2.5,
+                                      height: 35,
+                                      elevation: 5,
+                                      child: Text(
+                                        "Confirm".tr,
+                                        style: TextStyle(
+                                          fontFamily: globalFontFamily,
+                                          fontSize:
+                                              globalFontSizeChange <= 17
+                                                  ? (globalFontSizeChange / 5) +
+                                                      20
+                                                  : 20 -
+                                                      (globalFontSizeChange /
+                                                          5),
+                                          fontWeight: FontWeight.w400,
+                                          fontStyle: FontStyle.normal,
+                                          color: bgColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 30),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

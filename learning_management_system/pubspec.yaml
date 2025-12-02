@@ -63,9 +63,10 @@ dependencies:
   math_expressions: ^3.0.0
   material_dialogs: ^1.1.5
   infinite_scroll_pagination: ^5.1.0
-  firebase_core: ^3.13.0
-  firebase_messaging: ^15.2.5
-  flutter_local_notifications: ^19.1.0
+  flutter_animate: ^4.5.2
+  firebase_messaging: ^16.0.4
+  flutter_local_notifications: ^19.5.0
+  firebase_core: ^4.2.1
 
 dev_dependencies:
   flutter_test:
@@ -94,8 +95,6 @@ flutter:
     - images/
     - assets/music/
     - assets/lottie/
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
 
   fonts:
     - family: Roboto
@@ -107,9 +106,6 @@ flutter:
     - family: Amiri
       fonts:
         - asset: assets/fonts/Amiri-Regular.ttf
-    - family: Harmattan
-      fonts:
-        - asset: assets/fonts/Harmattan-Regular.ttf
     - family: Tajawal
       fonts:
         - asset: assets/fonts/Tajawal-Regular.ttf
@@ -123,12 +119,27 @@ flutter:
       fonts:
         - asset: assets/fonts/Merriweather_96pt_SemiCondensed-Bold.ttf
           weight: 700
-    - family: Montserrat
+    - family: Almendra
       fonts:
-        - asset: assets/fonts/Montserrat-Regular.ttf
+        - asset: assets/fonts/Almendra-Regular.ttf
+    - family: Calligraffitti
+      fonts:
+        - asset: assets/fonts/Calligraffitti-Regular.ttf
+    - family: Metal Mania
+      fonts:
+        - asset: assets/fonts/MetalMania-Regular.ttf
+    - family: Pangolin
+      fonts:
+        - asset: assets/fonts/Pangolin-Regular.ttf
     - family: Reem Kufi
       fonts:
         - asset: assets/fonts/Reem_Kufi/ReemKufi-VariableFont_wght.ttf
+    - family: San Francisco
+      fonts:
+        - asset: assets/fonts/SFPRODISPLAYREGULAR.OTF
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

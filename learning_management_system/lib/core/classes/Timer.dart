@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/TimerController.dart';
-import '../../controller/FontController.dart';
+import '../constants/FontGlobals.dart';
 
 class TimerView extends StatelessWidget {
   const TimerView({super.key});
@@ -39,8 +39,11 @@ class TimerView extends StatelessWidget {
               () => Text(
                 _getPhaseName(controller.currentPhase.value),
                 style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
-                  fontSize: 22,
+                  fontFamily: globalFontFamily,
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 22
+                          : 22 - (globalFontSizeChange / 5),
                   fontWeight: FontWeight.bold,
                   color: Colors.deepPurple,
                 ),
@@ -66,8 +69,11 @@ class TimerView extends StatelessWidget {
                   Text(
                     '${controller.minutes.value.toString().padLeft(2, '0')}:${controller.seconds.value.toString().padLeft(2, '0')}',
                     style: TextStyle(
-                      fontFamily: FontController().currentFontFamily,
-                      fontSize: 32,
+                      fontFamily: globalFontFamily,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 32
+                              : 32 - (globalFontSizeChange / 5),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -123,9 +129,7 @@ class TimerView extends StatelessWidget {
               },
               child: Text(
                 'Close',
-                style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
-                ),
+                style: TextStyle(fontFamily: globalFontFamily),
               ),
             ),
           ],
@@ -173,8 +177,11 @@ class TimerView extends StatelessWidget {
               Text(
                 'Timer Settings',
                 style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
-                  fontSize: 20,
+                  fontFamily: globalFontFamily,
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 20
+                          : 20 - (globalFontSizeChange / 5),
                   fontWeight: FontWeight.bold,
                   color: Colors.deepPurple,
                 ),
@@ -198,9 +205,7 @@ class TimerView extends StatelessWidget {
                     onPressed: () => Get.back(),
                     child: Text(
                       'Cancel',
-                      style: TextStyle(
-                        fontFamily: FontController().currentFontFamily,
-                      ),
+                      style: TextStyle(fontFamily: globalFontFamily),
                     ),
                   ),
                   ElevatedButton(
@@ -214,9 +219,7 @@ class TimerView extends StatelessWidget {
                     ),
                     child: Text(
                       'Save',
-                      style: TextStyle(
-                        fontFamily: FontController().currentFontFamily,
-                      ),
+                      style: TextStyle(fontFamily: globalFontFamily),
                     ),
                   ),
                 ],
@@ -238,8 +241,11 @@ class TimerView extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 16,
-                fontFamily: FontController().currentFontFamily,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 16
+                        : 16 - (globalFontSizeChange / 5),
+                fontFamily: globalFontFamily,
               ),
             ),
           ),
@@ -258,8 +264,11 @@ class TimerView extends StatelessWidget {
                   () => Text(
                     value.value.toString(),
                     style: TextStyle(
-                      fontFamily: FontController().currentFontFamily,
-                      fontSize: 16,
+                      fontFamily: globalFontFamily,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 16
+                              : 16 - (globalFontSizeChange / 5),
                       fontWeight: FontWeight.bold,
                       color: color,
                     ),

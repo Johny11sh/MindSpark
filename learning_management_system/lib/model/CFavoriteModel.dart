@@ -9,7 +9,7 @@ class CFavoriteModel {
   int? lecturesCount;
   int? subscriptions;
   String? image;
-  String? sources;
+  List<dynamic>? sources;
   String? createdAt;
   String? updatedAt;
   var rating;

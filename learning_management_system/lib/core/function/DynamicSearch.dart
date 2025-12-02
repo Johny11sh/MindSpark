@@ -1,14 +1,13 @@
 // ignore_for_file: file_names, non_constant_identifier_names
 
-import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:learning_management_system/view/NavBar.dart';
-import '../../controller/FontController.dart';
 import '../constants/ImageAssets.dart';
 import '../../themes/ThemeController.dart';
 import '../../themes/Themes.dart';
+import '../constants/FontGlobals.dart';
 
 class DynamicSearch extends SearchDelegate {
   final List elements;
@@ -115,8 +114,11 @@ class DynamicSearch extends SearchDelegate {
                         themeController.initialTheme == Themes.customLightTheme
                             ? Color.fromARGB(255, 210, 209, 224)
                             : Color.fromARGB(255, 40, 41, 61),
-                    fontSize: 18,
-                    fontFamily: FontController().currentFontFamily,
+                    fontSize:
+                        globalFontSizeChange <= 17
+                            ? (globalFontSizeChange / 5) + 18
+                            : 18 - (globalFontSizeChange / 5),
+                    fontFamily: globalFontFamily,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -130,9 +132,6 @@ class DynamicSearch extends SearchDelegate {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: sortedItems!.length,
               itemBuilder: (context, index) {
-                int elementsId = sortedItems![index]["id"];
-                // Uint8List? imageBytes = elementsImages[elementsId];
-
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: _buildSearchCard(
@@ -207,8 +206,11 @@ class DynamicSearch extends SearchDelegate {
                         themeController.initialTheme == Themes.customLightTheme
                             ? Color.fromARGB(255, 210, 209, 224)
                             : Color.fromARGB(255, 40, 41, 61),
-                    fontSize: 18,
-                    fontFamily: FontController().currentFontFamily,
+                    fontSize:
+                        globalFontSizeChange <= 17
+                            ? (globalFontSizeChange / 5) + 18
+                            : 18 - (globalFontSizeChange / 5),
+                    fontFamily: globalFontFamily,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -222,9 +224,6 @@ class DynamicSearch extends SearchDelegate {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: sortedItems!.length,
               itemBuilder: (context, index) {
-                int elementsId = sortedItems![index]["id"];
-                // Uint8List? imageBytes = elementsImages[elementsId];
-
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: _buildSearchCard(
@@ -294,8 +293,11 @@ class DynamicSearch extends SearchDelegate {
                     Text(
                       item["name"]?.toString() ?? "Unknown",
                       style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: FontController().currentFontFamily,
+                        fontSize:
+                            globalFontSizeChange <= 17
+                                ? (globalFontSizeChange / 5) + 16
+                                : 16 - (globalFontSizeChange / 5),
+                        fontFamily: globalFontFamily,
                         fontWeight: FontWeight.w600,
                         color:
                             themeController.initialTheme ==
@@ -317,10 +319,13 @@ class DynamicSearch extends SearchDelegate {
                           Text(
                             subjectName!,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize:
+                                  globalFontSizeChange <= 17
+                                      ? (globalFontSizeChange / 5) + 12
+                                      : 12 - (globalFontSizeChange / 5),
                               color: Colors.blue,
                               fontWeight: FontWeight.w500,
-                              fontFamily: FontController().currentFontFamily,
+                              fontFamily: globalFontFamily,
                             ),
                           ),
                         ],
@@ -329,10 +334,13 @@ class DynamicSearch extends SearchDelegate {
                       Text(
                         item["major"].toString(),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize:
+                              globalFontSizeChange <= 17
+                                  ? (globalFontSizeChange / 5) + 12
+                                  : 12 - (globalFontSizeChange / 5),
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w400,
-                          fontFamily: FontController().currentFontFamily,
+                          fontFamily: globalFontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -342,10 +350,13 @@ class DynamicSearch extends SearchDelegate {
                       Text(
                         item["description"].toString(),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize:
+                              globalFontSizeChange <= 17
+                                  ? (globalFontSizeChange / 5) + 12
+                                  : 12 - (globalFontSizeChange / 5),
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w400,
-                          fontFamily: FontController().currentFontFamily,
+                          fontFamily: globalFontFamily,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -394,9 +405,12 @@ class DynamicSearch extends SearchDelegate {
             Text(
               "Search ${_getSearchTitle()}".tr,
               style: TextStyle(
-                fontSize: 24,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 24
+                        : 24 - (globalFontSizeChange / 5),
                 fontWeight: FontWeight.bold,
-                fontFamily: FontController().currentFontFamily,
+                fontFamily: globalFontFamily,
                 color:
                     themeController.initialTheme == Themes.customLightTheme
                         ? Color.fromARGB(255, 40, 41, 61)
@@ -407,9 +421,12 @@ class DynamicSearch extends SearchDelegate {
             Text(
               "Type to start searching...".tr,
               style: TextStyle(
-                fontSize: 16,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 16
+                        : 16 - (globalFontSizeChange / 5),
                 color: Colors.grey[600],
-                fontFamily: FontController().currentFontFamily,
+                fontFamily: globalFontFamily,
               ),
             ),
           ],
@@ -435,9 +452,12 @@ class DynamicSearch extends SearchDelegate {
             Text(
               "No ${_getSearchTitle()} found".tr,
               style: TextStyle(
-                fontSize: 20,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 20
+                        : 20 - (globalFontSizeChange / 5),
                 fontWeight: FontWeight.w600,
-                fontFamily: FontController().currentFontFamily,
+                fontFamily: globalFontFamily,
                 color:
                     themeController.initialTheme == Themes.customLightTheme
                         ? Color.fromARGB(255, 40, 41, 61)
@@ -448,9 +468,12 @@ class DynamicSearch extends SearchDelegate {
             Text(
               "Try different keywords".tr,
               style: TextStyle(
-                fontSize: 14,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 14
+                        : 14 - (globalFontSizeChange / 5),
                 color: Colors.grey[600],
-                fontFamily: FontController().currentFontFamily,
+                fontFamily: globalFontFamily,
               ),
             ),
           ],

@@ -1,8 +1,10 @@
 // import 'package:cached_network_image/cached_network_image.dart';
 // ignore_for_file: file_names
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../controller/FontController.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../core/constants/FontGlobals.dart';
 import '../view/NavBar.dart';
 import 'package:like_button/like_button.dart';
 import '../controller/FavoriteController.dart';
@@ -68,9 +70,12 @@ class ViewCFavoriteCard extends StatelessWidget {
                               cFavoriteModel.rating.toString(),
                             ).toStringAsFixed(1),
                             style: TextStyle(
-                              fontFamily: FontController().currentFontFamily,
+                              fontFamily: globalFontFamily,
                               overflow: TextOverflow.clip,
-                              fontSize: 16,
+                              fontSize:
+                                  globalFontSizeChange <= 17
+                                      ? (globalFontSizeChange / 5) + 16
+                                      : 16 - (globalFontSizeChange / 5),
                               color: Color.fromARGB(255, 40, 41, 61),
                             ),
                           ),
@@ -91,12 +96,25 @@ class ViewCFavoriteCard extends StatelessWidget {
                       isLiked: isFav,
                       likeBuilder: (bool isLiked) {
                         return Icon(
-                          isLiked
-                              ? Icons.favorite
-                              : Icons.favorite_border_outlined,
-                          color: Colors.red,
-                          size: 30,
-                        );
+                              isLiked
+                                  ? Icons.favorite
+                                  : Icons.favorite_border_outlined,
+                              color: Colors.red,
+                              size: 30,
+                            )
+                            .animate(
+                              onPlay: (controller) {
+                                if (isLiked) {
+                                  controller.repeat(reverse: true);
+                                }
+                              },
+                            )
+                            .scaleXY(
+                              begin: isLiked ? 1.2 : 1,
+                              end: isLiked ? 0.9 : 1,
+                              duration: 800.ms,
+                              curve: Curves.easeInOut,
+                            );
                       },
                       onTap: (bool isLiked) async {
                         controller.toggleFavoriteC(
@@ -112,12 +130,15 @@ class ViewCFavoriteCard extends StatelessWidget {
           ),
           Center(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 34),
                 cFavoriteModel.image != null
-                    ? Image.asset(ImageAssets.book, height: 90, width: 90)
-                    : Image.asset(ImageAssets.book),
+                    ? CachedNetworkImage(
+                      imageUrl: "$mainIP/${cFavoriteModel.image}",
+                      height: 60,
+                      width: 60,
+                    )
+                    : Image.asset(ImageAssets.course),
 
                 Expanded(
                   flex: 1,
@@ -125,9 +146,12 @@ class ViewCFavoriteCard extends StatelessWidget {
                     "${cFavoriteModel.name}".tr,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: FontController().currentFontFamily,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontFamily: globalFontFamily,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 16
+                              : 16 - (globalFontSizeChange / 5),
+                      fontWeight: FontWeight.w400,
                       color:
                           themeController.initialTheme ==
                                   Themes.customLightTheme

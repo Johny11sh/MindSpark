@@ -3,14 +3,16 @@
 import 'package:flutter/material.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../controller/BackButtonController.dart';
 import '../../model/AIModel.dart';
 import '../../services/ChatService.dart';
 import '../../themes/Themes.dart';
 import '../../view/NavBar.dart';
-import '../../controller/FontController.dart';
 import 'ChatHistoryDrawer.dart';
+import '../constants/FontGlobals.dart';
 
 class ChatBot extends StatefulWidget {
   const ChatBot({super.key});
@@ -21,6 +23,8 @@ class ChatBot extends StatefulWidget {
 
 class _ChatBotState extends State<ChatBot> {
   final ChatService _chatService = ChatService();
+  final BackButtonController controller = Get.put(BackButtonController());
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = false;
 
@@ -34,177 +38,216 @@ class _ChatBotState extends State<ChatBot> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor:
-            themeController.initialTheme == Themes.customLightTheme
-                ? Color.fromARGB(255, 210, 209, 224)
-                : Color.fromARGB(255, 40, 41, 61),
-        title: Text(
-          'Sparky AI Assistant',
-          style: TextStyle(
-            fontFamily: FontController().currentFontFamily,
-            fontSize: 22,
-            color:
-                themeController.initialTheme == Themes.customLightTheme
-                    ? Color.fromARGB(255, 40, 41, 61)
-                    : Color.fromARGB(255, 210, 209, 224),
-          ),
+    return WillPopScope(
+      onWillPop: controller.onWillPop,
+
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor:
+              themeController.initialTheme == Themes.customLightTheme
+                  ? Color.fromARGB(255, 153, 151, 188)
+                  : Color.fromARGB(255, 40, 41, 61),
+          title: Text(
+                'Sparky AI Assistant'.tr,
+                style: TextStyle(
+                  fontFamily: globalFontFamily,
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 22
+                          : 22 - (globalFontSizeChange / 5),
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                ),
+              )
+              .animate(onPlay: (controller) => controller.loop())
+              .shimmer(
+                delay: Duration(seconds: 4),
+                duration: 800.ms,
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Colors.grey.shade700
+                        : Colors.white54,
+              ),
+          actions: [
+            IconButton(
+              icon: Icon(
+                Icons.post_add_rounded,
+                color:
+                    themeController.initialTheme == Themes.customLightTheme
+                        ? Color.fromARGB(255, 40, 41, 61)
+                        : Color.fromARGB(255, 210, 209, 224),
+                size: 25,
+              ),
+              onPressed: _startNewChat,
+              tooltip: 'New Chat'.tr,
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.post_add_rounded,
-              color:
-                  themeController.initialTheme == Themes.customLightTheme
-                      ? Color.fromARGB(255, 40, 41, 61)
-                      : Color.fromARGB(255, 210, 209, 224),
-              size: 25,
-            ),
-            onPressed: _startNewChat,
-            tooltip: 'New Chat',
-          ),
-        ],
-      ),
-      drawer: ChatHistoryDrawer(
-        chats: _chatService.chatHistory,
-        onChatSelected: _loadChat,
-      ),
-      body: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(flex: 6, child: _buildModelHeader()),
-              Expanded(
-                flex: 5,
-                child:
-                    _isLoading
-                        ? _buildLoadingIndicator()
-                        : _buildModelSelector(),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              "Sparky Academic AI Assistant",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: FontController().currentFontFamily,
-                color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
+        drawer: ChatHistoryDrawer(
+          chats: _chatService.chatHistory,
+          onChatSelected: _loadChat,
+        ),
 
-          Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              "Got a rule in need of explaining? Some concepts to dissect? Ask our sophisticated chatbot which will have the answer to every question in your mind!"
-                  .tr,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: FontController().currentFontFamily,
-                color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
-                fontSize: 14,
-                fontWeight: FontWeight.w200,
-              ),
-            ),
-          ),
+        drawerScrimColor:
+            themeController.initialTheme == Themes.customLightTheme
+                ? Color.fromARGB(255, 40, 41, 61)
+                : Color.fromARGB(255, 210, 209, 224),
 
-          Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              "It will guide you through your learning journey, giving you the right ways of studying and understanding each information."
-                  .tr,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: FontController().currentFontFamily,
-                color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
-                fontSize: 12,
-                fontWeight: FontWeight.w200,
-              ),
+        body: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(flex: 6, child: _buildModelHeader()),
+                Expanded(
+                  flex: 5,
+                  child:
+                      _isLoading
+                          ? _buildLoadingIndicator()
+                          : _buildModelSelector(),
+                ),
+              ],
             ),
-          ),
-
-          Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              "Only educational questions are allowed, any other types will be rejected respectfully."
-                  .tr,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: FontController().currentFontFamily,
-                color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? Color.fromARGB(255, 40, 41, 61)
-                        : Color.fromARGB(255, 210, 209, 224),
-                fontSize: 14,
-                fontWeight: FontWeight.w200,
-              ),
-            ),
-          ),
-          // const SizedBox(height: 20),
-          const Padding(
-            padding: EdgeInsets.only(left: 20, right: 20),
-            child: Divider(height: 30, thickness: 1),
-          ),
-
-          Expanded(
-            child: DashChat(
-              currentUser: _getCurrentUser(),
-              messageOptions: MessageOptions(
-                showTime: true,
-                onLongPressMessage: (p0) {
-                  Clipboard.setData(ClipboardData(text: p0.text));
-                },
-                maxWidth: Get.width * (0.7),
-                timeFormat: DateFormat('HH:mm'),
-                avatarBuilder: (user, message, onMessageAvatarTap) {
-                  final isUser = user.id == '1';
-                  return CircleAvatar(
-                    backgroundColor: isUser ? Colors.blue : Colors.grey[300],
-                    child: Icon(
-                      isUser ? Icons.person : Icons.auto_awesome,
-                      color: isUser ? Colors.white : Colors.grey[600],
-                    ),
-                  );
-                },
-              ),
-              inputOptions: InputOptions(
-                inputTextStyle: const TextStyle(fontSize: 16.0),
-                sendButtonBuilder: _buildSendButton,
-                inputDecoration: InputDecoration(
-                  hintText: 'Ask about your courses...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+            Padding(
+              padding: EdgeInsets.all(5),
+              child: Text(
+                "Sparky Academic AI Assistant".tr,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: globalFontFamily,
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 16
+                          : 16 - (globalFontSizeChange / 5),
+                  fontWeight: FontWeight.w400,
                 ),
               ),
-              messages: _convertToDashChatMessages().reversed.toList(),
-              onSend: (ChatMessage message) => _sendMessage(message),
             ),
-          ),
-        ],
+
+            Padding(
+              padding: EdgeInsets.all(5),
+              child: Text(
+                "Got a rule in need of explaining? Some concepts to dissect? Ask our sophisticated chatbot which will have the answer to every question in your mind!"
+                    .tr,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: globalFontFamily,
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 14
+                          : 14 - (globalFontSizeChange / 5),
+                  fontWeight: FontWeight.w200,
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: EdgeInsets.all(5),
+              child: Text(
+                "It will guide you through your learning journey, giving you the right ways of studying and understanding each piece of information."
+                    .tr,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: globalFontFamily,
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 12
+                          : 12 - (globalFontSizeChange / 5),
+                  fontWeight: FontWeight.w200,
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: EdgeInsets.all(5),
+              child: Text(
+                "Only educational questions are allowed, any other types will be rejected respectfully."
+                    .tr,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: globalFontFamily,
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? Color.fromARGB(255, 40, 41, 61)
+                          : Color.fromARGB(255, 210, 209, 224),
+                  fontSize:
+                      globalFontSizeChange <= 17
+                          ? (globalFontSizeChange / 5) + 14
+                          : 14 - (globalFontSizeChange / 5),
+                  fontWeight: FontWeight.w200,
+                ),
+              ),
+            ),
+            // const SizedBox(height: 20),
+            const Padding(
+              padding: EdgeInsets.only(left: 20, right: 20),
+              child: Divider(height: 30, thickness: 1),
+            ),
+
+            Expanded(
+              child: DashChat(
+                currentUser: _getCurrentUser(),
+                messageOptions: MessageOptions(
+                  showTime: true,
+                  onLongPressMessage: (p0) {
+                    Clipboard.setData(ClipboardData(text: p0.text));
+                  },
+                  maxWidth: Get.width * (0.7),
+                  timeFormat: DateFormat('HH:mm'),
+                  avatarBuilder: (user, message, onMessageAvatarTap) {
+                    final isUser = user.id == '1';
+                    return CircleAvatar(
+                      backgroundColor: isUser ? Colors.blue : Colors.grey[300],
+                      child: Icon(
+                        isUser ? Icons.person : Icons.auto_awesome,
+                        color: isUser ? Colors.white : Colors.grey[600],
+                      ),
+                    );
+                  },
+                ),
+                inputOptions: InputOptions(
+                  inputTextStyle: TextStyle(
+                    fontSize:
+                        globalFontSizeChange <= 17
+                            ? (globalFontSizeChange / 5) + 16
+                            : 16.0 - (globalFontSizeChange / 5),
+                  ),
+                  sendButtonBuilder: _buildSendButton,
+                  inputDecoration: InputDecoration(
+                    hintText: 'Ask about your courses...'.tr,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+                messages: _convertToDashChatMessages().reversed.toList(),
+                onSend: (ChatMessage message) => _sendMessage(message),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -220,10 +263,13 @@ class _ChatBotState extends State<ChatBot> {
                   title: Text(
                     _selectedModel.name,
                     style: TextStyle(
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                       color: Color.fromARGB(255, 40, 41, 61),
                       fontWeight: FontWeight.w500,
-                      fontSize: 20,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 20
+                              : 20 - (globalFontSizeChange / 5),
                     ),
                   ),
                   content: SingleChildScrollView(
@@ -233,72 +279,88 @@ class _ChatBotState extends State<ChatBot> {
                       children: [
                         // Row(children: [
                         Text(
-                          'Capabilities: ',
+                          'Capabilities: '.tr,
                           style: TextStyle(
-                            color: Color.fromARGB(255, 46, 48, 97),
+                            color: const Color.fromARGB(255, 85, 81, 132),
                             fontWeight: FontWeight.w500,
-                            fontFamily: FontController().currentFontFamily,
-                            fontSize: 18,
+                            fontFamily: globalFontFamily,
+                            fontSize:
+                                globalFontSizeChange <= 17
+                                    ? (globalFontSizeChange / 5) + 18
+                                    : 18 - (globalFontSizeChange / 5),
                           ),
                         ),
                         Text(
                           _selectedModel.capabilities,
                           style: TextStyle(
-                            fontFamily: FontController().currentFontFamily,
+                            fontFamily: globalFontFamily,
+                            color: const Color.fromARGB(255, 40, 41, 61),
                           ),
                         ),
                         // ],),
                         const SizedBox(height: 8),
                         // Row(children: [
                         Text(
-                          'Limitations: ',
+                          'Limitations: '.tr,
                           style: TextStyle(
-                            color: Color.fromARGB(255, 46, 48, 97),
+                            color: const Color.fromARGB(255, 85, 81, 132),
                             fontWeight: FontWeight.w500,
-                            fontSize: 18,
-                            fontFamily: FontController().currentFontFamily,
+                            fontSize:
+                                globalFontSizeChange <= 17
+                                    ? (globalFontSizeChange / 5) + 18
+                                    : 18 - (globalFontSizeChange / 5),
+                            fontFamily: globalFontFamily,
                           ),
                         ),
                         Text(
                           _selectedModel.limitations,
                           style: TextStyle(
-                            fontFamily: FontController().currentFontFamily,
+                            fontFamily: globalFontFamily,
+                            color: const Color.fromARGB(255, 40, 41, 61),
                           ),
                         ),
                         // ],),
                         const SizedBox(height: 8),
                         // Row(children: [
                         Text(
-                          'Recommended for: ',
+                          'Recommended for: '.tr,
                           style: TextStyle(
-                            color: Color.fromARGB(255, 46, 48, 97),
+                            color: const Color.fromARGB(255, 85, 81, 132),
                             fontWeight: FontWeight.w500,
-                            fontSize: 18,
-                            fontFamily: FontController().currentFontFamily,
+                            fontSize:
+                                globalFontSizeChange <= 17
+                                    ? (globalFontSizeChange / 5) + 18
+                                    : 18 - (globalFontSizeChange / 5),
+                            fontFamily: globalFontFamily,
                           ),
                         ),
                         Text(
                           _selectedModel.recommendedUse,
                           style: TextStyle(
-                            fontFamily: FontController().currentFontFamily,
+                            fontFamily: globalFontFamily,
+                            color: const Color.fromARGB(255, 40, 41, 61),
                           ),
                         ),
                         // ],),
                         const SizedBox(height: 12),
                         // Row(children: [
                         Text(
-                          'Supported Languages: ',
+                          'Supported Languages: '.tr,
                           style: TextStyle(
-                            color: Color.fromARGB(255, 46, 48, 97),
+                            color: const Color.fromARGB(255, 85, 81, 132),
                             fontWeight: FontWeight.w500,
-                            fontSize: 18,
-                            fontFamily: FontController().currentFontFamily,
+                            fontSize:
+                                globalFontSizeChange <= 17
+                                    ? (globalFontSizeChange / 5) + 18
+                                    : 18 - (globalFontSizeChange / 5),
+                            fontFamily: globalFontFamily,
                           ),
                         ),
                         Text(
                           _selectedModel.languages.join(', '),
                           style: TextStyle(
-                            fontFamily: FontController().currentFontFamily,
+                            fontFamily: globalFontFamily,
+                            color: const Color.fromARGB(255, 40, 41, 61),
                           ),
                         ),
                         // ],),
@@ -316,10 +378,8 @@ class _ChatBotState extends State<ChatBot> {
                   actions: [
                     TextButton(
                       child: Text(
-                        'OK',
-                        style: TextStyle(
-                          fontFamily: FontController().currentFontFamily,
-                        ),
+                        'OK'.tr,
+                        style: TextStyle(fontFamily: globalFontFamily),
                       ),
                       onPressed: () => Navigator.pop(context),
                     ),
@@ -341,10 +401,13 @@ class _ChatBotState extends State<ChatBot> {
           const Icon(Icons.auto_awesome, size: 16),
           const SizedBox(width: 8),
           Text(
-            'For More Info',
+            'For More Info'.tr,
             style: TextStyle(
-              fontSize: 16,
-              fontFamily: FontController().currentFontFamily,
+              fontSize:
+                  globalFontSizeChange <= 17
+                      ? (globalFontSizeChange / 5) + 16
+                      : 16 - (globalFontSizeChange / 5),
+              fontFamily: globalFontFamily,
               color: Color.fromARGB(255, 40, 41, 61),
             ),
           ),
@@ -386,11 +449,14 @@ class _ChatBotState extends State<ChatBot> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'AI is thinking...',
+                  'AI is thinking...'.tr,
                   style: TextStyle(
                     color: Colors.grey[600],
-                    fontSize: 14,
-                    fontFamily: FontController().currentFontFamily,
+                    fontSize:
+                        globalFontSizeChange <= 17
+                            ? (globalFontSizeChange / 5) + 14
+                            : 14 - (globalFontSizeChange / 5),
+                    fontFamily: globalFontFamily,
                   ),
                 ),
               ],
@@ -425,8 +491,11 @@ class _ChatBotState extends State<ChatBot> {
                   child: Text(
                     model.name,
                     style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: FontController().currentFontFamily,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 14
+                              : 14 - (globalFontSizeChange / 5),
+                      fontFamily: globalFontFamily,
                     ),
                   ),
                 );
@@ -445,7 +514,7 @@ class _ChatBotState extends State<ChatBot> {
   }
 
   ChatUser _getCurrentUser() {
-    return ChatUser(id: '1', firstName: 'You', lastName: '');
+    return ChatUser(id: '1', firstName: 'You'.tr, lastName: '');
   }
 
   List<ChatMessage> _convertToDashChatMessages() {
@@ -459,7 +528,7 @@ class _ChatBotState extends State<ChatBot> {
   }
 
   ChatUser _getBotUser() {
-    return ChatUser(id: '2', firstName: _selectedModel.name, lastName: '');
+    return ChatUser(id: '2', firstName: _selectedModel.name.tr, lastName: '');
   }
 
   Future<void> _sendMessage(ChatMessage message) async {
@@ -514,10 +583,10 @@ class _ChatBotState extends State<ChatBot> {
                   ? '${firstMessage.substring(0, 20)}...'
                   : firstMessage;
         } else {
-          newTitle = "New Chat";
+          newTitle = "New Chat".tr;
         }
       } else {
-        newTitle = "New Chat";
+        newTitle = "New Chat".tr;
       }
 
       // Create a new chat object with the updated title

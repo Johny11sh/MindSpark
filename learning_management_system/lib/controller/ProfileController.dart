@@ -1,11 +1,12 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, non_constant_identifier_names
 
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import '../controller/FontController.dart';
+import '../core/constants/FontGlobals.dart';
+import '../services/CacheManager.dart';
 import '../view/LogIn.dart';
 import '../services/SharedPrefs.dart';
 import '../view/NavBar.dart';
@@ -17,12 +18,16 @@ class ProfileController extends GetxController {
   var isLoading = true.obs;
   var profileData = {}.obs;
   final NetworkController networkController = Get.find<NetworkController>();
+  final CacheManager cacheManager = CacheManager();
 
   @override
   void onInit() {
     super.onInit();
     sharedPrefs = SharedPrefs.instance;
-    loadInitialData();
+    (cacheManager.isCacheEnabled.value == false &&
+            sharedPrefs.prefs.getBool('isConnected') == false)
+        ? print('caching is disabled')
+        : loadInitialData();
   }
 
   Future<void> loadInitialData() async {
@@ -185,11 +190,11 @@ class ProfileController extends GetxController {
     Get.rawSnackbar(
       messageText: Text(
         message,
-        style: TextStyle(fontFamily: FontController().currentFontFamily),
+        style: TextStyle(fontFamily: globalFontFamily),
       ),
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
-      backgroundColor: Colors.red[800]!,
+      backgroundColor: Colors.red,
       icon: const Icon(Icons.error_outline, color: Colors.white),
     );
   }

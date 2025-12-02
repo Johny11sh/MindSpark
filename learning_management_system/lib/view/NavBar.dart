@@ -14,8 +14,9 @@ import 'package:flutter/material.dart';
 
 final ThemeController themeController = Get.find<ThemeController>();
 final LocaleController localeController = Get.find<LocaleController>();
-// String mainIP = "http://192.168.216.214:8000";
-String mainIP = "http://127.0.0.1:8000";
+String mainIP = "http://192.168.3.120:8000";
+// String mainIP = "http://192.168.86.213:8000";
+// String mainIP = "http://127.0.0.1:8000";
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -30,7 +31,7 @@ class NavBarState extends State<NavBar> {
 
     {"Name": "Teachers", "Icon": Icons.person},
 
-    {"Name": "Library", "Icon": Icons.local_library_rounded},
+    {"Name": "Library", "Icon": Icons.menu_book_outlined},
 
     {"Name": "ChatBot", "Icon": Icons.assistant},
 

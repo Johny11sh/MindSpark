@@ -2,11 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
 import '../controller/WatchlistController.dart';
 import '../themes/ThemeController.dart';
 import '../themes/Themes.dart';
-import '../core/constants/ImageAssets.dart';
 import '../view/Watchlist.dart';
 
 class WatchlistSummaryCard extends StatefulWidget {
@@ -84,9 +82,9 @@ class _WatchlistSummaryCardState extends State<WatchlistSummaryCard>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors:
-                    isDark
-                        ? [themes.MidnightBlue, themes.DarkViolet]
-                        : [themes.SoftCream, themes.SoftBlue],
+                        isDark
+                            ? [themes.MidnightBlue, themes.DarkViolet]
+                            : [themes.SoftCream, themes.SoftBlue],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
@@ -110,9 +108,9 @@ class _WatchlistSummaryCardState extends State<WatchlistSummaryCard>
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         color:
-                        _isPressed
-                            ? Colors.black.withValues(alpha: 0.05)
-                            : Colors.transparent,
+                            _isPressed
+                                ? Colors.black.withValues(alpha: 0.05)
+                                : Colors.transparent,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,9 +171,9 @@ class _WatchlistSummaryCardState extends State<WatchlistSummaryCard>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color:
-        isDark
-            ? themes.MutedPurple.withValues(alpha: 0.3)
-            : themes.MutedPurple.withValues(alpha: 0.1),
+            isDark
+                ? themes.MutedPurple.withValues(alpha: 0.3)
+                : themes.MutedPurple.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -325,10 +323,5 @@ class _WatchlistSummaryCardState extends State<WatchlistSummaryCard>
 
   void _navigateToWatchlist() {
     Get.to(() => const Watchlist(), transition: Transition.fadeIn);
-  }
-
-  void _playAnimation() {
-    _animationController.reset();
-    _animationController.forward();
   }
 }

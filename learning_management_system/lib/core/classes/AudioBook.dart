@@ -2,17 +2,18 @@
 
 import 'dart:async';
 import 'dart:ui' as ui;
+import 'dart:typed_data';
+import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../controller/NetworkController.dart';
 import '../../themes/Themes.dart';
 import '../../themes/ThemeController.dart';
 import '../../view/NavBar.dart';
-import '../../controller/FontController.dart';
+import '../constants/FontGlobals.dart';
 import '../constants/ImageAssets.dart';
 
 class AudioBook extends StatefulWidget {
@@ -32,6 +33,8 @@ class AudioBook extends StatefulWidget {
 class _AudioBookState extends State<AudioBook> {
   final NetworkController networkController = Get.find<NetworkController>();
   final ThemeController themeController = Get.find<ThemeController>();
+
+  String? _currentSourceUrl;
 
   AudioPlayer? _audioPlayer;
   bool _isPlaying = false;
@@ -142,25 +145,60 @@ class _AudioBookState extends State<AudioBook> {
   }
 
   Future<void> _playOrPauseAudio() async {
-    if (_audioPlayer == null) return;
-    try {
-      final audioUrl = widget.audioBookData['audio_file_url'];
-      if (audioUrl == null || audioUrl.isEmpty) {
-        _showSnackBar("Audio URL is missing or invalid.");
-        return;
-      }
+    if (!mounted) return;
 
+    final audioUrl = widget.audioBookData['audio_file_url']?.toString() ?? '';
+    if (audioUrl.isEmpty) {
+      _showSnackBar("Audio URL is missing or invalid.");
+      return;
+    }
+
+    _audioPlayer ??= AudioPlayer();
+
+    try {
       if (_isPlaying) {
         await _audioPlayer!.pause();
         await _saveAudioPosition();
-      } else {
-        await _audioPlayer!.setSource(UrlSource(audioUrl));
-        await _audioPlayer!.seek(_currentPosition);
-        await _audioPlayer!.resume();
+        if (mounted) setState(() => _isPlaying = false);
+        return;
       }
+
+      final savedPosition = await _loadAudioPosition();
+
+      if (_currentSourceUrl != null && _currentSourceUrl == audioUrl) {
+        final diff = (savedPosition - _currentPosition).inMilliseconds.abs();
+        if (diff > 700) {
+          await _audioPlayer!.seek(savedPosition);
+          await Future.delayed(const Duration(milliseconds: 120));
+        }
+        await _audioPlayer!.resume();
+        if (mounted) setState(() => _isPlaying = true);
+        return;
+      }
+
+      try {
+        await _audioPlayer!.stop();
+      } catch (_) {}
+
+      try {
+        await _audioPlayer!.setSourceUrl(audioUrl);
+        _currentSourceUrl = audioUrl;
+      } catch (e) {
+        debugPrint('Failed to set audio source: $e');
+        _showSnackBar("Failed to load audio.");
+        return;
+      }
+
+      if (savedPosition > Duration.zero) {
+        await _audioPlayer!.seek(savedPosition);
+        await Future.delayed(const Duration(milliseconds: 150));
+      }
+
+      await _audioPlayer!.resume();
+      if (mounted) setState(() => _isPlaying = true);
     } catch (e) {
-      debugPrint('Playback error: $e');
-      _showSnackBar("Failed to play audio.");
+      debugPrint("Audio play error: $e");
+      _showSnackBar("Playback error.");
     }
   }
 
@@ -232,9 +270,39 @@ class _AudioBookState extends State<AudioBook> {
 
   Future<void> _extractDominantColor() async {
     try {
-      final codec = await ui.instantiateImageCodec(
-        widget.audioBookData['image']!,
-      );
+      // Support multiple shapes for image data: String (URL/path), Uint8List, List<int>
+      final dynamic rawImage = widget.audioBookData['image'];
+      if (rawImage == null) return;
+
+      Uint8List? imageBytes;
+
+      if (rawImage is String) {
+        // Build full URL if it's a relative path
+        final url =
+            rawImage.startsWith('http') ? rawImage : '$mainIP/$rawImage';
+        final resp = await http.get(Uri.parse(url));
+        if (resp.statusCode == 200) {
+          imageBytes = resp.bodyBytes;
+        } else {
+          debugPrint(
+            'Failed to download image for color extraction: ${resp.statusCode}',
+          );
+          return;
+        }
+      } else if (rawImage is Uint8List) {
+        imageBytes = rawImage;
+      } else if (rawImage is List<int>) {
+        imageBytes = Uint8List.fromList(rawImage);
+      } else {
+        debugPrint(
+          'Unsupported image type for color extraction: ${rawImage.runtimeType}',
+        );
+        return;
+      }
+
+      if (imageBytes.isEmpty) return;
+
+      final codec = await ui.instantiateImageCodec(imageBytes);
       final frame = await codec.getNextFrame();
       final image = frame.image;
       final byteData = await image.toByteData(
@@ -244,7 +312,9 @@ class _AudioBookState extends State<AudioBook> {
       final bytes = byteData.buffer.asUint8List();
 
       int r = 0, g = 0, b = 0, count = 0;
-      for (int i = 0; i < bytes.length; i += 40) {
+      // sample pixels with a step to avoid expensive loops on large images
+      final step = 40; // keep previous behavior sampling every 40 bytes
+      for (int i = 0; i < bytes.length; i += step) {
         if (i + 2 < bytes.length) {
           r += bytes[i];
           g += bytes[i + 1];
@@ -302,7 +372,7 @@ class _AudioBookState extends State<AudioBook> {
         SnackBar(
           content: Text(
             message,
-            style: TextStyle(fontFamily: FontController().currentFontFamily),
+            style: TextStyle(fontFamily: globalFontFamily),
           ),
         ),
       );
@@ -317,6 +387,9 @@ class _AudioBookState extends State<AudioBook> {
     _stateSubscription?.cancel();
     _stopLongPressSkip();
     _saveAudioPosition();
+    try {
+      _audioPlayer?.stop();
+    } catch (_) {}
     _audioPlayer?.dispose();
     super.dispose();
   }
@@ -328,292 +401,326 @@ class _AudioBookState extends State<AudioBook> {
             ? Color.fromARGB(255, 40, 41, 61)
             : Color.fromARGB(255, 210, 209, 224);
 
-    return Scaffold(
-      backgroundColor:
-          themeController.initialTheme == Themes.customLightTheme
-              ? Color.fromARGB(255, 210, 209, 224)
-              : Color.fromARGB(255, 46, 48, 97),
-      body:
-          _isLoading
-              ? Center(child: CircularProgressIndicator(color: accentColor))
-              : widget.audioBookData.isEmpty
-              ? Center(child: CircularProgressIndicator(color: accentColor))
-              : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(
-                          Icons.arrow_back_outlined,
-                          size: 35,
-                          color: accentColor,
+    return WillPopScope(
+      onWillPop: () async {
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: _dominantColor,
+        // themeController.initialTheme == Themes.customLightTheme
+        //     ? Color.fromARGB(255, 210, 209, 224)
+        //     : Color.fromARGB(255, 46, 48, 97),
+        body:
+            _isLoading
+                ? Center(child: CircularProgressIndicator(color: accentColor))
+                : widget.audioBookData.isEmpty
+                ? Center(child: CircularProgressIndicator(color: accentColor))
+                : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(
+                            Icons.arrow_back_outlined,
+                            size: 35,
+                            color: accentColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    Center(
+                      child: Container(
+                        height: 220,
+                        width: 220,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: _dominantColor,
+                          // ?? accentColor.withValues(alpha: 0.1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child:
+                              widget.audioBookData['image'] != null
+                                  ? CachedNetworkImage(
+                                    imageUrl:
+                                        "$mainIP/${widget.audioBookData['image']}",
+                                    height: 60,
+                                    width: 60,
+                                  )
+                                  : Image.asset(
+                                    ImageAssets.book,
+                                    fit: BoxFit.cover,
+                                  ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                    ),
 
-                  Center(
-                    child: Container(
-                      height: 120,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color:
-                            _dominantColor ??
-                            accentColor.withValues(alpha: 0.1),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 10,
-                            offset: Offset(0, 5),
+                    const SizedBox(height: 20),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        "${widget.audioBookData["name"]}".tr,
+                        style: TextStyle(
+                          fontFamily: globalFontFamily,
+                          fontSize:
+                              globalFontSizeChange <= 17
+                                  ? (globalFontSizeChange / 5) + 22
+                                  : 22 - (globalFontSizeChange / 5),
+                          fontWeight: FontWeight.w600,
+                          color: accentColor,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      "Author: ${widget.audioBookData["author"]}".tr,
+                      style: TextStyle(
+                        fontSize:
+                            globalFontSizeChange <= 17
+                                ? (globalFontSizeChange / 5) + 16
+                                : 16 - (globalFontSizeChange / 5),
+                        fontFamily: globalFontFamily,
+                        fontWeight: FontWeight.w400,
+                        color: accentColor.withValues(alpha: 0.8),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 5),
+
+                    Text(
+                      "Publish Date: ${widget.audioBookData["publish date"]}"
+                          .tr,
+                      style: TextStyle(
+                        fontSize:
+                            globalFontSizeChange <= 17
+                                ? (globalFontSizeChange / 5) + 14
+                                : 14 - (globalFontSizeChange / 5),
+                        fontWeight: FontWeight.w300,
+                        fontFamily: globalFontFamily,
+                        color: accentColor.withValues(alpha: .6),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: accentColor,
+                          inactiveTrackColor: accentColor.withValues(
+                            alpha: 0.3,
+                          ),
+                          thumbColor: accentColor,
+                          overlayColor: accentColor.withValues(alpha: 0.2),
+                        ),
+                        child: Slider(
+                          value: _currentPosition.inSeconds.toDouble(),
+                          min: 0,
+                          // max: widget.audioBookData["audio_file_duration_seconds"].toDouble() > 0
+                          //     ? widget.audioBookData["audio_file_duration_seconds"].toDouble()
+                          //     : 1,
+                          max:
+                              _totalDuration.inSeconds > 0
+                                  ? _totalDuration.inSeconds.toDouble()
+                                  : 1,
+                          onChanged: (value) {
+                            final position = Duration(seconds: value.toInt());
+                            _seekToPosition(position);
+                          },
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _formatDuration(_currentPosition),
+                            style: TextStyle(
+                              color: accentColor,
+                              fontSize:
+                                  globalFontSizeChange <= 17
+                                      ? (globalFontSizeChange / 5) + 14
+                                      : 14 - (globalFontSizeChange / 5),
+                              fontFamily: globalFontFamily,
+                            ),
+                          ),
+                          Text(
+                            _formatDuration(_totalDuration),
+                            style: TextStyle(
+                              color: accentColor,
+                              fontSize:
+                                  globalFontSizeChange <= 17
+                                      ? (globalFontSizeChange / 5) + 14
+                                      : 14 - (globalFontSizeChange / 5),
+                              fontFamily: globalFontFamily,
+                            ),
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child:
-                            widget.audioBookData['image'] != null
-                                ? CachedNetworkImage(
-                                  imageUrl:
-                                      "$mainIP/${widget.audioBookData['image']}",
-                                  height: 60,
-                                  width: 60,
-                                )
-                                : Image.asset(
-                                  ImageAssets.book,
-                                  fit: BoxFit.cover,
-                                ),
-                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      "${widget.audioBookData["name"]}".tr,
-                      style: TextStyle(
-                        fontFamily: FontController().currentFontFamily,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: accentColor,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    "Author: ${widget.audioBookData["author"]}".tr,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: FontController().currentFontFamily,
-                      fontWeight: FontWeight.w400,
-                      color: accentColor.withValues(alpha: 0.8),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  Text(
-                    "Publish Date: ${widget.audioBookData["publish date"]}".tr,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
-                      fontFamily: FontController().currentFontFamily,
-                      color: accentColor.withValues(alpha: .6),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: accentColor,
-                        inactiveTrackColor: accentColor.withValues(alpha: 0.3),
-                        thumbColor: accentColor,
-                        overlayColor: accentColor.withValues(alpha: 0.2),
-                      ),
-                      child: Slider(
-                        value: _currentPosition.inSeconds.toDouble(),
-                        min: 0,
-                        // max: widget.audioBookData["audio_file_duration_seconds"].toDouble() > 0
-                        //     ? widget.audioBookData["audio_file_duration_seconds"].toDouble()
-                        //     : 1,
-                        max:
-                            _totalDuration.inSeconds > 0
-                                ? _totalDuration.inSeconds.toDouble()
-                                : 1,
-                        onChanged: (value) {
-                          final position = Duration(seconds: value.toInt());
-                          _seekToPosition(position);
-                        },
-                      ),
-                    ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text(
-                          _formatDuration(_currentPosition),
-                          style: TextStyle(
+                        GestureDetector(
+                          onTapDown: (_) => _startLongPressSkip(false),
+                          onTapUp: (_) => _stopLongPressSkip(),
+                          onTapCancel: () => _stopLongPressSkip(),
+                          child: IconButton(
+                            icon: Icon(Icons.replay_10),
+                            iconSize: 32,
                             color: accentColor,
-                            fontSize: 14,
-                            fontFamily: FontController().currentFontFamily,
+                            onPressed: _skipBackward,
                           ),
                         ),
-                        Text(
-                          _formatDuration(_totalDuration),
-                          style: TextStyle(
-                            color: accentColor,
-                            fontSize: 14,
-                            fontFamily: FontController().currentFontFamily,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
 
-                  const SizedBox(height: 20),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTapDown: (_) => _startLongPressSkip(false),
-                        onTapUp: (_) => _stopLongPressSkip(),
-                        onTapCancel: () => _stopLongPressSkip(),
-                        child: IconButton(
-                          icon: Icon(Icons.replay_10),
-                          iconSize: 32,
-                          color: accentColor,
-                          onPressed: _skipBackward,
-                        ),
-                      ),
-
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: accentColor,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            _isPlaying ? Icons.pause : Icons.play_arrow,
-                            color: Colors.white,
-                          ),
-                          iconSize: 40,
-                          onPressed: _playOrPauseAudio,
-                        ),
-                      ),
-
-                      GestureDetector(
-                        onTapDown: (_) => _startLongPressSkip(true),
-                        onTapUp: (_) => _stopLongPressSkip(),
-                        onTapCancel: () => _stopLongPressSkip(),
-                        child: IconButton(
-                          icon: Icon(Icons.forward_10),
-                          iconSize: 32,
-                          color: accentColor,
-                          onPressed: _skipForward,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  SizedBox(
-                    child: Row(
-                      children: [
-                        Icon(Icons.volume_down, color: accentColor, size: 20),
-                        Expanded(
-                          child: SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: accentColor,
-                              inactiveTrackColor: accentColor.withValues(
-                                alpha: 0.3,
-                              ),
-                              thumbColor: accentColor,
-                              overlayColor: accentColor.withValues(alpha: 0.2),
-                            ),
-                            child: Slider(
-                              value: _currentVolume,
-                              min: 0,
-                              max: 1,
-                              onChanged: _changeVolume,
-                            ),
-                          ),
-                        ),
-                        Icon(Icons.volume_up, color: accentColor, size: 20),
-                        const SizedBox(width: 40),
-                        Text(
-                          "Speed: ",
-                          style: TextStyle(
-                            color: accentColor,
-                            fontSize: 14,
-                            fontFamily: FontController().currentFontFamily,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
                           decoration: BoxDecoration(
-                            color: accentColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            shape: BoxShape.circle,
+                            color: accentColor,
                           ),
-                          child: DropdownButton<double>(
-                            dropdownColor: Color.fromARGB(255, 40, 41, 61),
-                            value: _playbackSpeed,
-                            underline: const SizedBox(),
-                            style: TextStyle(color: accentColor, fontSize: 14),
-                            items:
-                                _speedOptions.map((speed) {
-                                  return DropdownMenuItem<double>(
-                                    value: speed,
-                                    child: Text(
-                                      ' ${speed}x',
-                                      style: TextStyle(
-                                        fontFamily:
-                                            FontController().currentFontFamily,
-                                        color: accentColor.withValues(alpha: 1),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                _changePlaybackSpeed(value);
-                              }
-                            },
+                          child: IconButton(
+                            icon: Icon(
+                              _isPlaying ? Icons.pause : Icons.play_arrow,
+                              color: Colors.white,
+                            ),
+                            iconSize: 40,
+                            onPressed: _playOrPauseAudio,
+                          ),
+                        ),
+
+                        GestureDetector(
+                          onTapDown: (_) => _startLongPressSkip(true),
+                          onTapUp: (_) => _stopLongPressSkip(),
+                          onTapCancel: () => _stopLongPressSkip(),
+                          child: IconButton(
+                            icon: Icon(Icons.forward_10),
+                            iconSize: 32,
+                            color: accentColor,
+                            onPressed: _skipForward,
                           ),
                         ),
                       ],
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
-                ],
-              ),
+                    const SizedBox(height: 20),
+
+                    SizedBox(
+                      child: Row(
+                        children: [
+                          Icon(Icons.volume_down, color: accentColor, size: 20),
+                          Expanded(
+                            child: SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                activeTrackColor: accentColor,
+                                inactiveTrackColor: accentColor.withValues(
+                                  alpha: 0.3,
+                                ),
+                                thumbColor: accentColor,
+                                overlayColor: accentColor.withValues(
+                                  alpha: 0.2,
+                                ),
+                              ),
+                              child: Slider(
+                                value: _currentVolume,
+                                min: 0,
+                                max: 1,
+                                onChanged: _changeVolume,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.volume_up, color: accentColor, size: 20),
+                          const SizedBox(width: 40),
+                          Text(
+                            "Speed: ",
+                            style: TextStyle(
+                              color: accentColor,
+                              fontSize:
+                                  globalFontSizeChange <= 17
+                                      ? (globalFontSizeChange / 5) + 14
+                                      : 14 - (globalFontSizeChange / 5),
+                              fontFamily: globalFontFamily,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: accentColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: DropdownButton<double>(
+                              dropdownColor: Color.fromARGB(255, 40, 41, 61),
+                              value: _playbackSpeed,
+                              underline: const SizedBox(),
+                              style: TextStyle(
+                                color: accentColor,
+                                fontSize:
+                                    globalFontSizeChange <= 17
+                                        ? (globalFontSizeChange / 5) + 14
+                                        : 14 - (globalFontSizeChange / 5),
+                              ),
+                              items:
+                                  _speedOptions.map((speed) {
+                                    return DropdownMenuItem<double>(
+                                      value: speed,
+                                      child: Text(
+                                        ' ${speed}x',
+                                        style: TextStyle(
+                                          fontFamily: globalFontFamily,
+                                          color: accentColor.withValues(
+                                            alpha: 1,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  _changePlaybackSpeed(value);
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+      ),
     );
   }
 }

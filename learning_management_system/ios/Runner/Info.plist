@@ -51,7 +51,7 @@
 		<false/>
 		<key>NSAppTransportSecurity</key>
 		<dict>
-			<key>NSAllArbitraryLoads</key>
+			<key>NSAllowsArbitraryLoads</key>
 			<true/>
 		</dict>
 		<key>NSAllowsLocalNetworking</key>

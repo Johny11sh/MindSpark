@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../model/AIModel.dart';
 import '../../themes/Themes.dart';
 import '../../view/NavBar.dart';
-import '../../controller/FontController.dart';
+import '../constants/FontGlobals.dart';
 
 class ChatHistoryDrawer extends StatelessWidget {
   final List<Chat> chats;
@@ -28,18 +28,21 @@ class ChatHistoryDrawer extends StatelessWidget {
           children: [
             DrawerHeader(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Chat History',
                     style: TextStyle(
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                       color:
                           themeController.initialTheme ==
                                   Themes.customLightTheme
                               ? Color.fromARGB(255, 40, 41, 61)
                               : Color.fromARGB(255, 210, 209, 224),
-                      fontSize: 24,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 24
+                              : 24 - (globalFontSizeChange / 5),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -57,7 +60,7 @@ class ChatHistoryDrawer extends StatelessWidget {
                   //   title: Text(
                   //     'Saved Messages',
                   //     style: TextStyle(
-                  //       fontSize: 15,
+                  //       fontSize:  globalFontSizeChange <= 17 ?(globalFontSizeChange/5) + 15 : 15 - (globalFontSizeChange / 5),
                   //       fontWeight: FontWeight.w500,
                   //       color:
                   //           themeController.initialTheme ==
@@ -68,19 +71,42 @@ class ChatHistoryDrawer extends StatelessWidget {
                   //     maxLines: 1,
                   //     overflow: TextOverflow.ellipsis,
                   //   ),
-                  //   onTap: () => onChatSelected(chat),
+                  //   onTap: () => onChatSelected(),
                   // ),
                   const SizedBox(height: 8),
                   Text(
                     'Your previous conversations',
                     style: TextStyle(
-                      fontFamily: FontController().currentFontFamily,
+                      fontFamily: globalFontFamily,
                       color:
                           themeController.initialTheme ==
                                   Themes.customLightTheme
                               ? Color.fromARGB(255, 40, 41, 61)
                               : Color.fromARGB(255, 210, 209, 224),
-                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 16
+                              : 16 - (globalFontSizeChange / 5),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Note: Chat history will be cleared at the end of the session.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: globalFontFamily,
+                      color:
+                          themeController.initialTheme ==
+                                  Themes.customLightTheme
+                              ? Color.fromARGB(255, 40, 41, 61)
+                              : Color.fromARGB(255, 210, 209, 224),
+                      fontWeight: FontWeight.w400,
+
+                      fontSize:
+                          globalFontSizeChange <= 17
+                              ? (globalFontSizeChange / 5) + 14
+                              : 14 - (globalFontSizeChange / 5),
                     ),
                   ),
                 ],
@@ -93,13 +119,16 @@ class ChatHistoryDrawer extends StatelessWidget {
                         child: Text(
                           'No chat history yet',
                           style: TextStyle(
-                            fontFamily: FontController().currentFontFamily,
+                            fontFamily: globalFontFamily,
                             color:
                                 themeController.initialTheme ==
                                         Themes.customLightTheme
                                     ? Color.fromARGB(255, 40, 41, 61)
                                     : Color.fromARGB(255, 210, 209, 224),
-                            fontSize: 16,
+                            fontSize:
+                                globalFontSizeChange <= 17
+                                    ? (globalFontSizeChange / 5) + 16
+                                    : 16 - (globalFontSizeChange / 5),
                           ),
                         ),
                       )
@@ -119,8 +148,11 @@ class ChatHistoryDrawer extends StatelessWidget {
                             title: Text(
                               chat.title.isNotEmpty ? chat.title : 'New Chat',
                               style: TextStyle(
-                                fontFamily: FontController().currentFontFamily,
-                                fontSize: 15,
+                                fontFamily: globalFontFamily,
+                                fontSize:
+                                    globalFontSizeChange <= 17
+                                        ? (globalFontSizeChange / 5) + 15
+                                        : 15 - (globalFontSizeChange / 5),
                                 fontWeight: FontWeight.w500,
                                 color:
                                     themeController.initialTheme ==
@@ -134,8 +166,11 @@ class ChatHistoryDrawer extends StatelessWidget {
                             subtitle: Text(
                               _formatDate(chat.createdAt),
                               style: TextStyle(
-                                fontFamily: FontController().currentFontFamily,
-                                fontSize: 12,
+                                fontFamily: globalFontFamily,
+                                fontSize:
+                                    globalFontSizeChange <= 17
+                                        ? (globalFontSizeChange / 5) + 12
+                                        : 12 - (globalFontSizeChange / 5),
                                 color:
                                     themeController.initialTheme ==
                                             Themes.customLightTheme

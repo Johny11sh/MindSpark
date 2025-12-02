@@ -1,14 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
-
 
   static Future<void> init() async {
     await _initFirebase();
@@ -40,8 +37,9 @@ class NotificationService {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initSettings =
-        InitializationSettings(android: androidSettings);
+    const InitializationSettings initSettings = InitializationSettings(
+      android: androidSettings,
+    );
 
     await _localNotifications.initialize(initSettings);
   }
@@ -86,13 +84,15 @@ class NotificationService {
     FirebaseMessaging.instance.getInitialMessage().then((message) {
       if (message != null) {
         print(
-            ' App launched from notification: ${message.notification?.title}');
+          ' App launched from notification: ${message.notification?.title}',
+        );
       }
     });
-   }
+  }
 
   static Future<void> firebaseMessagingBackgroundHandler(
-      RemoteMessage message) async {
+    RemoteMessage message,
+  ) async {
     await Firebase.initializeApp();
     print('Handling background message: ${message.messageId}');
   }

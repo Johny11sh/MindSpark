@@ -6,17 +6,18 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-import '../../controller/FontController.dart';
+import '../function/noDataLottie.dart';
 import 'Timer.dart';
 import 'package:path/path.dart';
 import '../../themes/Themes.dart';
 import 'package:get/get.dart';
 import '../../themes/ThemeController.dart';
+import '../constants/FontGlobals.dart';
 
 class PDFOpener extends StatefulWidget {
   final File PDFfile;
+
   const PDFOpener({super.key, required this.PDFfile});
 
   @override
@@ -252,8 +253,13 @@ class _PDFOpenerState extends State<PDFOpener> {
   void dispose() {
     _isDisposed = true;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    audioPlayer?.dispose();
-    audioPlayer = null;
+
+    if (audioPlayer != null) {
+      audioPlayer!.stop();
+      audioPlayer!.dispose();
+      audioPlayer = null;
+    }
+
     previousSongs.clear();
     _scrollController.dispose();
     super.dispose();
@@ -262,249 +268,352 @@ class _PDFOpenerState extends State<PDFOpener> {
   @override
   Widget build(BuildContext context) {
     final name = _formatFileName(basename(widget.PDFfile.path));
-    return Scaffold(
-      floatingActionButton: Container(
-        width: 150,
-        height: 40,
-        margin: const EdgeInsets.only(bottom: 10),
-        child: _buildMusicControls(),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      backgroundColor:
-          themeController.initialTheme == Themes.customLightTheme
-              ? const Color.fromARGB(255, 40, 41, 61)
-              : const Color.fromARGB(255, 210, 209, 224),
-      appBar: AppBar(
+
+    //     return PopScope(
+    //       onPopInvokedWithResult: (didPop, result) {
+    //         if (isPlaying == false) {
+    //           Navigator.pop(context);
+    //           didPop;
+    //         } else {
+    //           result = Get.rawSnackbar(
+    //             title: "Warning".tr,
+    //             messageText: Text(
+    //               "Please stop the audio player before closing the screen.".tr,
+    //               style: TextStyle(fontFamily: globalFontFamily),
+    //             ),
+    //             isDismissible: true,
+    //             snackPosition: SnackPosition.BOTTOM,
+    //             duration: const Duration(seconds: 3),
+    //             backgroundColor: Colors.red,
+    //             icon: const Icon(
+    //               Icons.priority_high_outlined,
+    //               color: Colors.white,
+    //               size: 35,
+    //             ),
+    //             margin: const EdgeInsets.all(5),
+    //             borderRadius: 5,
+    //             borderColor: Colors.grey[700]!,
+    //           );
+    //           result;
+    //         }
+    //       },
+    return WillPopScope(
+      onWillPop: () async {
+        if (isPlaying) {
+          Get.rawSnackbar(
+            title: "Warning".tr,
+            messageText: Text(
+              "Please stop the audio player before closing the screen.".tr,
+              style: TextStyle(fontFamily: globalFontFamily),
+            ),
+            isDismissible: true,
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+            icon: const Icon(
+              Icons.priority_high_outlined,
+              color: Colors.white,
+              size: 35,
+            ),
+            margin: const EdgeInsets.all(5),
+            borderRadius: 5,
+            borderColor: Colors.grey[700]!,
+          );
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        floatingActionButton: Container(
+          width: 150,
+          height: 40,
+          margin: const EdgeInsets.only(bottom: 10),
+          child: _buildMusicControls(),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         backgroundColor:
             themeController.initialTheme == Themes.customLightTheme
                 ? const Color.fromARGB(255, 40, 41, 61)
                 : const Color.fromARGB(255, 210, 209, 224),
-        title: Text(
-          name,
-          style: TextStyle(
-            fontFamily: FontController().currentFontFamily,
-            color:
-                themeController.initialTheme == Themes.customLightTheme
-                    ? const Color.fromARGB(255, 210, 209, 224)
-                    : const Color.fromARGB(255, 40, 41, 61),
-          ),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color:
-                themeController.initialTheme == Themes.customLightTheme
-                    ? const Color.fromARGB(255, 210, 209, 224)
-                    : const Color.fromARGB(255, 40, 41, 61),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          if (pages > 0) ...[
-            IconButton(
-              onPressed: () {
-                final page = pageIndex == 0 ? pages : pageIndex - 1;
-                pdfViewController.setPage(page);
-              },
-              icon: Icon(
-                Icons.chevron_left_outlined,
-                size: 26,
-                color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? const Color.fromARGB(255, 210, 209, 224)
-                        : const Color.fromARGB(255, 40, 41, 61),
-              ),
+        appBar: AppBar(
+          backgroundColor:
+              themeController.initialTheme == Themes.customLightTheme
+                  ? const Color.fromARGB(255, 40, 41, 61)
+                  : const Color.fromARGB(255, 210, 209, 224),
+          title: Text(
+            name,
+            style: TextStyle(
+              fontFamily: globalFontFamily,
+              color:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? const Color.fromARGB(255, 210, 209, 224)
+                      : const Color.fromARGB(255, 40, 41, 61),
             ),
-            if (pages > 0)
-              Text(
-                '${pageIndex + 1} of $pages',
-                style: TextStyle(
-                  fontFamily: FontController().currentFontFamily,
-                  fontSize: 12,
+          ),
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color:
+                  themeController.initialTheme == Themes.customLightTheme
+                      ? const Color.fromARGB(255, 210, 209, 224)
+                      : const Color.fromARGB(255, 40, 41, 61),
+            ),
+            onPressed: () {
+              if (isPlaying == false) {
+                Navigator.pop(context);
+              } else {
+                Get.rawSnackbar(
+                  title: "Warning".tr,
+                  messageText: Text(
+                    "Please stop the audio player before closing the screen."
+                        .tr,
+                    style: TextStyle(fontFamily: globalFontFamily),
+                  ),
+                  isDismissible: true,
+                  snackPosition: SnackPosition.BOTTOM,
+                  duration: const Duration(seconds: 3),
+                  backgroundColor: Colors.red,
+                  icon: const Icon(
+                    Icons.priority_high_outlined,
+                    color: Colors.white,
+                    size: 35,
+                  ),
+                  margin: const EdgeInsets.all(5),
+                  borderRadius: 5,
+                  borderColor: Colors.grey[700]!,
+                );
+              }
+            },
+          ),
+          actions: [
+            if (pages > 0) ...[
+              IconButton(
+                onPressed: () {
+                  final page = pageIndex == 0 ? pages : pageIndex - 1;
+                  pdfViewController.setPage(page);
+                },
+                icon: Icon(
+                  Icons.chevron_left_outlined,
+                  size: 26,
                   color:
                       themeController.initialTheme == Themes.customLightTheme
                           ? const Color.fromARGB(255, 210, 209, 224)
                           : const Color.fromARGB(255, 40, 41, 61),
                 ),
               ),
-            IconButton(
-              onPressed: () {
-                final page = pageIndex == pages - 1 ? 0 : pageIndex + 1;
-                pdfViewController.setPage(page);
-              },
-              icon: Icon(
-                Icons.chevron_right_outlined,
-                size: 26,
-                color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? const Color.fromARGB(255, 210, 209, 224)
-                        : const Color.fromARGB(255, 40, 41, 61),
-              ),
-            ),
-            IconButton(
-              onPressed: () {
-                Get.dialog(TimerView(), barrierColor: Colors.transparent);
-              },
-              icon: Icon(
-                Icons.timer,
-                size: 26,
-                color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? const Color.fromARGB(255, 210, 209, 224)
-                        : const Color.fromARGB(255, 40, 41, 61),
-              ),
-            ),
-          ],
-        ],
-      ),
-      body: Stack(
-        children: [
-          RepaintBoundary(
-            child: PDFView(
-              filePath: widget.PDFfile.path,
-              swipeHorizontal: false,
-              pageSnap: false,
-              autoSpacing: true,
-              pageFling: false,
-              preventLinkNavigation: false,
-              onRender: (pages) {
-                if (!_isDisposed) {
-                  setState(() {
-                    this.pages = pages!;
-                    isLoading = false;
-                  });
-                }
-              },
-              onViewCreated: (pdfViewController) {
-                if (!_isDisposed) {
-                  setState(() {
-                    this.pdfViewController = pdfViewController;
-                  });
-                }
-              },
-              onPageChanged: (pageIndex, _) {
-                if (!_isDisposed) {
-                  setState(() {
-                    this.pageIndex = pageIndex!;
-                  });
-                }
-              },
-              onError: (error) {
-                debugPrint('Error loading PDF: $error');
-                if (!_isDisposed) {
-                  Get.snackbar(
-                    'Error'.tr,
-                    'Failed to load PDF'.tr,
-                    snackPosition: SnackPosition.BOTTOM,
-                  );
-                }
-              },
-              onPageError: (page, error) {
-                debugPrint('Error loading page $page: $error');
-              },
-              enableSwipe: true,
-              fitPolicy: FitPolicy.BOTH,
-              defaultPage: 0,
-            ),
-          ),
-          if (isLoading)
-            Center(
-              child: CircularProgressIndicator(
-                color:
-                    themeController.initialTheme == Themes.customLightTheme
-                        ? const Color.fromARGB(255, 210, 209, 224)
-                        : const Color.fromARGB(255, 40, 41, 61),
-              ),
-            ),
-          if (pages > 0)
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: Container(
-                width: 40,
-                color: Colors.transparent,
-                child: Center(
-                  child: Container(
-                    width: 8,
-                    height: MediaQuery.of(context).size.height * 0.75,
-                    decoration: BoxDecoration(
-                      color:
-                          themeController.initialTheme ==
-                                  Themes.customLightTheme
-                              ? const Color.fromARGB(
-                                255,
-                                210,
-                                209,
-                                224,
-                              ).withValues(alpha: 0.5)
-                              : const Color.fromARGB(
-                                255,
-                                40,
-                                41,
-                                61,
-                              ).withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    child: GestureDetector(
-                      onVerticalDragStart:
-                          (_) => setState(() => isDragging = true),
-                      onVerticalDragEnd:
-                          (_) => setState(() => isDragging = false),
-                      onVerticalDragUpdate: (details) {
-                        if (pages > 0) {
-                          final screenHeight =
-                              MediaQuery.of(context).size.height * 0.7;
-                          final dragPercentage =
-                              details.localPosition.dy / screenHeight;
-                          final targetPage =
-                              (dragPercentage * (pages - 1)).floor();
-                          if (targetPage >= 0 && targetPage < pages) {
-                            pdfViewController.setPage(targetPage);
-                          }
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          if (isDragging && pages > 0)
-            Positioned(
-              right: 50,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
+              if (pages > 0)
+                Text(
+                  '${pageIndex + 1} of $pages',
+                  style: TextStyle(
+                    fontFamily: globalFontFamily,
+                    fontSize:
+                        globalFontSizeChange <= 17
+                            ? (globalFontSizeChange / 5) + 12
+                            : 12 - (globalFontSizeChange / 5),
                     color:
                         themeController.initialTheme == Themes.customLightTheme
-                            ? const Color.fromARGB(255, 40, 41, 61)
-                            : const Color.fromARGB(255, 210, 209, 224),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    '${pageIndex + 1}',
-                    style: TextStyle(
-                      fontFamily: FontController().currentFontFamily,
-                      color:
-                          themeController.initialTheme ==
-                                  Themes.customLightTheme
-                              ? const Color.fromARGB(255, 210, 209, 224)
-                              : const Color.fromARGB(255, 40, 41, 61),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                            ? const Color.fromARGB(255, 210, 209, 224)
+                            : const Color.fromARGB(255, 40, 41, 61),
                   ),
                 ),
+              IconButton(
+                onPressed: () {
+                  final page = pageIndex == pages - 1 ? 0 : pageIndex + 1;
+                  pdfViewController.setPage(page);
+                },
+                icon: Icon(
+                  Icons.chevron_right_outlined,
+                  size: 26,
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? const Color.fromARGB(255, 210, 209, 224)
+                          : const Color.fromARGB(255, 40, 41, 61),
+                ),
               ),
-            ),
-        ],
+              IconButton(
+                onPressed: () {
+                  Get.dialog(TimerView(), barrierColor: Colors.transparent);
+                },
+                icon: Icon(
+                  Icons.timer,
+                  size: 26,
+                  color:
+                      themeController.initialTheme == Themes.customLightTheme
+                          ? const Color.fromARGB(255, 210, 209, 224)
+                          : const Color.fromARGB(255, 40, 41, 61),
+                ),
+              ),
+            ],
+          ],
+        ),
+        body:
+            (widget.PDFfile.path.isEmpty)
+                ? noDataLottie("No data available")
+                : Stack(
+                  children: [
+                    RepaintBoundary(
+                      child: PDFView(
+                        filePath: widget.PDFfile.path,
+                        swipeHorizontal: false,
+                        pageSnap: false,
+                        autoSpacing: true,
+                        pageFling: false,
+                        preventLinkNavigation: false,
+                        onRender: (pages) {
+                          if (!_isDisposed) {
+                            setState(() {
+                              this.pages = pages!;
+                              isLoading = false;
+                            });
+                          }
+                        },
+                        onViewCreated: (pdfViewController) {
+                          if (!_isDisposed) {
+                            setState(() {
+                              this.pdfViewController = pdfViewController;
+                            });
+                          }
+                        },
+                        onPageChanged: (pageIndex, _) {
+                          if (!_isDisposed) {
+                            setState(() {
+                              this.pageIndex = pageIndex!;
+                            });
+                          }
+                        },
+                        onError: (error) {
+                          debugPrint('Error loading PDF: $error');
+                          if (!_isDisposed) {
+                            Get.snackbar(
+                              'Error'.tr,
+                              'Failed to load PDF'.tr,
+                              snackPosition: SnackPosition.BOTTOM,
+                            );
+                          }
+                        },
+                        onPageError: (page, error) {
+                          debugPrint('Error loading page $page: $error');
+                        },
+                        enableSwipe: true,
+                        fitPolicy: FitPolicy.BOTH,
+                        defaultPage: 0,
+                      ),
+                    ),
+                    if (isLoading)
+                      Center(
+                        child: CircularProgressIndicator(
+                          color:
+                              themeController.initialTheme ==
+                                      Themes.customLightTheme
+                                  ? const Color.fromARGB(255, 210, 209, 224)
+                                  : const Color.fromARGB(255, 40, 41, 61),
+                        ),
+                      ),
+                    if (pages > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 40,
+                          color: Colors.transparent,
+                          child: Center(
+                            child: Container(
+                              width: 8,
+                              height: MediaQuery.of(context).size.height * 0.75,
+                              decoration: BoxDecoration(
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ).withValues(alpha: 0.5)
+                                        : const Color.fromARGB(
+                                          255,
+                                          40,
+                                          41,
+                                          61,
+                                        ).withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                              child: GestureDetector(
+                                onVerticalDragStart:
+                                    (_) => setState(() => isDragging = true),
+                                onVerticalDragEnd:
+                                    (_) => setState(() => isDragging = false),
+                                onVerticalDragUpdate: (details) {
+                                  if (pages > 0) {
+                                    final screenHeight =
+                                        MediaQuery.of(context).size.height *
+                                        0.7;
+                                    final dragPercentage =
+                                        details.localPosition.dy / screenHeight;
+                                    final targetPage =
+                                        (dragPercentage * (pages - 1)).floor();
+                                    if (targetPage >= 0 && targetPage < pages) {
+                                      pdfViewController.setPage(targetPage);
+                                    }
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (isDragging && pages > 0)
+                      Positioned(
+                        right: 50,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  themeController.initialTheme ==
+                                          Themes.customLightTheme
+                                      ? const Color.fromARGB(255, 40, 41, 61)
+                                      : const Color.fromARGB(
+                                        255,
+                                        210,
+                                        209,
+                                        224,
+                                      ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${pageIndex + 1}',
+                              style: TextStyle(
+                                fontFamily: globalFontFamily,
+                                color:
+                                    themeController.initialTheme ==
+                                            Themes.customLightTheme
+                                        ? const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        )
+                                        : const Color.fromARGB(255, 40, 41, 61),
+                                fontSize:
+                                    globalFontSizeChange <= 17
+                                        ? (globalFontSizeChange / 5) + 16
+                                        : 16 - (globalFontSizeChange / 5),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
       ),
     );
   }

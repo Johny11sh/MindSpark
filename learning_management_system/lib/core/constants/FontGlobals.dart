@@ -1,5 +1,7 @@
 // Global font configuration variables
 
+// ignore_for_file: file_names
+
 // Stores only the change (delta) to apply on top of base font sizes across the app
 import 'dart:io';
 

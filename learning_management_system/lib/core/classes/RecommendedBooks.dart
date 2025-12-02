@@ -241,7 +241,7 @@ class _RecommendedBooksState extends State<RecommendedBooks> {
                         return SizedBox(height: 30);
                       }
 
-                      int bookId = recommendedBooks[index]["id"];
+                      // int bookId = recommendedBooks[index]["id"];
                       // Uint8List? imageBytes = recommendedBooksImages[bookId];
 
                       return Container(

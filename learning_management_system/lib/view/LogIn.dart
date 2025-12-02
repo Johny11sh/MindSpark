@@ -5,10 +5,14 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:learning_management_system/core/classes/PrivacyPolicy.dart';
+import 'package:learning_management_system/core/classes/TermsOfService.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controller/NetworkController.dart';
+import '../core/constants/FontGlobals.dart';
 import '../core/constants/ImageAssets.dart';
 import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
@@ -38,6 +42,16 @@ class _LogInState extends State<LogIn> {
   late Widget temp;
   String supportTeamWhatsApp = "";
   String supportTeamTelegram = "";
+  int index = 0;
+
+  List availableLanguages = [
+    {"name": "English", "LangCode": "En", "flag": ImageAssets.EnglishFlag},
+    {"name": "Arabic", "LangCode": "Ar", "flag": ImageAssets.ArabicFlag},
+    {"name": "German", "LangCode": "De", "flag": ImageAssets.GermanFlag},
+    {"name": "Spanish", "LangCode": "Es", "flag": ImageAssets.SpanishFlag},
+    {"name": "French", "LangCode": "Fr", "flag": ImageAssets.FrenchFlag},
+  ];
+  bool isListExpanded = false;
 
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
@@ -93,7 +107,6 @@ class _LogInState extends State<LogIn> {
         final savedToken = sharedPrefs.prefs.getString('token');
         print("Saved Token: $savedToken\n"); // Fixed print statement
 
-
         String? fcmToken = await FirebaseMessaging.instance.getToken();
         if (fcmToken != null) {
           await http.post(
@@ -112,7 +125,8 @@ class _LogInState extends State<LogIn> {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
 
         sharedPrefs.prefs.setString('reason', responseBody['reason']);
-        if (sharedPrefs.prefs.getString('reason') == "Banned") {
+        if (sharedPrefs.prefs.getString('reason') == "Banned" ||
+            responseBody['reason']) {
           Get.snackbar(
             "Banned Account!".tr,
             "Contact the support team to restore this account.".tr,
@@ -183,500 +197,1048 @@ class _LogInState extends State<LogIn> {
   Widget build(BuildContext context) {
     LocaleController localeController = Get.put(LocaleController());
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      locale: localeController.initialLang,
-      home: Scaffold(
-        body: Container(
-          width: Get.width,
-          // decoration: const BoxDecoration(
-          //   gradient: LinearGradient(
-          //     colors: [
-          //       Color.fromARGB(255, 40, 41, 61),
-          //       Color.fromARGB(255, 210, 209, 224),
-          //     ],
-          //     begin: Alignment.bottomLeft,
-          //     end: Alignment.topRight,
-          //   ),
-          // ),
-          color: Color.fromARGB(255, 210, 209, 224),
-          child: ListView(
-            scrollDirection: Axis.vertical,
-            physics: AlwaysScrollableScrollPhysics(),
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(padding: const EdgeInsets.all(10)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const SizedBox(width: 20),
-                      IconButton(
-                        onPressed: () {
-                          Get.to(() => OnBoarding());
-                        },
-                        icon: Icon(
-                          Icons.arrow_back_outlined,
-                          size: 35,
-                          color: Color.fromARGB(255, 40, 41, 61),
-                        ),
-                      ),
-                      SizedBox(width: Get.width / 10),
-                      Text(
-                        "Welcome Back!".tr,
-                        style: const TextStyle(
-                          color: Color.fromARGB(255, 40, 41, 61),
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(padding: const EdgeInsets.all(10)),
-
-                  Container(
-                    width: Get.width,
-                    height: Get.height - 50,
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 40, 41, 61),
-
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(40),
-                      ),
-                    ),
-                    child: Column(
+    return WillPopScope(
+      onWillPop: () async {
+        return true;
+      },
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        locale: localeController.initialLang,
+        home: Scaffold(
+          body: Container(
+            width: Get.width,
+            // decoration: const BoxDecoration(
+            //   gradient: LinearGradient(
+            //     colors: [
+            //       Color.fromARGB(255, 40, 41, 61),
+            //       Color.fromARGB(255, 210, 209, 224),
+            //     ],
+            //     begin: Alignment.bottomLeft,
+            //     end: Alignment.topRight,
+            //   ),
+            // ),
+            color: Color.fromARGB(255, 210, 209, 224),
+            child: ListView(
+              scrollDirection: Axis.vertical,
+              physics: AlwaysScrollableScrollPhysics(),
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(padding: const EdgeInsets.all(10)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Padding(padding: const EdgeInsets.all(20)),
-                        Center(
-                          child: Image.asset(
-                            ImageAssets.AppIconNoBackGround,
-                            width: 140,
-                            height: 140,
+                        const SizedBox(width: 20),
+                        IconButton(
+                          onPressed: () {
+                            Get.to(() => OnBoarding());
+                          },
+                          icon: Icon(
+                            Icons.arrow_back_outlined,
+                            size: 35,
+                            color: Color.fromARGB(255, 40, 41, 61),
                           ),
                         ),
-                        Padding(padding: const EdgeInsets.all(20)),
-                        Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 20,
-                            left: 20,
-                            right: 20,
-                          ),
-                          child: Form(
-                            key: formKey,
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 80,
-                                  padding: const EdgeInsets.only(
-                                    right: 20,
-                                    left: 20,
-                                  ),
-                                  child: TextFormField(
-                                    style: TextStyle(
-                                      color: Color.fromARGB(255, 210, 209, 224),
-                                    ),
-                                    controller: userNameController,
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                    cursorColor: const Color.fromARGB(
-                                      255,
-                                      254,
-                                      233,
-                                      204,
-                                    ),
-                                    obscureText: false,
-                                    keyboardType: TextInputType.name,
-                                    // onSaved: (val){username = val;},
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(
-                                        Icons.perm_identity,
-                                        size: 30,
-                                      ),
-                                      prefixIconColor: const Color.fromARGB(
-                                        255,
-                                        210,
-                                        209,
-                                        224,
-                                      ),
-                                      hintText: "User Name".tr,
-                                      hintStyle: TextStyle(
-                                        color: const Color.fromARGB(
-                                          255,
-                                          210,
-                                          209,
-                                          224,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                          width: 2,
-                                          color: Color.fromARGB(
-                                            255,
-                                            210,
-                                            209,
-                                            224,
-                                          ),
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                          color: Color.fromARGB(
-                                            255,
-                                            210,
-                                            209,
-                                            224,
-                                          ),
-                                        ),
-                                      ),
-                                      errorBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                          color: Color.fromARGB(
-                                            255,
-                                            255,
-                                            23,
-                                            7,
-                                          ),
-                                        ),
-                                      ),
-                                      focusedErrorBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                          width: 2,
-                                          color: Color.fromARGB(
-                                            255,
-                                            255,
-                                            23,
-                                            7,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    validator: (val) {
-                                      if (val!.isEmpty) {
-                                        return "Please enter your User Name".tr;
-                                      } else {
-                                        if (val.length < 3) {
-                                          return "User Name must be longer than 3 characters"
-                                              .tr;
-                                        } else if (val.length > 25) {
-                                          return "User Name must be shorter than 25 characters"
-                                              .tr;
-                                        }
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Container(
-                                  height: 80,
-                                  padding: const EdgeInsets.only(
-                                    right: 20,
-                                    left: 20,
-                                  ),
-                                  child: TextFormField(
-                                    style: TextStyle(
-                                      color: Color.fromARGB(255, 210, 209, 224),
-                                    ),
-                                    controller: passwordController,
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                    cursorColor: const Color.fromARGB(
-                                      255,
-                                      254,
-                                      233,
-                                      204,
-                                    ),
-                                    maxLength: 35,
-                                    obscureText: TextAsAsterisks,
-                                    obscuringCharacter: '*',
-                                    keyboardType: TextInputType.visiblePassword,
-                                    decoration: InputDecoration(
-                                      helperStyle: TextStyle(
-                                        color: Color.fromARGB(
-                                          255,
-                                          210,
-                                          209,
-                                          224,
-                                        ),
-                                      ),
-                                      prefixIcon: const Icon(
-                                        Icons.lock_outline_rounded,
-                                        size: 30,
-                                      ),
-                                      prefixIconColor: const Color.fromARGB(
-                                        255,
-                                        210,
-                                        209,
-                                        224,
-                                      ),
-                                      hintText: "Password".tr,
-                                      hintStyle: TextStyle(
-                                        color: const Color.fromARGB(
-                                          255,
-                                          210,
-                                          209,
-                                          224,
-                                        ),
-                                      ),
-                                      suffix: IconButton(
-                                        onPressed: () {
-                                          TextAsAsterisks = !TextAsAsterisks;
-                                          temp = visibilityIcon;
-                                          visibilityIcon = invisibilityIcon;
-                                          invisibilityIcon = temp;
-
-                                          setState(() {});
-                                        },
-                                        icon: visibilityIcon,
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                          width: 2,
-                                          color: Color.fromARGB(
-                                            255,
-                                            210,
-                                            209,
-                                            224,
-                                          ),
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                          color: Color.fromARGB(
-                                            255,
-                                            210,
-                                            209,
-                                            224,
-                                          ),
-                                        ),
-                                      ),
-                                      errorBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                          color: Color.fromARGB(
-                                            255,
-                                            255,
-                                            23,
-                                            7,
-                                          ),
-                                        ),
-                                      ),
-                                      focusedErrorBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                          width: 2,
-                                          color: Color.fromARGB(
-                                            255,
-                                            255,
-                                            23,
-                                            7,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    validator: (val) {
-                                      if (val!.isEmpty) {
-                                        return "Please enter your Password".tr;
-                                      } else {
-                                        if (val.length < 8) {
-                                          return "Password must be at least 8 characters"
-                                              .tr;
-                                        }
-                                        return null;
-                                      }
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Container(
-                                  alignment: Alignment.center,
-                                  width: Get.width / 1.5,
-                                  height: 35,
-                                  decoration: BoxDecoration(
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: MaterialButton(
-                                    onPressed: () async {
-                                      await networkController
-                                          .checkConnectivityManually();
-                                      isConnected = sharedPrefs.prefs.getBool(
-                                        'isConnected',
-                                      );
-                                      if (isConnected == true) {
-                                        if (formKey.currentState!.validate()) {
-                                          sendLogInData();
-                                          await Future.delayed(
-                                            Duration(milliseconds: 1000),
-                                          );
-
-                                          Future.microtask(() {
-                                            Get.offAll(() => NavBar());
-                                          });
-                                        } else {
-                                          Get.snackbar(
-                                            "Validation Error".tr,
-                                            "Log In failed, fill the textfields correctly"
-                                                .tr,
-                                          );
-                                        }
-                                      } else {
-                                        Get.snackbar(
-                                          "Connection error".tr,
-                                          "Connection access is needed".tr,
-                                        );
-                                      }
-                                    },
-                                    minWidth: Get.width / 1.5,
-                                    height: 35,
-                                    elevation: 5,
-                                    child: Text(
-                                      "Log In".tr,
-                                      style: const TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w600,
-                                        fontStyle: FontStyle.normal,
-                                        color: Color.fromARGB(255, 40, 41, 61),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(height: 40),
-                                Text(
-                                  "Support team".tr,
-                                  style: const TextStyle(
-                                    color: Color.fromARGB(255, 210, 209, 224),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      child: TextButton(
-                                        onPressed: () async {
-                                          _launchURL(supportTeamWhatsApp);
-                                        },
-                                        child: Text(
-                                          "WhatsApp".tr,
-                                          style: const TextStyle(
-                                            color: Color.fromARGB(
-                                              255,
-                                              210,
-                                              209,
-                                              224,
-                                            ),
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w400,
-                                            decoration:
-                                                TextDecoration.underline,
-                                            decorationColor: Color.fromARGB(
-                                              255,
-                                              210,
-                                              209,
-                                              224,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      child: TextButton(
-                                        onPressed: () async {
-                                          _launchURL(supportTeamTelegram);
-                                        },
-                                        child: Text(
-                                          "Telegram".tr,
-                                          style: const TextStyle(
-                                            color: Color.fromARGB(
-                                              255,
-                                              210,
-                                              209,
-                                              224,
-                                            ),
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w400,
-                                            decoration:
-                                                TextDecoration.underline,
-                                            decorationColor: Color.fromARGB(
-                                              255,
-                                              210,
-                                              209,
-                                              224,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 60),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "Don't have an account?".tr,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w400,
-                                        fontStyle: FontStyle.normal,
-                                        color: Color.fromARGB(
-                                          255,
-                                          210,
-                                          209,
-                                          224,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Get.toNamed("/SignUp");
-                                      },
-                                      child: Text(
-                                        "Sign Up".tr,
-                                        style: const TextStyle(
-                                          color: Color.fromARGB(
-                                            255,
-                                            254,
-                                            233,
-                                            204,
-                                          ),
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w400,
-                                          decoration: TextDecoration.underline,
-                                          decorationColor: Color.fromARGB(
-                                            255,
-                                            254,
-                                            233,
-                                            204,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                        SizedBox(width: Get.width / 10),
+                        Text(
+                              "Welcome Back!".tr,
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 40, 41, 61),
+                                fontSize:
+                                    globalFontSizeChange <= 17
+                                        ? (globalFontSizeChange / 5) + 22
+                                        : 22 - (globalFontSizeChange / 5),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                            .animate(onPlay: (controller) => controller.loop())
+                            .shimmer(
+                              delay: Duration(seconds: 4),
+                              duration: 800.ms,
+                              color: Colors.white54,
                             ),
-                          ),
-                        ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    Padding(padding: const EdgeInsets.all(10)),
+
+                    Container(
+                      width: Get.width,
+                      height: Get.height * 1.2,
+
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 40, 41, 61),
+
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(40),
+                          topRight: Radius.circular(40),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(padding: const EdgeInsets.all(20)),
+                          Center(
+                            child: Image.asset(
+                              ImageAssets.AppIconNoBackGround,
+                              width: 140,
+                              height: 140,
+                            ),
+                          ),
+                          Padding(padding: const EdgeInsets.all(20)),
+                          Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 20,
+                              left: 20,
+                              right: 20,
+                            ),
+                            child: Form(
+                              key: formKey,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 80,
+                                    padding: const EdgeInsets.only(
+                                      right: 20,
+                                      left: 20,
+                                    ),
+                                    child: TextFormField(
+                                      style: TextStyle(
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      controller: userNameController,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      cursorColor: const Color.fromARGB(
+                                        255,
+                                        254,
+                                        233,
+                                        204,
+                                      ),
+                                      obscureText: false,
+                                      keyboardType: TextInputType.name,
+                                      // onSaved: (val){username = val;},
+                                      decoration: InputDecoration(
+                                        prefixIcon: const Icon(
+                                          Icons.perm_identity,
+                                          size: 30,
+                                        ),
+                                        prefixIconColor: const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                        hintText: "User Name".tr,
+                                        hintStyle: TextStyle(
+                                          color: const Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            width: 2,
+                                            color: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Color.fromARGB(
+                                              255,
+                                              255,
+                                              23,
+                                              7,
+                                            ),
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            width: 2,
+                                            color: Color.fromARGB(
+                                              255,
+                                              255,
+                                              23,
+                                              7,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      validator: (val) {
+                                        if (val!.isEmpty) {
+                                          return "Please enter your User Name"
+                                              .tr;
+                                        } else {
+                                          if (val.length < 3) {
+                                            return "User Name must be longer than 3 characters"
+                                                .tr;
+                                          } else if (val.length > 25) {
+                                            return "User Name must be shorter than 25 characters"
+                                                .tr;
+                                          }
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    height: 80,
+                                    padding: const EdgeInsets.only(
+                                      right: 20,
+                                      left: 20,
+                                    ),
+                                    child: TextFormField(
+                                      style: TextStyle(
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                      ),
+                                      controller: passwordController,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      cursorColor: const Color.fromARGB(
+                                        255,
+                                        254,
+                                        233,
+                                        204,
+                                      ),
+                                      maxLength: 35,
+                                      obscureText: TextAsAsterisks,
+                                      obscuringCharacter: '*',
+                                      keyboardType:
+                                          TextInputType.visiblePassword,
+                                      decoration: InputDecoration(
+                                        helperStyle: TextStyle(
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.lock_outline_rounded,
+                                          size: 30,
+                                        ),
+                                        prefixIconColor: const Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                        hintText: "Password".tr,
+                                        hintStyle: TextStyle(
+                                          color: const Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                        suffix: IconButton(
+                                          onPressed: () {
+                                            TextAsAsterisks = !TextAsAsterisks;
+                                            temp = visibilityIcon;
+                                            visibilityIcon = invisibilityIcon;
+                                            invisibilityIcon = temp;
+
+                                            setState(() {});
+                                          },
+                                          icon: visibilityIcon,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            width: 2,
+                                            color: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+                                          ),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Color.fromARGB(
+                                              255,
+                                              255,
+                                              23,
+                                              7,
+                                            ),
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            width: 2,
+                                            color: Color.fromARGB(
+                                              255,
+                                              255,
+                                              23,
+                                              7,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      validator: (val) {
+                                        if (val!.isEmpty) {
+                                          return "Please enter your Password"
+                                              .tr;
+                                        } else {
+                                          if (val.length < 8) {
+                                            return "Password must be at least 8 characters"
+                                                .tr;
+                                          }
+                                          return null;
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  StatefulBuilder(
+                                    builder: (context, setDState) {
+                                      return PopupMenuButton(
+                                        color: Color.fromARGB(
+                                          255,
+                                          210,
+                                          209,
+                                          224,
+                                        ),
+                                        child: Container(
+                                          width: Get.width / 1.2,
+                                          decoration: BoxDecoration(
+                                            color: Color.fromARGB(
+                                              255,
+                                              210,
+                                              209,
+                                              224,
+                                            ),
+
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(20),
+                                            ),
+                                          ),
+
+                                          child: ListTile(
+                                            trailing: CircleAvatar(
+                                              backgroundColor: Color.fromARGB(
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                              ),
+                                              child: Image.asset(
+                                                availableLanguages[index]["flag"]!,
+                                                fit: BoxFit.fill,
+                                              ),
+                                            ),
+                                            title: Text(
+                                              textAlign: TextAlign.center,
+                                              "Language".tr,
+                                              style: TextStyle(
+                                                fontFamily: globalFontFamily,
+                                                color: Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
+                                                fontSize:
+                                                    globalFontSizeChange >= 17
+                                                        ? (globalFontSizeChange /
+                                                                5) +
+                                                            18
+                                                        : 18 -
+                                                            (globalFontSizeChange /
+                                                                5),
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              textAlign: TextAlign.center,
+                                              "Choose a language".tr,
+                                              style: TextStyle(
+                                                fontFamily: globalFontFamily,
+                                                color: Color.fromARGB(
+                                                  255,
+                                                  40,
+                                                  41,
+                                                  61,
+                                                ),
+                                                fontSize:
+                                                    globalFontSizeChange >= 17
+                                                        ? (globalFontSizeChange /
+                                                                5) +
+                                                            16
+                                                        : 16 -
+                                                            (globalFontSizeChange /
+                                                                5),
+                                                fontWeight: FontWeight.w300,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        itemBuilder:
+                                            (context) => [
+                                              PopupMenuItem(
+                                                onTap: () {
+                                                  setDState(() {
+                                                    index = 0;
+                                                    availableLanguages[index]["LangCode"] =
+                                                        "En";
+                                                    localeController.changeLang(
+                                                      availableLanguages[index]['LangCode'],
+                                                    );
+                                                  });
+                                                },
+                                                value: 'English',
+                                                child: Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      backgroundColor:
+                                                          Color.fromARGB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                          ),
+                                                      child: Image.asset(
+                                                        availableLanguages[0]["flag"]!,
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 30),
+                                                    Text(
+                                                      "English".tr,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            globalFontFamily,
+                                                        color: Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                                        fontSize:
+                                                            globalFontSizeChange >=
+                                                                    17
+                                                                ? (globalFontSizeChange /
+                                                                        5) +
+                                                                    14
+                                                                : 14 -
+                                                                    (globalFontSizeChange /
+                                                                        5),
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              PopupMenuItem(
+                                                onTap: () {
+                                                  setDState(() {
+                                                    index = 1;
+                                                    availableLanguages[index]["LangCode"] =
+                                                        "Ar";
+                                                    localeController.changeLang(
+                                                      availableLanguages[index]['LangCode'],
+                                                    );
+                                                  });
+                                                },
+                                                value: 'Arabic',
+                                                child: Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      backgroundColor:
+                                                          Color.fromARGB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                          ),
+                                                      child: Image.asset(
+                                                        availableLanguages[1]["flag"]!,
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 30),
+                                                    Text(
+                                                      "Arabic".tr,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            globalFontFamily,
+                                                        color: Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                                        fontSize:
+                                                            globalFontSizeChange >=
+                                                                    17
+                                                                ? (globalFontSizeChange /
+                                                                        5) +
+                                                                    14
+                                                                : 14 -
+                                                                    (globalFontSizeChange /
+                                                                        5),
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              PopupMenuItem(
+                                                onTap: () {
+                                                  setDState(() {
+                                                    index = 2;
+                                                    availableLanguages[index]["LangCode"] =
+                                                        "De";
+                                                    localeController.changeLang(
+                                                      availableLanguages[index]['LangCode'],
+                                                    );
+                                                  });
+                                                },
+                                                value: 'German',
+                                                child: Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      backgroundColor:
+                                                          Color.fromARGB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                          ),
+                                                      child: Image.asset(
+                                                        availableLanguages[2]["flag"]!,
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 30),
+                                                    Text(
+                                                      "German".tr,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            globalFontFamily,
+                                                        color: Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                                        fontSize:
+                                                            globalFontSizeChange >=
+                                                                    17
+                                                                ? (globalFontSizeChange /
+                                                                        5) +
+                                                                    14
+                                                                : 14 -
+                                                                    (globalFontSizeChange /
+                                                                        5),
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              PopupMenuItem(
+                                                onTap: () {
+                                                  setDState(() {
+                                                    index = 3;
+                                                    availableLanguages[index]["LangCode"] =
+                                                        "Es";
+                                                    localeController.changeLang(
+                                                      availableLanguages[index]['LangCode'],
+                                                    );
+                                                  });
+                                                },
+                                                value: 'Spanish',
+                                                child: Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      backgroundColor:
+                                                          Color.fromARGB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                          ),
+                                                      child: Image.asset(
+                                                        availableLanguages[3]["flag"]!,
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 30),
+                                                    Text(
+                                                      "Spanish".tr,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            globalFontFamily,
+                                                        color: Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                                        fontSize:
+                                                            globalFontSizeChange >=
+                                                                    17
+                                                                ? (globalFontSizeChange /
+                                                                        5) +
+                                                                    14
+                                                                : 14 -
+                                                                    (globalFontSizeChange /
+                                                                        5),
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              PopupMenuItem(
+                                                onTap: () {
+                                                  setDState(() {
+                                                    index = 4;
+                                                    availableLanguages[index]["LangCode"] =
+                                                        "Fr";
+                                                    localeController.changeLang(
+                                                      availableLanguages[index]['LangCode'],
+                                                    );
+                                                  });
+                                                },
+                                                value: 'French',
+                                                child: Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      backgroundColor:
+                                                          Color.fromARGB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                          ),
+                                                      child: Image.asset(
+                                                        availableLanguages[4]["flag"]!,
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 30),
+                                                    Text(
+                                                      "French".tr,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            globalFontFamily,
+                                                        color: Color.fromARGB(
+                                                          255,
+                                                          40,
+                                                          41,
+                                                          61,
+                                                        ),
+                                                        fontSize:
+                                                            globalFontSizeChange >=
+                                                                    17
+                                                                ? (globalFontSizeChange /
+                                                                        5) +
+                                                                    14
+                                                                : 14 -
+                                                                    (globalFontSizeChange /
+                                                                        5),
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                      );
+                                    },
+                                  ),
+
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    alignment: Alignment.center,
+                                    width: Get.width / 1.5,
+                                    height: 35,
+                                    decoration: BoxDecoration(
+                                      color: Color.fromARGB(255, 210, 209, 224),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: MaterialButton(
+                                      onPressed: () async {
+                                        await networkController
+                                            .checkConnectivityManually();
+                                        isConnected = sharedPrefs.prefs.getBool(
+                                          'isConnected',
+                                        );
+                                        if (isConnected == true) {
+                                          if (formKey.currentState!
+                                              .validate()) {
+                                            // Await the login call and navigate only on success
+                                            final resp = await sendLogInData();
+                                            if (resp != null) {
+                                              // Successful login
+                                              Future.microtask(() {
+                                                Get.offAll(() => NavBar());
+                                              });
+                                            } else {
+                                              // keep user on the form; error snackbars are shown in sendLogInData
+                                            }
+                                          } else {
+                                            Get.snackbar(
+                                              "Validation Error".tr,
+                                              "Log In failed, fill the textfields correctly"
+                                                  .tr,
+                                            );
+                                          }
+                                        } else {
+                                          Get.snackbar(
+                                            "Connection error".tr,
+                                            "Connection access is needed".tr,
+                                          );
+                                        }
+                                      },
+                                      minWidth: Get.width / 1.5,
+                                      height: 35,
+                                      elevation: 5,
+                                      child: Text(
+                                        "Log In".tr,
+                                        style: TextStyle(
+                                          fontSize:
+                                              globalFontSizeChange <= 17
+                                                  ? (globalFontSizeChange / 5) +
+                                                      22
+                                                  : 22 -
+                                                      (globalFontSizeChange /
+                                                          5),
+                                          fontWeight: FontWeight.w600,
+                                          fontStyle: FontStyle.normal,
+                                          color: Color.fromARGB(
+                                            255,
+                                            40,
+                                            41,
+                                            61,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 40),
+                                  Text(
+                                    "If you log in, you agree to our:".tr,
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 210, 209, 224),
+                                      fontSize:
+                                          globalFontSizeChange <= 17
+                                              ? (globalFontSizeChange / 5) + 18
+                                              : 18 - (globalFontSizeChange / 5),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        child: TextButton(
+                                          onPressed: () async {
+                                            Get.to(() => TermsOfService());
+                                          },
+                                          child: Text(
+                                            "Terms of Service".tr,
+                                            style: TextStyle(
+                                              color: const Color.fromARGB(
+                                                255,
+                                                254,
+                                                233,
+                                                204,
+                                              ),
+                                              fontSize:
+                                                  globalFontSizeChange <= 17
+                                                      ? (globalFontSizeChange /
+                                                              5) +
+                                                          17
+                                                      : 17 -
+                                                          (globalFontSizeChange /
+                                                              5),
+                                              fontWeight: FontWeight.w500,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor:
+                                                  const Color.fromARGB(
+                                                    255,
+                                                    254,
+                                                    233,
+                                                    204,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        child: TextButton(
+                                          onPressed: () async {
+                                            Get.to(() => PrivacyPolicy());
+                                          },
+                                          child: Text(
+                                            "Privacy Policy".tr,
+                                            style: TextStyle(
+                                              color: const Color.fromARGB(
+                                                255,
+                                                254,
+                                                233,
+                                                204,
+                                              ),
+                                              fontSize:
+                                                  globalFontSizeChange <= 17
+                                                      ? (globalFontSizeChange /
+                                                              5) +
+                                                          17
+                                                      : 17 -
+                                                          (globalFontSizeChange /
+                                                              5),
+                                              fontWeight: FontWeight.w500,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor:
+                                                  const Color.fromARGB(
+                                                    255,
+                                                    254,
+                                                    233,
+                                                    204,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 40),
+
+                                  Text(
+                                    "Support team".tr,
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 210, 209, 224),
+                                      fontSize:
+                                          globalFontSizeChange <= 17
+                                              ? (globalFontSizeChange / 5) + 15
+                                              : 15 - (globalFontSizeChange / 5),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        child: TextButton(
+                                          onPressed: () async {
+                                            _launchURL(supportTeamWhatsApp);
+                                          },
+                                          child: Text(
+                                            "WhatsApp".tr,
+                                            style: TextStyle(
+                                              color: Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                              fontSize:
+                                                  globalFontSizeChange <= 17
+                                                      ? (globalFontSizeChange /
+                                                              5) +
+                                                          15
+                                                      : 15 -
+                                                          (globalFontSizeChange /
+                                                              5),
+                                              fontWeight: FontWeight.w400,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor: Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        child: TextButton(
+                                          onPressed: () async {
+                                            _launchURL(supportTeamTelegram);
+                                          },
+                                          child: Text(
+                                            "Telegram".tr,
+                                            style: TextStyle(
+                                              color: Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                              fontSize:
+                                                  globalFontSizeChange <= 17
+                                                      ? (globalFontSizeChange /
+                                                              5) +
+                                                          15
+                                                      : 15 -
+                                                          (globalFontSizeChange /
+                                                              5),
+                                              fontWeight: FontWeight.w400,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor: Color.fromARGB(
+                                                255,
+                                                210,
+                                                209,
+                                                224,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 60),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Don't have an account?".tr,
+                                        style: TextStyle(
+                                          fontSize:
+                                              globalFontSizeChange <= 17
+                                                  ? (globalFontSizeChange / 5) +
+                                                      15
+                                                  : 15 -
+                                                      (globalFontSizeChange /
+                                                          5),
+                                          fontWeight: FontWeight.w400,
+                                          fontStyle: FontStyle.normal,
+                                          color: Color.fromARGB(
+                                            255,
+                                            210,
+                                            209,
+                                            224,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Get.toNamed("/SignUp");
+                                        },
+                                        child: Text(
+                                          "Sign Up".tr,
+                                          style: TextStyle(
+                                            color: Color.fromARGB(
+                                              255,
+                                              254,
+                                              233,
+                                              204,
+                                            ),
+                                            fontSize:
+                                                globalFontSizeChange <= 17
+                                                    ? (globalFontSizeChange /
+                                                            5) +
+                                                        15
+                                                    : 15 -
+                                                        (globalFontSizeChange /
+                                                            5),
+                                            fontWeight: FontWeight.w400,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Color.fromARGB(
+                                              255,
+                                              254,
+                                              233,
+                                              204,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

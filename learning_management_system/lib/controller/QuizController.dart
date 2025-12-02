@@ -26,6 +26,8 @@ class QuizController extends GetxController
   var selectedAnswerIndex = Rxn<int>();
   var score = 0.obs;
   var quizCompleted = false.obs;
+  var quizResultsList = {}.obs;
+
   String? quiz_id;
   String? lessonID;
   @override
@@ -97,7 +99,6 @@ class QuizController extends GetxController
     } finally {
       isLoading(false);
 
-      // الانتقال التلقائي لشاشة الاختبار
       if (questions.isNotEmpty && !Get.isRegistered<QuizScreen>()) {
         Get.to(() => QuizScreen(lessonId: ''));
       }
@@ -105,9 +106,17 @@ class QuizController extends GetxController
   }
 
   Future<void> SendScore(String lessonId, List<int> answers) async {
-    int quizId = lessonId as int;
+    int? quizId = int.tryParse(lessonId);
+    if (quizId == null) {
+      debugPrint("Invalid quizId: $lessonId");
+      return;
+    }
     isLoading(true);
     await _quizService.sendScore(quizId, answers);
+    quizResultsList.value = Map<String, dynamic>.from(
+      _quizService.quizResult.value,
+    );
+    debugPrint("Quiz results: $quizResultsList");
     isLoading(false);
   }
 
@@ -128,13 +137,12 @@ class QuizController extends GetxController
 
     selectedAnswerIndex.value = index;
 
-    // تخزين النتيجة لكل سؤال (1 لصحيح، 0 لخطأ)
     if (index == question.correctAnswerIndex) {
       score.value += 1;
-      userAnswers[currentIndex] = 1; // إجابة صحيحة
+      userAnswers[currentIndex] = 1;
       _showCorrectAnswerAnimation();
     } else {
-      userAnswers[currentIndex] = 0; // إجابة خاطئة
+      userAnswers[currentIndex] = 0;
       _showWrongAnswerAnimation();
     }
   }
@@ -181,24 +189,29 @@ class QuizController extends GetxController
     }
   }
 
-  void completeQuiz() {
+  void completeQuiz() async {
     quizCompleted.value = true;
+    await submitResults();
   }
 
   Future<void> submitResults() async {
     if (quiz_id == null) return;
 
-    try {
-      int? quizId = int.tryParse(quiz_id!);
-      if (quizId == null) {
-        Get.snackbar('Error'.tr, 'Invalid Quiz ID'.tr);
-        return;
-      }
+    int? quizId = int.tryParse(quiz_id!);
+    if (quizId == null) {
+      debugPrint("Invalid quizId: $quiz_id");
+      return;
+    }
 
+    try {
       await _quizService.sendScore(
         quizId,
         userAnswers.map((a) => a ?? 0).toList(),
       );
+      quizResultsList.value = Map<String, dynamic>.from(
+        _quizService.quizResult.value,
+      );
+      debugPrint("Quiz results: $quizResultsList");
     } catch (e) {
       debugPrint("Error submitting results: $e");
     }
@@ -219,6 +232,8 @@ class QuizController extends GetxController
 }
 
 class QuizService {
+  var quizResult = {}.obs;
+
   Future<QuizResponse> fetchQuiz(String lessonId) async {
     final token = sharedPrefs.prefs.getString('token') ?? '';
     if (token.isEmpty) {
@@ -397,7 +412,7 @@ class QuizService {
               'Content-Type': 'application/json; charset=UTF-8',
               'Accept': 'application/json',
             },
-            body: jsonEncode({'answers': answers}),
+            body: jsonEncode({'correctAnswers': answers}),
           )
           .timeout(const Duration(seconds: 15));
 
@@ -406,6 +421,11 @@ class QuizService {
 
       if (response.statusCode == 200) {
         debugPrint("Answers submitted successfully");
+        final responseBody = jsonDecode(response.body);
+        final quizResultList = Map<String, dynamic>.from(responseBody);
+
+        quizResult.value = quizResultList;
+
         return true;
       } else if (response.statusCode == 401) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
