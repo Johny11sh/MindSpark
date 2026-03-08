@@ -1,12 +1,14 @@
 // ignore_for_file: file_names
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../model/AIModel.dart';
 
 class ApiService {
+  // Use the official API host and v1 path for OpenRouter
   static const String _baseUrl =
-      'https://openrouter.ai/api/v1/chat/completions';
+      'https://api.openrouter.ai/v1/chat/completions';
   static const String _apiKey =
       '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';
   // static const String _apiKey = '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';
@@ -55,8 +57,17 @@ class ApiService {
       } else if (response.statusCode == 403) {
         return "❌ Access forbidden. Please check your API key permissions.";
       } else {
-        return "API Error ${response.statusCode}: ${response.reasonPhrase}";
+        try {
+          final body = response.body;
+          return "API Error ${response.statusCode}: ${response.reasonPhrase}. Response: $body";
+        } catch (_) {
+          return "API Error ${response.statusCode}: ${response.reasonPhrase}";
+        }
       }
+    } on HandshakeException catch (e) {
+      return "TLS handshake failed: ${e.message}. Check device time, network/proxy, or server certificate.";
+    } on SocketException catch (e) {
+      return "Network error: ${e.message}. Please check your internet connection.";
     } on http.ClientException {
       return "Connection error. Please check your internet connection.";
     } catch (e) {
