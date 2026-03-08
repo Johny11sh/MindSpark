@@ -264,7 +264,8 @@ class _SubjectsBooksState extends State<SubjectsBooks> {
       child: Scaffold(
         body:
             (cacheManager.isCacheEnabled.value == false &&
-                    sharedPrefs.prefs.getBool('isConnected') == false)
+                        sharedPrefs.prefs.getBool('isConnected') == false) ||
+                    (subjectBooks.isEmpty)
                 ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

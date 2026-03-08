@@ -51,6 +51,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
   bool report2 = false;
   bool report3 = false;
   bool? isConnected;
+  late String helpfulType;
   Map<int, bool> helpfulStates = {};
   Map<int, bool> unhelpfulStates = {};
   List<Map<String, dynamic>> commentsData = [];
@@ -72,6 +73,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
         defaultValue: mainIP,
       );
       final APIurl = '$baseUrl/api/${widget.type}/${widget.sectionId}';
+      print('api url $APIurl');
 
       final response = await http
           .get(
@@ -162,6 +164,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
 
       cacheManager.init();
       networkController.onInit();
+      print(widget.type);
       print('caching: ${cacheManager.isCacheEnabled.value}');
       print('connection: ${networkController.isConnected}');
       (cacheManager.isCacheEnabled.value == false &&
@@ -1221,10 +1224,24 @@ class _ReviewsPageState extends State<ReviewsPage> {
                                                       bool isLiked,
                                                     ) async {
                                                       // print(commentsData["id"].toString());
+                                                      widget.type ==
+                                                              'getresourceratings'
+                                                          ? helpfulType =
+                                                              'resource_rating_id'
+                                                          : widget.type ==
+                                                              'getlectureratings'
+                                                          ? helpfulType =
+                                                              'lecture_rating_id'
+                                                          : widget.type ==
+                                                              'getteacherratings'
+                                                          ? helpfulType =
+                                                              'teacher_rating_id'
+                                                          : helpfulType =
+                                                              'course_rating_id';
 
                                                       await likesController
                                                           .toggleHelpful({
-                                                            "lecture_rating_id":
+                                                            helpfulType:
                                                                 featuredRatings[index]['id'],
                                                           });
 
@@ -1288,9 +1305,24 @@ class _ReviewsPageState extends State<ReviewsPage> {
                                                       bool isLiked,
                                                     ) async {
                                                       // print(commentsData["id"].toString());
+                                                      widget.type ==
+                                                              'getresourceratings'
+                                                          ? helpfulType =
+                                                              'resource_rating_id'
+                                                          : widget.type ==
+                                                              'getlectureratings'
+                                                          ? helpfulType =
+                                                              'lecture_rating_id'
+                                                          : widget.type ==
+                                                              'getteacherratings'
+                                                          ? helpfulType =
+                                                              'teacher_rating_id'
+                                                          : helpfulType =
+                                                              'course_rating_id';
+
                                                       await likesController
                                                           .toggleUnhelpful({
-                                                            "lecture_rating_id":
+                                                            helpfulType:
                                                                 featuredRatings[index]['id'],
                                                           });
                                                       review["isHelpful"] =

@@ -490,7 +490,7 @@ class TaskCard extends StatelessWidget {
                 Icon(Icons.date_range, size: 16, color: primaryColor),
                 const SizedBox(width: 4),
                 Text(
-                  '${"Creation Date".tr}: ${DateFormat.yMd().format(task.createdAt)}',
+                  '${"Creation Date".tr}: ${DateFormat.yMd().add_jm().format(task.createdAt.toLocal())}',
                   style: TextStyle(
                     fontSize:
                         globalFontSizeChange <= 17
@@ -509,7 +509,7 @@ class TaskCard extends StatelessWidget {
                   Icon(Icons.calendar_today, size: 16, color: primaryColor),
                   const SizedBox(width: 4),
                   Text(
-                    '${"Delivery Date".tr}: ${DateFormat.yMd().add_jm().format(task.dueDate!)}',
+                    '${"Due Date".tr}: ${DateFormat.yMd().add_jm().format(task.dueDate!.toLocal())}',
                     style: TextStyle(
                       fontSize:
                           globalFontSizeChange <= 17

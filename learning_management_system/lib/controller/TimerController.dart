@@ -159,8 +159,9 @@ class PomodoroController extends GetxController {
   }
 
   @override
-  void onClose() {
+  void onClose() async {
     _timer?.cancel();
+    await audioPlayer!.stop();
     audioPlayer?.dispose();
     audioPlayer = null;
     print("Resources cleaned");

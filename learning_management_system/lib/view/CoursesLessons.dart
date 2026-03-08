@@ -533,7 +533,8 @@ class _CoursesLessonsState extends State<CoursesLessons> {
       child: Scaffold(
         body:
             (cacheManager.isCacheEnabled.value == false &&
-                    sharedPrefs.prefs.getBool('isConnected') == false)
+                        sharedPrefs.prefs.getBool('isConnected') == false) ||
+                    (widget.CoursesData.isEmpty && coursesData.isEmpty)
                 ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -2281,7 +2282,7 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                                             profileController.profileData['userName'])
                                                                         ? themeController.initialTheme ==
                                                                                 Themes.customLightTheme
-                                                                            ? Colors.orangeAccent.shade400
+                                                                            ? Colors.amber.shade700
                                                                             : Colors.amber
                                                                         : themeController.initialTheme ==
                                                                             Themes.customLightTheme

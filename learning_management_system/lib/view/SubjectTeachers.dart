@@ -217,7 +217,8 @@ class _SubjectTeachersState extends State<SubjectTeachers> {
       child: Scaffold(
         body:
             (cacheManager.isCacheEnabled.value == false &&
-                    sharedPrefs.prefs.getBool('isConnected') == false)
+                        sharedPrefs.prefs.getBool('isConnected') == false) ||
+                    (widget.SubjectData.isEmpty && subjectTeachers.isEmpty)
                 ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -45,13 +45,17 @@ class Task {
       id: json['id'] as int? ?? 0,
       title: json['title'] as String? ?? '',
       description: json['description'] as String? ?? '',
-      isChecked: (json['isChecked'] as int?) == 1, // تحويل 0/1 إلى boolean
+      isChecked: (json['isChecked'] as int?) == 1,
       isTrashed: (json['isTrashed'] as int?) == 1,
       userId: json['user_id'] as int? ?? 0,
       estimatedHours: (json['estimatedHours'] as num?)?.toDouble() ?? 0.0,
       // trashed_at: DateTime.parse(json['trashed_at'] as String? ?? '2025-01-01'),
-      dueDate: DateTime.parse(json['dueDate'] as String? ?? '2025-01-01'),
-      createdAt: DateTime.parse(json['created_at'] as String? ?? '2025-01-01'),
+      dueDate: DateTime.parse(
+        json['dueDate'] as String? ?? DateTime.now().toIso8601String(),
+      ),
+      createdAt: DateTime.parse(
+        json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -116,7 +120,6 @@ class TaskController extends GetxController {
       );
       tasks.add(newTask);
       fetchTasks();
-      Get.back();
     } catch (e) {
       errorMessage.value = e.toString();
     } finally {

@@ -1389,7 +1389,10 @@ class _BookDetailsState extends State<BookDetails> {
                                                 ),
 
                                         onPressed: () async {
-                                          Navigator.of(context).push(
+                                          // Open ReviewsPage and wait for potential updated commentsData
+                                          final result = await Navigator.of(
+                                            context,
+                                          ).push(
                                             MaterialPageRoute(
                                               builder:
                                                   (context) => ReviewsPage(
@@ -1399,6 +1402,32 @@ class _BookDetailsState extends State<BookDetails> {
                                                   ),
                                             ),
                                           );
+
+                                          if (result
+                                              is List<Map<String, dynamic>>) {
+                                            setState(() {
+                                              final featured =
+                                                  (widget.BookData['FeaturedRatings']
+                                                      as List<dynamic>?) ??
+                                                  [];
+                                              for (final updated in result) {
+                                                final updatedId = updated['id'];
+                                                final idx = featured.indexWhere(
+                                                  (e) =>
+                                                      e is Map &&
+                                                      e['id'] == updatedId,
+                                                );
+                                                if (idx != -1) {
+                                                  featured[idx] = updated;
+                                                } else {
+                                                  featured.add(updated);
+                                                }
+                                              }
+                                              widget.BookData['FeaturedRatings'] =
+                                                  featured;
+                                            });
+                                          }
+
                                           _areBarsVisible = false;
                                           Animations();
                                         },

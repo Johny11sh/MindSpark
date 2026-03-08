@@ -329,7 +329,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                     GetBuilder<FavoriteController>(
                                       builder: (controller) {
                                         final isFav =
-                                            controller.isFavoriteC[widget
+                                            controller.isFavorite[widget
                                                 .TeacherData["id"]
                                                 .toString()] ??
                                             false;
@@ -348,7 +348,7 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                             );
                                           },
                                           onTap: (bool isLiked) async {
-                                            controller.toggleFavoriteC(
+                                            controller.toggleFavorite(
                                               widget.TeacherData["id"]
                                                   .toString(),
                                             );

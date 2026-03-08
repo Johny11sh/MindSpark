@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../controller/NetworkController.dart';
 import '../core/constants/FontGlobals.dart';
 import '../core/constants/ImageAssets.dart';
+import '../core/function/SnackBarFun.dart';
 import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
 import 'NavBar.dart';
@@ -125,14 +126,15 @@ class _LogInState extends State<LogIn> {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
 
         sharedPrefs.prefs.setString('reason', responseBody['reason']);
-        if (sharedPrefs.prefs.getString('reason') == "Banned" ||
-            responseBody['reason']) {
+        if (sharedPrefs.prefs.getString('reason') == "Banned") {
           Get.snackbar(
             "Banned Account!".tr,
             "Contact the support team to restore this account.".tr,
           );
         } else if (sharedPrefs.prefs.getString('reason') ==
             "Invalid Credentials") {
+          // showErrorSnackbar('Please check your username and password'.tr);
+
           Get.snackbar(
             "Invalid Credentials".tr,
             "Please check your username and password".tr,
