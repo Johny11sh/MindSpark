@@ -13,7 +13,7 @@ import '../../controller/NetworkController.dart';
 import '../../controller/ProfileController.dart';
 import '../../services/SharedPrefs.dart';
 import '../../view/NavBar.dart';
-import '../../widget/AnimatedWatchlistButton.dart';
+// import '../../widget/AnimatedWatchlistButton.dart';
 import '../constants/FontGlobals.dart';
 import '../function/CustomRatingDialog.dart';
 import '../function/buildRatingBar.dart';
@@ -263,50 +263,56 @@ class _BookDetailsState extends State<BookDetails> {
                                                 ),
                                       ),
                                     ),
-                                    Text(
-                                          "Book Details".tr,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: globalFontFamily,
+                                    Center(
+                                      child: Text(
+                                            "Book Details".tr,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontFamily: globalFontFamily,
+                                              color:
+                                                  themeController
+                                                              .initialTheme ==
+                                                          Themes
+                                                              .customLightTheme
+                                                      ? Color.fromARGB(
+                                                        255,
+                                                        210,
+                                                        209,
+                                                        224,
+                                                      )
+                                                      : Color.fromARGB(
+                                                        255,
+                                                        40,
+                                                        41,
+                                                        61,
+                                                      ),
+                                              fontWeight: FontWeight.w500,
+                                              fontSize:
+                                                  globalFontSizeChange <= 17
+                                                      ? (globalFontSizeChange /
+                                                              5) +
+                                                          20
+                                                      : 20 -
+                                                          (globalFontSizeChange /
+                                                              5),
+                                            ),
+                                          )
+                                          .animate(
+                                            onPlay:
+                                                (controller) =>
+                                                    controller.loop(),
+                                          )
+                                          .shimmer(
+                                            delay: Duration(seconds: 4),
+                                            duration: 800.ms,
                                             color:
                                                 themeController.initialTheme ==
                                                         Themes.customLightTheme
-                                                    ? Color.fromARGB(
-                                                      255,
-                                                      210,
-                                                      209,
-                                                      224,
-                                                    )
-                                                    : Color.fromARGB(
-                                                      255,
-                                                      40,
-                                                      41,
-                                                      61,
-                                                    ),
-                                            fontWeight: FontWeight.w500,
-                                            fontSize:
-                                                globalFontSizeChange <= 17
-                                                    ? (globalFontSizeChange /
-                                                            5) +
-                                                        20
-                                                    : 20 -
-                                                        (globalFontSizeChange /
-                                                            5),
+                                                    ? Colors.grey.shade700
+                                                    : Colors.white54,
                                           ),
-                                        )
-                                        .animate(
-                                          onPlay:
-                                              (controller) => controller.loop(),
-                                        )
-                                        .shimmer(
-                                          delay: Duration(seconds: 4),
-                                          duration: 800.ms,
-                                          color:
-                                              themeController.initialTheme ==
-                                                      Themes.customLightTheme
-                                                  ? Colors.grey.shade700
-                                                  : Colors.white54,
-                                        ),
+                                    ),
+                                    const SizedBox(width: 30),
                                     // IconButton(
                                     //   onPressed: () {},
                                     //   icon: Icon(
@@ -324,21 +330,21 @@ class _BookDetailsState extends State<BookDetails> {
                                     //             : Color.fromARGB(255, 40, 41, 61),
                                     //   ),
                                     // ),
-                                    AnimatedWatchlistButton(
-                                      itemId:
-                                          widget.BookData["id"]?.toString() ??
-                                          "0",
-                                      itemType: "resource",
-                                      itemTitle:
-                                          widget.BookData["name"]?.toString() ??
-                                          "Book",
-                                      itemImage:
-                                          widget.BookData["image"]
-                                              ?.toString() ??
-                                          "",
-                                      size: 24,
-                                      isCourse: false,
-                                    ),
+                                    // AnimatedWatchlistButton(
+                                    //   itemId:
+                                    //       widget.BookData["id"]?.toString() ??
+                                    //       "0",
+                                    //   itemType: "resource",
+                                    //   itemTitle:
+                                    //       widget.BookData["name"]?.toString() ??
+                                    //       "Book",
+                                    //   itemImage:
+                                    //       widget.BookData["image"]
+                                    //           ?.toString() ??
+                                    //       "",
+                                    //   size: 24,
+                                    //   isCourse: false,
+                                    // ),
                                   ],
                                 ),
                               ),

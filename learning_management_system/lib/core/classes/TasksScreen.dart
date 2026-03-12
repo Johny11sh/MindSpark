@@ -194,7 +194,7 @@ class TasksScreen extends StatelessWidget {
 
     final titleController = TextEditingController();
     final descController = TextEditingController();
-    Rx<DateTime?> dueDate = Rx<DateTime?>(DateTime.now());
+    Rx<DateTime?> dueDate = Rx<DateTime?>(DateTime.now().toUtc());
     RxDouble estimatedHours = 1.0.obs;
 
     Get.dialog(
@@ -276,9 +276,11 @@ class TasksScreen extends StatelessWidget {
                   onTap: () async {
                     final selectedDate = await showDatePicker(
                       context: Get.context!,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                      initialDate: DateTime.now().toUtc(),
+                      firstDate: DateTime.now().toUtc(),
+                      lastDate: DateTime.now().toUtc().add(
+                        const Duration(days: 365),
+                      ),
                     );
 
                     if (selectedDate != null) {
@@ -296,7 +298,7 @@ class TasksScreen extends StatelessWidget {
                           selectedTime.minute,
                         );
                       } else {
-                        dueDate.value = DateTime.now();
+                        dueDate.value = DateTime.now().toUtc();
                       }
                     }
                   },
@@ -648,7 +650,8 @@ class TrashScreen extends StatelessWidget {
           final task = taskController.deletedTasks[index];
           final daysLeft =
               task.trashed_at != null
-                  ? 30 - DateTime.now().difference(task.trashed_at!).inDays
+                  ? 30 -
+                      DateTime.now().toUtc().difference(task.trashed_at!).inDays
                   : 30;
 
           return Container(

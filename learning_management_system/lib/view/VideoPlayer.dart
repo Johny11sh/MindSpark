@@ -47,7 +47,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   Set<int> expandedReviews = {};
   final TextEditingController reportController = TextEditingController();
   final LikesController likesController = Get.find<LikesController>();
-  late VideoPlayerController _videoPlayerController;
+  VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
   bool _isInitialized = false;
   bool _isError = false;
@@ -135,20 +135,25 @@ class _VideoPlayerState extends State<VideoPlayer> {
   @override
   void initState() {
     super.initState();
+    _init();
+  }
 
+  Future<void> _init() async {
     Animations();
-
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    _initializePlayer();
-    _initSharedPreferences();
-    likesController.onInit();
 
-    token = sharedPrefs.prefs.getString("token")!;
+    await _initSharedPreferences();
+
+    token = sharedPrefs.prefs.getString("token") ?? "";
+
+    likesController.onInit();
     profileController.getProfileData();
 
     IsLiked = widget.videoData["isLiked"] == true;
     isDisLiked = widget.videoData["isDisliked"] == true;
-    loadRatedLessons();
+
+    await loadRatedLessons();
+    await _initializePlayer();
   }
 
   Future<void> _initSharedPreferences() async {
@@ -252,16 +257,18 @@ class _VideoPlayerState extends State<VideoPlayer> {
   // }
 
   Future<void> _initializePlayer() async {
-    if (_isDisposed) return;
+    if (!mounted) return;
     if (_isInitialized || _isInitializing == true) return;
     _isInitializing = true;
 
     try {
-      setState(() {
-        _isInitialized = false;
-        _isError = false;
-        _errorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isInitialized = false;
+          _isError = false;
+          _errorMessage = null;
+        });
+      }
 
       final connectivityResult = await Connectivity().checkConnectivity();
       if (connectivityResult == ConnectivityResult.none) {
@@ -275,39 +282,47 @@ class _VideoPlayerState extends State<VideoPlayer> {
       if (currentUrl == null || currentUrl.isEmpty) {
         throw Exception("Video URL is invalid");
       }
+      // Remove previous listener if any
+      if (_videoPlayerController != null && _videoListener != null) {
+        try {
+          _videoPlayerController!.removeListener(_videoListener!);
+        } catch (_) {}
+      }
 
       _videoPlayerController =
           VideoPlayerController.networkUrl(
               Uri.parse(currentUrl),
+              // Uri.parse(
+              //   "https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4",
+              // ),
               httpHeaders: const {'Accept': '*/*', 'Connection': 'keep-alive'},
             )
             ..setLooping(false)
             ..setVolume(1.0);
 
-      _videoPlayerController.removeListener(_videoListener ?? () {});
       _videoListener = () {
-        if (_isDisposed) return;
-        if (_videoPlayerController.value.hasError) {
-          debugPrint(
-            'VideoPlayer error: ${_videoPlayerController.value.errorDescription}',
-          );
-          if (!_isDisposed) {
+        if (!mounted) return;
+        final controller = _videoPlayerController;
+        if (controller == null) return;
+        if (controller.value.hasError) {
+          debugPrint('VideoPlayer error: ${controller.value.errorDescription}');
+          if (mounted) {
             setState(() {
               _isError = true;
               _errorMessage =
-                  _videoPlayerController.value.errorDescription ??
-                  'Unknown video error';
+                  controller.value.errorDescription ?? 'Unknown video error';
             });
           }
         }
-        if (_videoPlayerController.value.isPlaying && !_hasCountedView) {
+        if (controller.value.isPlaying && !_hasCountedView) {
           incrementViews(widget.videoData["id"].toString());
           _hasCountedView = true;
         }
       };
-      _videoPlayerController.addListener(_videoListener!);
 
-      await _videoPlayerController.initialize().timeout(
+      _videoPlayerController!.addListener(_videoListener!);
+
+      await _videoPlayerController!.initialize().timeout(
         const Duration(seconds: 18),
         onTimeout: () {
           throw TimeoutException('Video initialization timed out');
@@ -316,11 +331,18 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
       if (_isDisposed) return;
 
-      _chewieController?.removeListener(_chewieListener ?? () {});
-      _chewieController?.dispose();
+      if (_chewieListener != null) {
+        try {
+          _chewieController?.removeListener(_chewieListener!);
+        } catch (_) {}
+        _chewieListener = null;
+      }
+      try {
+        _chewieController?.dispose();
+      } catch (_) {}
       _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController,
-        aspectRatio: _videoPlayerController.value.aspectRatio,
+        videoPlayerController: _videoPlayerController!,
+        aspectRatio: _videoPlayerController?.value.aspectRatio ?? 16 / 9,
         autoInitialize: true,
         autoPlay: false,
         looping: false,
@@ -334,7 +356,11 @@ class _VideoPlayerState extends State<VideoPlayer> {
         additionalOptions: (context) => _buildAdditionalOptions(),
       );
 
-      _chewieController?.removeListener(_chewieListener ?? () {});
+      if (_chewieListener != null) {
+        try {
+          _chewieController?.removeListener(_chewieListener!);
+        } catch (_) {}
+      }
       _chewieListener = () {
         if (!mounted) return;
         final isFs = _chewieController?.isFullScreen ?? false;
@@ -342,7 +368,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
       };
       _chewieController?.addListener(_chewieListener!);
 
-      if (!_isDisposed) {
+      if (mounted) {
         setState(() {
           _isInitialized = true;
           _isError = false;
@@ -350,7 +376,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
       }
     } catch (e, st) {
       debugPrint('Video init failed: $e\n$st');
-      if (!_isDisposed) {
+      if (mounted) {
         setState(() {
           _isError = true;
           _errorMessage = e.toString();
@@ -481,8 +507,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
         _currentQuality = quality;
       });
 
-      final wasPlaying = _videoPlayerController.value.isPlaying;
-      final position = _videoPlayerController.value.position;
+      final wasPlaying = _videoPlayerController?.value.isPlaying ?? false;
+      final position = _videoPlayerController?.value.position ?? Duration.zero;
 
       final wasFullscreen = _isFullScreen;
       if (wasFullscreen) {
@@ -497,10 +523,12 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
       // tear down existing controllers
       try {
-        await _videoPlayerController.pause();
+        await _videoPlayerController?.pause();
       } catch (_) {}
       try {
-        await _videoPlayerController.dispose();
+        if (_videoPlayerController?.value.isInitialized == true) {
+          _videoPlayerController?.dispose();
+        }
       } catch (_) {}
       try {
         _chewieController?.removeListener(_chewieListener!);
@@ -525,8 +553,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
       // restore playback position/state
       if (wasPlaying && !_isDisposed) {
         try {
-          await _videoPlayerController.seekTo(position);
-          await _videoPlayerController.play();
+          await _videoPlayerController?.seekTo(position);
+          await _videoPlayerController?.play();
         } catch (e) {
           debugPrint('Error restoring playback after quality change: $e');
         }
@@ -605,7 +633,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
       _chewieController?.dispose();
     } catch (_) {}
     try {
-      _videoPlayerController.dispose();
+      if (_videoPlayerController?.value.isInitialized == true) {
+        _videoPlayerController?.dispose();
+      }
     } catch (_) {}
 
     super.dispose();
@@ -653,7 +683,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
                         )
                         : _isInitialized && _chewieController != null
                         ? AspectRatio(
-                          aspectRatio: _videoPlayerController.value.aspectRatio,
+                          aspectRatio:
+                              _videoPlayerController?.value.aspectRatio ??
+                              16 / 9,
                           child: RepaintBoundary(
                             child: Chewie(controller: _chewieController!),
                           ),

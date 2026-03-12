@@ -1,23 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:learning_management_system/view/SignUp.dart';
 import '../core/constants/FontGlobals.dart';
+import '../view/OnBoarding.dart';
 
 class BackButtonController extends GetxController {
+  late bool? ban;
   DateTime? lastBackButtonTime;
 
+  BackButtonController({this.ban});
+
   Future<bool> onWillPop() async {
+    if (ban == true) {
+      Navigator.pop;
+      Get.offAll(() => SignUp());
+      sharedPrefs.prefs.clear();
+      return true;
+    }
     final currentTime = DateTime.now();
 
-    // Check if the last press was more than 2 seconds ago (reset if too old)
     bool shouldReset =
         lastBackButtonTime != null &&
         currentTime.difference(lastBackButtonTime!) > Duration(seconds: 2);
 
     if (lastBackButtonTime == null || shouldReset) {
-      // Reset if it's been more than 2 seconds
       lastBackButtonTime = currentTime;
-      yourCustomFunction();
+      CustomFunction();
 
       Get.rawSnackbar(
         title: "Press back again".tr,
@@ -45,7 +53,7 @@ class BackButtonController extends GetxController {
     }
   }
 
-  void yourCustomFunction() {
+  void CustomFunction() {
     print('Back button pressed - first time');
   }
 }

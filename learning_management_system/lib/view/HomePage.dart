@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import 'package:learning_management_system/controller/BackButtonController.dart';
-import 'package:learning_management_system/controller/WatchlistController.dart';
+// import 'package:learning_management_system/controller/WatchlistController.dart';
 import 'package:learning_management_system/core/classes/PdfCard.dart';
 import 'package:learning_management_system/core/classes/SubjectsBooks.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage>
   final ProfileController profileController = Get.find<ProfileController>();
   final LocaleController localeController = Get.find<LocaleController>();
   final FontController fontController = Get.find<FontController>();
-  final BackButtonController controller = Get.put(BackButtonController());
+  late BackButtonController controller = Get.put(BackButtonController());
 
   // final ProfileController profileController = Get.put(ProfileController());
 
@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage>
   List<Map<String, dynamic>> userInfo = [];
 
   late FavoriteController favoriteController;
-  late WatchlistController watchlistController;
+  // late WatchlistController watchlistController;
   final CacheManager cacheManager = CacheManager();
 
   late String token;
@@ -119,7 +119,8 @@ class _HomePageState extends State<HomePage>
     token = sharedPrefs.prefs.getString("token")!;
 
     favoriteController = Get.put(FavoriteController());
-    watchlistController = Get.put(WatchlistController());
+
+    // watchlistController = Get.put(WatchlistController());
   }
 
   void showWarningDialog() {
@@ -170,49 +171,53 @@ class _HomePageState extends State<HomePage>
       );
     }
     if (isBanned == 1) {
-      print("Banned");
-
+      if (isBanned == 1) {
+        controller.ban = true;
+      }
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Banned"),
-            titleTextStyle: TextStyle(
-              fontFamily: globalFontFamily,
-              color: Color.fromARGB(255, 40, 41, 61),
-              fontWeight: FontWeight.w400,
-              fontSize:
-                  globalFontSizeChange <= 17
-                      ? (globalFontSizeChange / 5) + 20
-                      : 20 - (globalFontSizeChange / 5),
-            ),
-            content: Text(
-              'Your account has been banned due to multiple violations of our terms.\nPlease contact one of our admins in order to get your account reinstated.'
-                  .tr,
-            ),
-            contentTextStyle: TextStyle(
-              fontFamily: globalFontFamily,
-              color: Color.fromARGB(255, 40, 41, 61),
-              fontWeight: FontWeight.w300,
-              fontSize:
-                  globalFontSizeChange <= 17
-                      ? (globalFontSizeChange / 5) + 16
-                      : 16 - (globalFontSizeChange / 5),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  Get.offAll(() => LogIn());
-                  sharedPrefs.prefs.clear();
-                },
-                child: Text(
-                  'OK',
-                  style: TextStyle(fontFamily: globalFontFamily),
-                ),
+          return WillPopScope(
+            onWillPop: controller.onWillPop,
+            child: AlertDialog(
+              title: Text("Banned"),
+              titleTextStyle: TextStyle(
+                fontFamily: globalFontFamily,
+                color: Color.fromARGB(255, 40, 41, 61),
+                fontWeight: FontWeight.w400,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 20
+                        : 20 - (globalFontSizeChange / 5),
               ),
-            ],
+              content: Text(
+                'Your account has been banned due to multiple violations of our terms.\nPlease contact one of our admins in order to get your account reinstated.\nIf we already told you we removed the ban, please try logging in again later'
+                    .tr,
+              ),
+              contentTextStyle: TextStyle(
+                fontFamily: globalFontFamily,
+                color: Color.fromARGB(255, 40, 41, 61),
+                fontWeight: FontWeight.w300,
+                fontSize:
+                    globalFontSizeChange <= 17
+                        ? (globalFontSizeChange / 5) + 16
+                        : 16 - (globalFontSizeChange / 5),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    Get.offAll(() => LogIn());
+                    sharedPrefs.prefs.clear();
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(fontFamily: globalFontFamily),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       );
@@ -754,7 +759,9 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
-    print('number');
+    if (isBanned == 1) {
+      controller.ban = true;
+    }
     return WillPopScope(
       onWillPop: controller.onWillPop,
 
@@ -820,8 +827,25 @@ class _HomePageState extends State<HomePage>
                           ? Color.fromARGB(255, 210, 209, 224)
                           : Color.fromARGB(255, 46, 48, 97),
                   onRefresh: () async {
+                    setState(() {
+                      cacheManager.init();
+                      networkController.init();
+                    });
                     await networkController.checkConnectivityManually();
-                    await getSubjectsData(subjectType);
+
+                    print('caching: ${cacheManager.isCacheEnabled.value}');
+                    print(
+                      'connection: ${sharedPrefs.prefs.getBool('isConnected')}',
+                    );
+                    setState(() {});
+                    if (sharedPrefs.prefs.getBool('isConnected') == true) {
+                      await _loadInitialData();
+                    } else {
+                      if (cacheManager.isCacheEnabled.value == true) {
+                        await _loadCachedData();
+                        setState(() {});
+                      }
+                    }
                   },
                   child: Center(
                     child: CircularProgressIndicator(
@@ -843,8 +867,25 @@ class _HomePageState extends State<HomePage>
                           ? Color.fromARGB(255, 210, 209, 224)
                           : Color.fromARGB(255, 46, 48, 97),
                   onRefresh: () async {
+                    setState(() {
+                      cacheManager.init();
+                      networkController.init();
+                    });
                     await networkController.checkConnectivityManually();
-                    await getSubjectsData(subjectType);
+
+                    print('caching: ${cacheManager.isCacheEnabled.value}');
+                    print(
+                      'connection: ${sharedPrefs.prefs.getBool('isConnected')}',
+                    );
+                    setState(() {});
+                    if (sharedPrefs.prefs.getBool('isConnected') == true) {
+                      await _loadInitialData();
+                    } else {
+                      if (cacheManager.isCacheEnabled.value == true) {
+                        await _loadCachedData();
+                        setState(() {});
+                      }
+                    }
                   },
                   child: Container(
                     color:

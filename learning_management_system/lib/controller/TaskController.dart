@@ -51,10 +51,11 @@ class Task {
       estimatedHours: (json['estimatedHours'] as num?)?.toDouble() ?? 0.0,
       // trashed_at: DateTime.parse(json['trashed_at'] as String? ?? '2025-01-01'),
       dueDate: DateTime.parse(
-        json['dueDate'] as String? ?? DateTime.now().toIso8601String(),
+        json['dueDate'] as String? ?? DateTime.now().toUtc().toIso8601String(),
       ),
       createdAt: DateTime.parse(
-        json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+        json['created_at'] as String? ??
+            DateTime.now().toUtc().toIso8601String(),
       ),
     );
   }

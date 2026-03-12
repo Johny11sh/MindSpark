@@ -9,7 +9,7 @@ import 'package:lottie/lottie.dart';
 import '../core/constants/FontGlobals.dart';
 import '../controller/LikesController.dart';
 import '../controller/ProfileController.dart';
-import '../controller/WatchlistController.dart';
+// import '../controller/WatchlistController.dart';
 import '../core/classes/QuizScreen.dart';
 import 'package:like_button/like_button.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -31,7 +31,7 @@ import '../locale/LocaleController.dart';
 import '../themes/ThemeController.dart';
 import '../services/SharedPrefs.dart';
 import '../themes/Themes.dart';
-import '../widget/AnimatedWatchlistButton.dart';
+// import '../widget/AnimatedWatchlistButton.dart';
 import 'NavBar.dart';
 import 'PDFPage.dart';
 import 'VideoPlayer.dart';
@@ -647,7 +647,6 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                 ),
                                       ),
                                     ),
-                                    const SizedBox(width: 30),
                                     Text(
                                           "Course".tr,
                                           textAlign: TextAlign.center,
@@ -692,50 +691,49 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                   ? Colors.grey.shade700
                                                   : Colors.white54,
                                         ),
-                                    const SizedBox(width: 0),
                                     Row(
                                       children: [
-                                        Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            gradient: const LinearGradient(
-                                              colors: [
-                                                Color(0xFF4F8EF7),
-                                                Color(0xFF2563EB),
-                                              ],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                            shape: BoxShape.circle,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(
-                                                  0.15,
-                                                ),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: AnimatedWatchlistButton(
-                                            itemId:
-                                                widget.CoursesData["id"]
-                                                    ?.toString() ??
-                                                "0",
-                                            itemType: "course",
-                                            itemTitle:
-                                                widget.CoursesData["name"]
-                                                    ?.toString() ??
-                                                "Book",
-                                            itemImage:
-                                                widget.CoursesData["image"]
-                                                    ?.toString() ??
-                                                "",
-                                            size: 24,
-                                            isCourse: true,
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   width: 32,
+                                        //   height: 32,
+                                        //   decoration: BoxDecoration(
+                                        //     gradient: const LinearGradient(
+                                        //       colors: [
+                                        //         Color(0xFF4F8EF7),
+                                        //         Color(0xFF2563EB),
+                                        //       ],
+                                        //       begin: Alignment.topLeft,
+                                        //       end: Alignment.bottomRight,
+                                        //     ),
+                                        //     shape: BoxShape.circle,
+                                        //     boxShadow: [
+                                        //       BoxShadow(
+                                        //         color: Colors.black.withOpacity(
+                                        //           0.15,
+                                        //         ),
+                                        //         blurRadius: 4,
+                                        //         offset: const Offset(0, 2),
+                                        //       ),
+                                        //     ],
+                                        //   ),
+                                        //   child: AnimatedWatchlistButton(
+                                        //     itemId:
+                                        //         widget.CoursesData["id"]
+                                        //             ?.toString() ??
+                                        //         "0",
+                                        //     itemType: "course",
+                                        //     itemTitle:
+                                        //         widget.CoursesData["name"]
+                                        //             ?.toString() ??
+                                        //         "Book",
+                                        //     itemImage:
+                                        //         widget.CoursesData["image"]
+                                        //             ?.toString() ??
+                                        //         "",
+                                        //     size: 24,
+                                        //     isCourse: true,
+                                        //   ),
+                                        // ),
                                         const SizedBox(width: 20),
                                         GetBuilder<FavoriteController>(
                                           builder: (controller) {
@@ -3858,88 +3856,88 @@ class _CoursesLessonsState extends State<CoursesLessons> {
                                                             const SizedBox(
                                                               width: 30,
                                                             ),
-                                                            Container(
-                                                              width: 24,
-                                                              height: 24,
-                                                              decoration: BoxDecoration(
-                                                                gradient: const LinearGradient(
-                                                                  colors: [
-                                                                    Color(
-                                                                      0xFF4F8EF7,
-                                                                    ),
-                                                                    Color(
-                                                                      0xFF2563EB,
-                                                                    ),
-                                                                  ],
-                                                                  begin:
-                                                                      Alignment
-                                                                          .topLeft,
-                                                                  end:
-                                                                      Alignment
-                                                                          .bottomRight,
-                                                                ),
-                                                                shape:
-                                                                    BoxShape
-                                                                        .circle,
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: Colors
-                                                                        .black
-                                                                        .withOpacity(
-                                                                          0.15,
-                                                                        ),
-                                                                    blurRadius:
-                                                                        3,
-                                                                    offset:
-                                                                        const Offset(
-                                                                          0,
-                                                                          1,
-                                                                        ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              child: IconButton(
-                                                                padding:
-                                                                    EdgeInsets
-                                                                        .zero,
-                                                                iconSize: 14,
-                                                                icon: const Icon(
-                                                                  Icons
-                                                                      .bookmark_add_outlined,
-                                                                  color:
-                                                                      Colors
-                                                                          .white,
-                                                                ),
-                                                                onPressed: () {
-                                                                  final watchlist =
-                                                                      Get.find<
-                                                                        WatchlistController
-                                                                      >();
-                                                                  watchlist.toggleLectureWatchlist(
-                                                                    coursesData[i]['id']
-                                                                        .toString(),
-                                                                    (coursesData[i]['name'] ??
-                                                                            '')
-                                                                        .toString(),
-                                                                    '',
-                                                                  );
-                                                                  Get.snackbar(
-                                                                    'Watchlist',
-                                                                    'Toggled',
-                                                                    snackPosition:
-                                                                        SnackPosition
-                                                                            .BOTTOM,
-                                                                    duration:
-                                                                        const Duration(
-                                                                          seconds:
-                                                                              1,
-                                                                        ),
-                                                                  );
-                                                                },
-                                                                tooltip:
-                                                                    'Add to Watchlist',
-                                                              ),
-                                                            ),
+                                                            // Container(
+                                                            //   width: 24,
+                                                            //   height: 24,
+                                                            //   decoration: BoxDecoration(
+                                                            //     gradient: const LinearGradient(
+                                                            //       colors: [
+                                                            //         Color(
+                                                            //           0xFF4F8EF7,
+                                                            //         ),
+                                                            //         Color(
+                                                            //           0xFF2563EB,
+                                                            //         ),
+                                                            //       ],
+                                                            //       begin:
+                                                            //           Alignment
+                                                            //               .topLeft,
+                                                            //       end:
+                                                            //           Alignment
+                                                            //               .bottomRight,
+                                                            //     ),
+                                                            //     shape:
+                                                            //         BoxShape
+                                                            //             .circle,
+                                                            //     boxShadow: [
+                                                            //       BoxShadow(
+                                                            //         color: Colors
+                                                            //             .black
+                                                            //             .withOpacity(
+                                                            //               0.15,
+                                                            //             ),
+                                                            //         blurRadius:
+                                                            //             3,
+                                                            //         offset:
+                                                            //             const Offset(
+                                                            //               0,
+                                                            //               1,
+                                                            //             ),
+                                                            //       ),
+                                                            //     ],
+                                                            //   ),
+                                                            //   child: IconButton(
+                                                            //     padding:
+                                                            //         EdgeInsets
+                                                            //             .zero,
+                                                            //     iconSize: 14,
+                                                            //     icon: const Icon(
+                                                            //       Icons
+                                                            //           .bookmark_add_outlined,
+                                                            //       color:
+                                                            //           Colors
+                                                            //               .white,
+                                                            //     ),
+                                                            //     onPressed: () {
+                                                            //       final watchlist =
+                                                            //           Get.find<
+                                                            //             WatchlistController
+                                                            //           >();
+                                                            //       watchlist.toggleLectureWatchlist(
+                                                            //         coursesData[i]['id']
+                                                            //             .toString(),
+                                                            //         (coursesData[i]['name'] ??
+                                                            //                 '')
+                                                            //             .toString(),
+                                                            //         '',
+                                                            //       );
+                                                            //       Get.snackbar(
+                                                            //         'Watchlist',
+                                                            //         'Toggled',
+                                                            //         snackPosition:
+                                                            //             SnackPosition
+                                                            //                 .BOTTOM,
+                                                            //         duration:
+                                                            //             const Duration(
+                                                            //               seconds:
+                                                            //                   1,
+                                                            //             ),
+                                                            //       );
+                                                            //     },
+                                                            //     tooltip:
+                                                            //         'Add to Watchlist',
+                                                            //   ),
+                                                            // ),
                                                           ],
                                                         ),
                                                       ],

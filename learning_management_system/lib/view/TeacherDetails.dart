@@ -3030,93 +3030,93 @@ class _TeacherDetailsState extends State<TeacherDetails> {
                                             thickness: 1,
                                           ),
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.only(
-                                            left: 5,
-                                          ),
-                                          child: Text(
-                                            "My Courses".tr,
-                                            style: TextStyle(
-                                              fontFamily: globalFontFamily,
-                                              color:
-                                                  themeController
-                                                              .initialTheme ==
-                                                          Themes
-                                                              .customLightTheme
-                                                      ? Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
-                                                        210,
-                                                        209,
-                                                        224,
-                                                      ),
-                                              fontSize:
-                                                  globalFontSizeChange <= 17
-                                                      ? (globalFontSizeChange /
-                                                              5) +
-                                                          18
-                                                      : 18 -
-                                                          (globalFontSizeChange /
-                                                              5),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   padding: const EdgeInsets.only(
+                                        //     left: 5,
+                                        //   ),
+                                        //   child: Text(
+                                        //     "My Courses".tr,
+                                        //     style: TextStyle(
+                                        //       fontFamily: globalFontFamily,
+                                        //       color:
+                                        //           themeController
+                                        //                       .initialTheme ==
+                                        //                   Themes
+                                        //                       .customLightTheme
+                                        //               ? Color.fromARGB(
+                                        //                 255,
+                                        //                 40,
+                                        //                 41,
+                                        //                 61,
+                                        //               )
+                                        //               : Color.fromARGB(
+                                        //                 255,
+                                        //                 210,
+                                        //                 209,
+                                        //                 224,
+                                        //               ),
+                                        //       fontSize:
+                                        //           globalFontSizeChange <= 17
+                                        //               ? (globalFontSizeChange /
+                                        //                       5) +
+                                        //                   18
+                                        //               : 18 -
+                                        //                   (globalFontSizeChange /
+                                        //                       5),
+                                        //       fontWeight: FontWeight.w500,
+                                        //     ),
+                                        //   ),
+                                        // ),
 
-                                        Container(
-                                          padding: const EdgeInsets.only(
-                                            left: 5,
-                                            top: 10,
-                                          ),
-                                          child: Text(
-                                            "${widget.TeacherData['courseNames']}"
-                                                .tr,
-                                            style: TextStyle(
-                                              fontFamily: globalFontFamily,
-                                              color:
-                                                  themeController
-                                                              .initialTheme ==
-                                                          Themes
-                                                              .customLightTheme
-                                                      ? Color.fromARGB(
-                                                        255,
-                                                        40,
-                                                        41,
-                                                        61,
-                                                      )
-                                                      : Color.fromARGB(
-                                                        255,
-                                                        210,
-                                                        209,
-                                                        224,
-                                                      ),
-                                              fontSize:
-                                                  globalFontSizeChange <= 17
-                                                      ? (globalFontSizeChange /
-                                                              5) +
-                                                          16
-                                                      : 16 -
-                                                          (globalFontSizeChange /
-                                                              5),
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                        ),
-                                        const Padding(
-                                          padding: EdgeInsets.only(
-                                            left: 20,
-                                            right: 20,
-                                          ),
-                                          child: Divider(
-                                            height: 30,
-                                            thickness: 1,
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   padding: const EdgeInsets.only(
+                                        //     left: 5,
+                                        //     top: 10,
+                                        //   ),
+                                        //   child: Text(
+                                        //     "${widget.TeacherData['courseNames']}"
+                                        //         .tr,
+                                        //     style: TextStyle(
+                                        //       fontFamily: globalFontFamily,
+                                        //       color:
+                                        //           themeController
+                                        //                       .initialTheme ==
+                                        //                   Themes
+                                        //                       .customLightTheme
+                                        //               ? Color.fromARGB(
+                                        //                 255,
+                                        //                 40,
+                                        //                 41,
+                                        //                 61,
+                                        //               )
+                                        //               : Color.fromARGB(
+                                        //                 255,
+                                        //                 210,
+                                        //                 209,
+                                        //                 224,
+                                        //               ),
+                                        //       fontSize:
+                                        //           globalFontSizeChange <= 17
+                                        //               ? (globalFontSizeChange /
+                                        //                       5) +
+                                        //                   16
+                                        //               : 16 -
+                                        //                   (globalFontSizeChange /
+                                        //                       5),
+                                        //       fontWeight: FontWeight.w400,
+                                        //     ),
+                                        //   ),
+                                        // ),
+                                        // const Padding(
+                                        //   padding: EdgeInsets.only(
+                                        //     left: 20,
+                                        //     right: 20,
+                                        //   ),
+                                        //   child: Divider(
+                                        //     height: 30,
+                                        //     thickness: 1,
+                                        //   ),
+                                        // ),
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,

@@ -699,21 +699,12 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                                                               5),
                                                                               fontFamily:
                                                                                   globalFontFamily,
-                                                                              color:
-                                                                                  themeController.initialTheme ==
-                                                                                          Themes.customLightTheme
-                                                                                      ? Color.fromARGB(
-                                                                                        255,
-                                                                                        210,
-                                                                                        209,
-                                                                                        224,
-                                                                                      )
-                                                                                      : Color.fromARGB(
-                                                                                        255,
-                                                                                        40,
-                                                                                        41,
-                                                                                        61,
-                                                                                      ),
+                                                                              color: Color.fromARGB(
+                                                                                255,
+                                                                                40,
+                                                                                41,
+                                                                                61,
+                                                                              ),
                                                                             ),
                                                                           ),
                                                                         ],

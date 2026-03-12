@@ -14,8 +14,8 @@ import 'package:flutter/material.dart';
 
 final ThemeController themeController = Get.find<ThemeController>();
 final LocaleController localeController = Get.find<LocaleController>();
-String mainIP = "http://192.168.1.7:8000";
-// String mainIP = "http://192.168.45.213:8000";
+String mainIP = "http://192.168.1.2:8000";
+// String mainIP = "http://192.168.231.213:8000";
 // String mainIP = "http://127.0.0.1:8000";
 
 class NavBar extends StatefulWidget {

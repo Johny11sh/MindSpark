@@ -111,7 +111,7 @@ class _LogInState extends State<LogIn> {
         String? fcmToken = await FirebaseMessaging.instance.getToken();
         if (fcmToken != null) {
           await http.post(
-            Uri.parse("$baseUrl/api/set-token"),
+            Uri.parse("$baseUrl/api/set_fcm_token"),
             headers: {
               "Authorization": "Bearer $token",
               "Content-Type": "application/json",

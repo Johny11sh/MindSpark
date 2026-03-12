@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
-import 'package:learning_management_system/view/Watchlist.dart';
+// import 'package:learning_management_system/view/Watchlist.dart';
 
 // import '../core/classes/AboutUs.dart';
 // import '../core/classes/ChangeTheme.dart';
@@ -30,11 +30,11 @@ class _ManagementState extends State<Management> with TickerProviderStateMixin {
   final List<Animation<double>> _cardAnimations = [];
 
   final List<Map<String, dynamic>> managementData = [
-    {
-      'icon': Icons.format_list_numbered_rounded,
-      'title': "WatchList".tr,
-      'onTap': () => Get.to(() => Watchlist()),
-    },
+    // {
+    //   'icon': Icons.format_list_numbered_rounded,
+    //   'title': "WatchList".tr,
+    //   'onTap': () => Get.to(() => Watchlist()),
+    // },
     {
       'icon': Icons.task_outlined,
       'title': "Tasks".tr,
